@@ -1,0 +1,15 @@
+{
+  "name": "Realtime.Examples.NetworkRecovery",
+  "rootNamespace": "Realtime.Examples.NetworkRecovery",
+  "references": [
+    "Realtime.Core",
+    "Realtime.Transport",
+    "Realtime.Prediction",
+    "Realtime.Correction",
+    "Realtime.Interpolation",
+    "Realtime.Simulation",
+    "Realtime.Clock",
+    "Realtime.Diagnostics"
+  ],
+  "noEngineReferences": true
+}

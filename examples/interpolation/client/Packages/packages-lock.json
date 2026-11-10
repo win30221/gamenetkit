@@ -1,0 +1,50 @@
+{
+  "dependencies": {
+    "com.realtime.core": {
+      "version": "file:../../../../packages/unity/core",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
+    "com.realtime.interpolation": {
+      "version": "file:../../../../packages/unity/interpolation",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.core": "0.1.0"
+      }
+    },
+    "com.realtime.simulation": {
+      "version": "file:../../../../packages/unity/simulation",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.core": "0.1.0"
+      }
+    },
+    "com.realtime.transport": {
+      "version": "file:../../../../packages/unity/transport",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
+    "com.unity.modules.imgui": {
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "dependencies": {}
+    },
+    "com.unity.modules.jsonserialize": {
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "dependencies": {}
+    },
+    "com.unity.modules.physics": {
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "dependencies": {}
+    }
+  }
+}

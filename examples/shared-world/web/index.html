@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Shared World · 共用世界教學</title><link rel="stylesheet" href="./style.css"></head>
+<body><main>
+  <header><div><p class="eyebrow">SHARED WORLD / REALTIME FRAMEWORK</p><h1>同一個世界，一起移動。</h1><p class="subtitle">教學 02 · core + transport 共用世界</p></div><a class="unity" href="/unity/">開啟 Unity WebGL ↗</a></header>
+  <section class="toolbar" aria-label="連線控制"><div><span id="light" class="light"></span><strong id="status" role="status">尚未連線</strong><span id="endpoint"></span></div><div class="actions"><button id="connect">連線</button><button id="disconnect" class="secondary" disabled>中斷連線</button></div></section>
+  <section class="stats" aria-label="世界狀態"><div><span>你的玩家 ID</span><strong id="player">—</strong></div><div><span>世界 TICK</span><strong id="tick">—</strong></div><div><span>線上玩家</span><strong id="count">0 <small>/ 8</small></strong></div><div><span>快照頻率</span><strong>15 <small>Hz</small></strong></div></section>
+  <section class="arena"><div class="arena-heading"><h2>共享競技場</h2><div class="legend"><span class="self">你</span><span class="peer">其他玩家</span></div></div><canvas id="world" width="960" height="660" tabindex="0" aria-label="共享競技場。點擊後使用 WASD 或方向鍵移動；離開焦點即停止。"></canvas><div class="arena-footer"><span id="hint">連線後點擊場地，使用 WASD 或方向鍵移動</span><span>伺服器權威位置 · 30 tick/s</span></div></section>
+  <footer><span>開啟另一個視窗，即可看到彼此加入與離開。</span><span>藍色是你，橘色是同行者。</span></footer>
+</main><script type="module" src="./app.js"></script></body></html>

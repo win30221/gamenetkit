@@ -1,0 +1,5 @@
+KayKit 1.4-unit characters, no root motion or gameplay colliders
+Knight bounds=Center: (0.06, 0.70, 0.25), Extents: (0.42, 0.70, 0.55) renderers=11
+Ranger stringRelease=(-0.16, 0.00, 0.99) weaponGrip=(-0.06, 0.69, 0.38)
+Ranger bounds=Center: (0.00, 0.70, 0.06), Extents: (0.38, 0.70, 0.52) renderers=9
+Arrow bounds=Center: (0.00, 0.00, -0.16), Extents: (0.04, 0.04, 0.34) renderers=2

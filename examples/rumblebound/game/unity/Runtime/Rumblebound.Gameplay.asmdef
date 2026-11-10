@@ -1,0 +1,6 @@
+{
+  "name": "Rumblebound.Gameplay",
+  "rootNamespace": "Rumblebound.Gameplay",
+  "references": ["Realtime.Core"],
+  "noEngineReferences": true
+}

@@ -1,0 +1,10 @@
+{
+  "name": "Realtime.Examples.ReplayLesson.Unity",
+  "references": [
+    "Realtime.Examples.ReplayLesson",
+    "Realtime.Examples.Presentation",
+    "Realtime.Transport",
+    "Realtime.Core",
+    "Realtime.Playback"
+  ]
+}

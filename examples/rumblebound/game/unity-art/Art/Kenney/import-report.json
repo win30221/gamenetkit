@@ -1,0 +1,195 @@
+{
+    "pipeline": "rumblebound-mini-2",
+    "fingerprint": "df8f5ec4fd9c3c48bbf265fef8921f131cbae1285f873cdd6a2cda0edc551b4a",
+    "sourceToWorldScale": 1.673990249633789,
+    "characterHeight": 1.399999976158142,
+    "characterClips": [
+        "idle",
+        "walk",
+        "sprint",
+        "die",
+        "holding-right-shoot"
+    ],
+    "prefabs": [
+        {
+            "resource": "Kenney/Character",
+            "size": {
+                "x": 1.306656837463379,
+                "y": 1.3999998569488525,
+                "z": 0.8704748153686523
+            },
+            "triangles": 513,
+            "renderers": 2
+        },
+        {
+            "resource": "Kenney/Arena/floor",
+            "size": {
+                "x": 1.673990249633789,
+                "y": 0.0,
+                "z": 1.673990249633789
+            },
+            "triangles": 2,
+            "renderers": 1
+        },
+        {
+            "resource": "Kenney/Arena/floor-detail",
+            "size": {
+                "x": 1.673990249633789,
+                "y": 0.11717931926250458,
+                "z": 1.673990249633789
+            },
+            "triangles": 50,
+            "renderers": 1
+        },
+        {
+            "resource": "Kenney/Arena/wall",
+            "size": {
+                "x": 1.673990249633789,
+                "y": 1.673990249633789,
+                "z": 1.0043941736221313
+            },
+            "triangles": 174,
+            "renderers": 1
+        },
+        {
+            "resource": "Kenney/Arena/wall-gate",
+            "size": {
+                "x": 1.673990249633789,
+                "y": 1.673990249633789,
+                "z": 1.0043941736221313
+            },
+            "triangles": 322,
+            "renderers": 2
+        },
+        {
+            "resource": "Kenney/Arena/wall-corner",
+            "size": {
+                "x": 1.339192271232605,
+                "y": 1.673990249633789,
+                "z": 1.339192271232605
+            },
+            "triangles": 226,
+            "renderers": 1
+        },
+        {
+            "resource": "Kenney/Arena/column",
+            "size": {
+                "x": 1.0096254348754883,
+                "y": 1.673990249633789,
+                "z": 1.0043941736221313
+            },
+            "triangles": 168,
+            "renderers": 1
+        },
+        {
+            "resource": "Kenney/Arena/column-damaged",
+            "size": {
+                "x": 1.0043941736221313,
+                "y": 1.1979986429214478,
+                "z": 1.0043941736221313
+            },
+            "triangles": 148,
+            "renderers": 1
+        },
+        {
+            "resource": "Kenney/Arena/statue",
+            "size": {
+                "x": 1.1717931032180786,
+                "y": 2.236994981765747,
+                "z": 1.1717931032180786
+            },
+            "triangles": 549,
+            "renderers": 1
+        },
+        {
+            "resource": "Kenney/Arena/banner",
+            "size": {
+                "x": 1.0043941736221313,
+                "y": 1.7158399820327759,
+                "z": 0.37664780020713806
+            },
+            "triangles": 228,
+            "renderers": 1
+        },
+        {
+            "resource": "Kenney/Arena/tree",
+            "size": {
+                "x": 1.0881191492080688,
+                "y": 3.20932674407959,
+                "z": 1.0900012254714966
+            },
+            "triangles": 330,
+            "renderers": 1
+        },
+        {
+            "resource": "Kenney/Arena/bricks",
+            "size": {
+                "x": 1.2923259735107422,
+                "y": 0.6905209422111511,
+                "z": 1.4177405834197998
+            },
+            "triangles": 120,
+            "renderers": 1
+        },
+        {
+            "resource": "Kenney/Arena/border-straight",
+            "size": {
+                "x": 1.673990249633789,
+                "y": 0.6695960760116577,
+                "z": 1.0043941736221313
+            },
+            "triangles": 60,
+            "renderers": 1
+        },
+        {
+            "resource": "Kenney/Arena/border-corner",
+            "size": {
+                "x": 1.339192271232605,
+                "y": 0.6695960760116577,
+                "z": 1.339192271232605
+            },
+            "triangles": 122,
+            "renderers": 1
+        },
+        {
+            "resource": "Kenney/Dungeon/barrel",
+            "size": {
+                "x": 0.8665021657943726,
+                "y": 0.7971380949020386,
+                "z": 0.8665021657943726
+            },
+            "triangles": 148,
+            "renderers": 1
+        },
+        {
+            "resource": "Kenney/Dungeon/chest",
+            "size": {
+                "x": 0.8369951248168945,
+                "y": 0.7532956600189209,
+                "z": 0.8369951248168945
+            },
+            "triangles": 288,
+            "renderers": 2
+        },
+        {
+            "resource": "Kenney/Dungeon/rocks",
+            "size": {
+                "x": 1.673990249633789,
+                "y": 0.8369951248168945,
+                "z": 1.673990249633789
+            },
+            "triangles": 190,
+            "renderers": 1
+        },
+        {
+            "resource": "Kenney/Dungeon/shield-round",
+            "size": {
+                "x": 0.6355806589126587,
+                "y": 0.6355806589126587,
+                "z": 0.17827995121479034
+            },
+            "triangles": 160,
+            "renderers": 1
+        }
+    ]
+}

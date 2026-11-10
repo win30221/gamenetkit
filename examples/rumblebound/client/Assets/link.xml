@@ -1,0 +1,6 @@
+<linker>
+  <assembly fullname="Rumblebound.Example.Battle" preserve="all" />
+  <assembly fullname="Rumblebound.Example.Battle.Unity" preserve="all" />
+  <assembly fullname="Rumblebound.Gameplay" preserve="all" />
+  <assembly fullname="Rumblebound.Presentation" preserve="all" />
+</linker>

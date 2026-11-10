@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AOI 興趣範圍同步 · GameNetKit</title><link rel="stylesheet" href="/style.css"></head>
+<body><main><header><p class="eyebrow">GameNetKit · 第 7 課</p><h1>AOI 興趣範圍同步</h1><p>只傳附近需要的物件，觀察每位玩家各自收到的清單。</p></header>
+<div class="connection"><span id="status" role="status">正在連線…</span><span id="identity"></span><button id="reconnect">重新連線</button></div>
+<section><h2>先切換，再走近與走遠</h2><div class="buttons"><button id="interest-all" aria-pressed="true">全部同步</button><button id="interest-aoi" aria-pressed="false">範圍同步 AOI</button><label><input type="checkbox" id="auto"> 自動左右移動</label></div><p id="explanation">目前接收全部物件。按「範圍同步 AOI」，比較範圍內外的差別。</p><p class="hint">點畫面後按 WASD／方向鍵移動。金色地標是常駐物件，範圍外也會同步。</p></section>
+<div class="metrics"><div><span>收到物件</span><strong id="received-count">—</strong></div><div><span>權威世界物件</span><strong id="world-count">—</strong></div><div><span>收到玩家／世界玩家</span><strong id="player-count">—</strong></div></div>
+<canvas id="world" width="1000" height="440" tabindex="0" aria-label="AOI 世界，可按 WASD 或方向鍵移動"></canvas>
+<div class="legend"><span>■ 藍色：你</span><span>■ 橘色：其他玩家</span><span>◆ 綠色：一般物件</span><span>◆ 金色：常駐地標</span><span>圓圈：伺服器最新同步中心與半徑</span></div>
+<div id="feedback" class="feedback" aria-live="polite">圈外物件停止接收，伺服器仍保留它們。靠近後會再收到相同物件。</div>
+<p class="hint">可開第二個分頁，各自移動和切換模式；每位玩家的接收範圍互相獨立。自己的預測與校正、其他玩家的平滑也有保留。</p>
+<details id="advanced"><summary>進階：半徑、範圍邊界與接收清單</summary><div class="buttons"><label>同步半徑 <select id="radius"><option value="3" selected>3 單位</option><option value="5">5 單位</option></select></label><label><input type="checkbox" id="margin"> 顯示離開範圍的緩衝外圈</label></div><p class="hint">進入用內圈，已收到的物件超過外圈（半徑＋0.75）才離開，減少邊界反覆出現／消失。</p><p id="snapshot-bytes"></p><p id="replica-stats"></p><pre id="objects-list"></pre><pre id="changes"></pre>
+<h3>沿用前一課的物件操作</h3><div class="buttons"><button id="spawn">新增自己的標記</button><button id="remove">真正移除最後一個</button><button id="rebirth">同 ID 重生</button></div><p class="hint">自己的標記也受 AOI 範圍限制。移出接收清單時，權威世界數量不變；真正移除時，世界物件數量會減少。每人最多 4 個標記。</p>
+<h3>自己的預測與校正</h3><div class="buttons"><button id="mode-authority" aria-pressed="false">等待權威</button><button id="mode-prediction" aria-pressed="true">本機預測</button><button id="correction-snap" aria-pressed="false">直接校正</button><button id="correction-smooth" aria-pressed="true">平滑校正</button></div>
+<h3>其他玩家的平滑移動</h3><div class="buttons"><button id="remote-latest" aria-pressed="false">關閉</button><button id="remote-fixed" aria-pressed="false">固定平滑</button><button id="remote-adaptive" aria-pressed="true">自適應平滑</button></div>
+<div class="buttons"><label>回包延遲 <select id="profile"><option value="clean" selected>0 ms</option><option value="delay">150 ms</option><option value="high">300 ms</option></select></label><label><input type="checkbox" id="ghost"> 顯示權威位置外框</label><button id="disconnect">中斷連線</button></div><p class="hint">圈的中心採伺服器最新快照；啟用回包延遲時，可能落後於自己立即預測的位置。</p></details>
+<footer>Go interest SDK 為每位接收者篩選清單；C# SDK 處理接收物件與移動呈現。瀏覽器負責操作和繪圖。</footer></main><script src="/app.js"></script></body></html>

@@ -1,0 +1,24 @@
+param([string]$DotNet='')
+$ErrorActionPreference='Stop'
+. "$PSScriptRoot/Toolchain.ps1"
+$DotNet=Resolve-GameNetKitDotNet -Path $DotNet
+$root=Split-Path -Parent $PSScriptRoot
+$out=Join-Path $root '.local/game-domain/tests';New-Item -ItemType Directory -Force $out | Out-Null
+$sdkRoot=Split-Path -Parent $DotNet
+$sdk=Get-ChildItem (Join-Path $sdkRoot 'sdk') -Directory -Filter '8.*' | Sort-Object {[version]$_.Name.Split('-')[0]} -Descending | Select-Object -First 1
+$pack=Get-ChildItem (Join-Path $sdkRoot 'packs/Microsoft.NETCore.App.Ref') -Directory -Filter '8.*' | Sort-Object {[version]$_.Name} -Descending | Select-Object -First 1
+$refs=@(Get-ChildItem (Join-Path $pack.FullName 'ref/net8.0') -Filter '*.dll' | ForEach-Object {'-r:"'+$_.FullName+'"'})
+$sample=Join-Path $root 'samples/rumblebound/client/Assets'
+$timeline=(Get-Content -LiteralPath (Join-Path $sample 'Editor/FrameworkVerification.cs') -Raw).Split('public static class FrameworkVerification')[0]
+$timelinePath=Join-Path $out 'VerificationTimeline.cs';$timeline|Set-Content -LiteralPath $timelinePath -Encoding utf8
+$sources=@((Join-Path $root 'tests/game-domain/Program.cs'),$timelinePath)
+$sources+=Join-Path $sample 'Editor/SharedArtPaths.cs'
+foreach($file in @('Scripts/MovementView.cs','Scripts/GameNetcode.cs','Scripts/GameNetcodeModules.cs','Scripts/CollisionVerification.cs','Scripts/Recovery.cs','Editor/FixedPredictionVerification.cs','Editor/MovementViewVerification.cs','Editor/RemoteMotionVerification.cs','Editor/RecoveryVerification.cs')){$sources+=Join-Path $sample $file}
+foreach($folder in @('examples/rumblebound/game/unity/Runtime')+@('core','interpolation','prediction','correction','clock','replication','actions','codec','diagnostics','simulation','playback'|ForEach-Object{"packages/unity/$_/Runtime"})){$sources+=@(Get-ChildItem (Join-Path $root $folder) -Filter '*.cs'|ForEach-Object FullName)}
+$arguments=@('/nologo','/nostdlib','/target:exe','/langversion:latest',('-out:"'+(Join-Path $out 'GameDomainTests.dll')+'"'))+$refs+@($sources|ForEach-Object{'"'+$_+'"'})
+$response=Join-Path $out 'compile.rsp';$arguments|Set-Content -LiteralPath $response -Encoding utf8
+& $DotNet (Join-Path $sdk.FullName 'Roslyn/bincore/csc.dll') "@$response"
+if($LASTEXITCODE -ne 0){throw 'Game domain verifier compilation failed'}
+'{"runtimeOptions":{"tfm":"net8.0","framework":{"name":"Microsoft.NETCore.App","version":"8.0.0"},"rollForward":"LatestPatch"}}'|Set-Content -LiteralPath (Join-Path $out 'GameDomainTests.runtimeconfig.json') -Encoding utf8
+Push-Location (Join-Path $root 'samples/rumblebound/client')
+try{& $DotNet (Join-Path $out 'GameDomainTests.dll');if($LASTEXITCODE -ne 0){throw 'Shared C# game domain verification failed'}}finally{Pop-Location}

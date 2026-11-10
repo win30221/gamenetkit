@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "records": {
+    "validation": "2026-10-29 URP17.6 Windows/WebGL builds passed; actual nativecamera renders of sourceart, hits/flash and occupiedloop at7s; simulatedpointparticles beyond60s; UI/two-player/private/recovery/practice passed; HTTP200 forwebfiles; no browser GPU/performance claim.",
+    "serializationUpgrade": "Official older serialized meshes/materials/prefabs re-saved by installed Unity 6000.3.27f1 in isolated .cache/vfx-upgrade project using Upgrade-ParticleAssets.ps1; main project remains 6000.6.6f1; GUIDs and authored vertex data retained.",
+    "resourceAdaptation": "Resurrection source uses soft hollow circle; resource variant selects same official package CFX3_AuraRunic ADD glyph texture, retains gold celebration, shortens Stretched Billboard lengths and reduces spikes/rays/stars rates; radius-normalized; persistent glyph alpha .23; original solid point disk disabled.",
+    "renderPipeline": "URP17.6.0 on Unity6000.6.6f1",
+    "urpMigration": "2026-10-29 user approved; originalmaterialsnapshot preserved, texture/UV/color mapping verified, actualnativecamera renders passed; sourceart license unchanged",
+    "occupiedLoop": "PointOccupied loops while scoring/contested with rising gold streaks/stars; empty stops new emissions and drains existing particles naturally; rotation/end clears immediately; base rune rotates30s with seamless particle lifetime; max3 reusable point instances; actual simulated particles tested beyond60s and native waiting7s.",
+    "occupiedExit": {
+      "updatedOn": "2026-10-29",
+      "method": "Disable emission while keeping simulation and authored lifetime fade; hide reusable effect only when all particle counts reach0. Re-entry during fade restores cached emission settings without Play, clearing particles or repeating prewarm.",
+      "cleanup": "Tick runs before preview early returns; empty never replays the entry burst; relocation/end/Clear/Dispose still clear immediately.",
+      "nativePreview": "13 actual URP camera frames in artifacts/point-exit-fade.gif show preserved exit tail, gradual decay and final cleanup with base rune retained."
+    },
+    "occupiedVisibility": {
+      "updatedOn": "2026-10-29",
+      "reason": "User found the rising layer too inconspicuous at the gameplay camera scale",
+      "verticalScaleMultiplier": 2,
+      "stretchedSpriteScale": {
+        "before": 0.5,
+        "after": 0.85
+      },
+      "emissionPerSecond": {
+        "Spikes": 30,
+        "Rays": 9,
+        "Stars": 5
+      },
+      "particleAlpha": {
+        "Spikes": 0.55,
+        "Rays": 0.62,
+        "Stars": 0.8
+      },
+      "upwardWorldVelocity": {
+        "Spikes": 0.7,
+        "Rays": 0.55
+      },
+      "method": "Occupied resource only; retain authored gold RGB, textures and lifetime fade curves. Give nearly stationary/downward source streaks an explicit world-up velocity. Keep normalized horizontal emitter radius0.8 and the separate short entry burst.",
+      "nativeValidation": "Actual URP camera captures after7s in close-up and original gameplay camera;8 continuous frames assembled as point-occupied-loop.gif. Empty-to-occupied trigger and departure suppression unchanged.",
+      "buildValidation": "Windows/WebGL builds and RB_POINT_EFFECTS passed after visibility adjustment, including continuous particles beyond60s and departure suppression;497 assets checked with0 errors/warnings."
+    },
+    "occupiedEmissionFootprint": {
+      "updatedOn": "2026-10-29",
+      "reason": "User found rising center particles too small relative to the ground rune",
+      "previousNormalizedRadii": {
+        "Rays": 0.29,
+        "Spikes": 0.508,
+        "Stars": 0.569
+      },
+      "targetNormalizedRadius": 0.8,
+      "method": "Project imported mesh vertices or Box corners through actual emitter transforms; resize only horizontal Shape.scale axes after radius normalization. Particle sprites, vertical span, lifetime, speed, rates and gameplay point radius unchanged.",
+      "validation": "Windows/WebGL builds and actual native camera preview passed; all three emitter spans verified at0.8, existing continuous-loop checks through60s passed; webdata servedHTTP200"
+    }
+  }
+}

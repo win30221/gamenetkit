@@ -1,0 +1,5 @@
+<linker>
+  <assembly fullname="Realtime.Examples.ObjectsActions" preserve="all" />
+  <assembly fullname="Realtime.Examples.ObjectsActions.Unity" preserve="all" />
+  <assembly fullname="Realtime.Examples.Presentation" preserve="all" />
+</linker>

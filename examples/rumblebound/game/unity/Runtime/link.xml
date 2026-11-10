@@ -1,0 +1,3 @@
+<linker>
+  <assembly fullname="Rumblebound.Gameplay" preserve="all" />
+</linker>

@@ -1,0 +1,5 @@
+<linker>
+  <assembly fullname="Realtime.Examples.HistoryLesson" preserve="all" />
+  <assembly fullname="Realtime.Examples.HistoryLesson.Unity" preserve="all" />
+  <assembly fullname="Realtime.Examples.Presentation" preserve="all" />
+</linker>

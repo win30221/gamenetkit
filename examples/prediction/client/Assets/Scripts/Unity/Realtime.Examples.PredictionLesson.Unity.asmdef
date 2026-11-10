@@ -1,0 +1,9 @@
+{
+  "name": "Realtime.Examples.PredictionLesson.Unity",
+  "references": [
+    "Realtime.Examples.PredictionLesson",
+    "Realtime.Examples.Presentation",
+    "Realtime.Transport",
+    "Realtime.Core"
+  ]
+}

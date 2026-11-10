@@ -1,0 +1,1 @@
+{"name":"Rumblebound.Presentation","rootNamespace":"Rumblebound.Presentation","references":["Rumblebound.Gameplay","Unity.RenderPipelines.Universal.Runtime","Unity.RenderPipelines.Core.Runtime"],"noEngineReferences":false}

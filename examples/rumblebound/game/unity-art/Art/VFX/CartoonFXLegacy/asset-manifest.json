@@ -1,0 +1,57 @@
+{
+  "manifestSchema": 2,
+  "generatedBy": "scripts/Prepare-CaptureAssets.py",
+  "maintenanceNotes": "asset-notes.json",
+  "creator": "Jean Moreno (JMO Assets)",
+  "source": "https://assetstore.unity.com/packages/vfx/particles/cartoon-fx-remaster-free-109565",
+  "authorLegacyGallery": "https://jeanmoreno.com/unity/cartoonfxfree/",
+  "acquiredOn": "2026-10-29",
+  "acquisition": "User downloaded official Cartoon FX Remaster Free through Unity Asset Store; bundled legacy package extracted locally.",
+  "license": "Standard Unity Asset Store EULA. Not CC0; do not redistribute standalone or modified source assets.",
+  "archive": "CartoonFX-Official.unitypackage",
+  "sha256": "8fc53d6a315c677e98f1e92dfa00d69174201a2216fa52ec4b2ae8c04e3e77e8",
+  "embeddedArchive": "Assets/JMO Assets/Cartoon FX FREE (old legacy effects).unitypackage",
+  "embeddedSha256": "69bc8aa41552ca68969fc0afd41d5ec248756857ef444f8b9c94711a2dfc4753",
+  "selectedPrefabs": [
+    "CFX3 Prefabs/Light/CFX3_ResurrectionLight_Circle.prefab",
+    "CFX3 Prefabs/Magic Misc/CFX3_MagicAura_B_Runic.prefab",
+    "CFX3 Prefabs/Magic Misc/CFX3_MagicAura_D_Runic.prefab"
+  ],
+  "exactRequestedEffect": "CFX3_ResurrectionLight_Circle: included in the bundled legacy package, same name as author screenshot.",
+  "normalization": "Selected dependency closure with original GUIDs; vendor MonoBehaviour blocks and GameObject component references removed. Authored particles, materials, textures, meshes and root transforms retained. Runtime Resource variants are normalized separately by the project editor builder.",
+  "removedScriptComponents": {
+    "Assets/JMO Assets/Cartoon FX (legacy)/CFX3 Prefabs/Magic Misc/CFX3_MagicAura_D_Runic.prefab": [
+      "11400000"
+    ],
+    "Assets/JMO Assets/Cartoon FX (legacy)/CFX3 Prefabs/Magic Misc/CFX3_MagicAura_B_Runic.prefab": [
+      "11400000",
+      "11400002"
+    ],
+    "Assets/JMO Assets/Cartoon FX (legacy)/CFX3 Prefabs/Light/CFX3_ResurrectionLight_Circle.prefab": [
+      "11400000"
+    ]
+  },
+  "files": [
+    "CFX3 Prefabs/Light/CFX3_ResurrectionLight_Circle.prefab",
+    "CFX3 Prefabs/Magic Misc/CFX3_MagicAura_B_Runic.prefab",
+    "CFX3 Prefabs/Magic Misc/CFX3_MagicAura_D_Runic.prefab",
+    "Materials/Light/CFX3_AuraRunic ADD.mat",
+    "Materials/Light/CFX3_CircleSoft ADDSOFT.mat",
+    "Materials/Light/CFX3_GlowStar ADD.mat",
+    "Materials/Light/CFX3_HollowCircle ADD.mat",
+    "Materials/Light/CFX3_RayStraight ADD.mat",
+    "Materials/Light/CFX3_SmallRay ADDSOFT.mat",
+    "Materials/Stretched/CFX_RayRounded.mat",
+    "Mesh/CFX_Mesh_Circular.FBX",
+    "Mesh/CFX_Mesh_Circular1.5.asset",
+    "Mesh/CFX_Mesh_CircularAngle.FBX",
+    "Textures/CFX3_T_AuraRunic.png",
+    "Textures/CFX3_T_CircleSoft.png",
+    "Textures/CFX3_T_GlowStar.png",
+    "Textures/CFX3_T_HollowCircle.png",
+    "Textures/CFX3_T_RayStraight.png",
+    "Textures/CFX3_T_SmallRay.png",
+    "Textures/CFX_T_RayRounded.png"
+  ],
+  "importValidation": "Dependency closure has no unresolved GUIDs other than Unity built-ins. Unity 6 native/WebGL import and visual checks remain required."
+}

@@ -1,0 +1,4 @@
+<linker>
+  <assembly fullname="Realtime.Examples.InterpolationLesson" preserve="all" />
+  <assembly fullname="Realtime.Examples.InterpolationLesson.Unity" preserve="all" />
+</linker>

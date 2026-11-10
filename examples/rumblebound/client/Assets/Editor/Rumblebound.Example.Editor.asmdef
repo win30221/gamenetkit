@@ -1,0 +1,11 @@
+{
+  "name": "Rumblebound.Example.Editor",
+  "references": [
+    "Rumblebound.Example.Battle",
+    "Rumblebound.Example.Battle.Unity",
+    "Rumblebound.Gameplay"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}

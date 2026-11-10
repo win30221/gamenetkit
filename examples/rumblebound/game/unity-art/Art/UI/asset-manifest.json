@@ -1,0 +1,20 @@
+{
+  "acquiredOn": "2026-10-27",
+  "creator": "Kenney",
+  "pack": "UI Pack",
+  "version": "2.0",
+  "source": "https://kenney.nl/assets/ui-pack",
+  "archive": "https://kenney.nl/media/pages/assets/ui-pack/f651646eab-1718203990/kenney_ui-pack.zip",
+  "archiveSha256": "a8a14a234911eb648c062622915c93e79e94e97cb7f9f375a70f6617f1174318",
+  "license": "CC0-1.0",
+  "licenseFile": "Kenney-License.txt",
+  "files": {
+    "Resources/UI/Textures/button-primary.png": "PNG/Blue/Double/button_rectangle_depth_flat.png",
+    "Resources/UI/Textures/button-secondary.png": "PNG/Grey/Double/button_rectangle_depth_flat.png",
+    "Resources/UI/Textures/button-danger.png": "PNG/Red/Double/button_rectangle_depth_flat.png",
+    "Resources/UI/Textures/icon-ready.png": "PNG/Green/Double/icon_checkmark.png",
+    "Resources/UI/Textures/icon-star.png": "PNG/Yellow/Double/star.png"
+  },
+  "modifications": "Original PNGs unchanged; nine-slice backgrounds and in-engine color tinting via UI Toolkit USS.",
+  "font": "font-manifest.json"
+}

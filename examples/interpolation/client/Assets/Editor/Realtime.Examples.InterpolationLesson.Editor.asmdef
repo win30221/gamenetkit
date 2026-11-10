@@ -1,0 +1,5 @@
+{
+  "name": "Realtime.Examples.InterpolationLesson.Editor",
+  "references": ["Realtime.Examples.InterpolationLesson"],
+  "includePlatforms": ["Editor"]
+}

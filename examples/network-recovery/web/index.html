@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>即時連線與恢復 · 操作教學</title><link rel="stylesheet" href="/style.css"></head>
+<body><main>
+<header><p class="eyebrow">REALTIME FRAMEWORK · LIVE CONNECTION & RECOVERY</p><h1>先看一件事：斷線後，怎麼自動回來？</h1><p>先不用調參數。按下方按鈕，觀察方塊消失後重新出現的過程。</p></header>
+<section class="guide"><div class="choices"><button id="guide-normal">① 正常移動／重新開始</button><button id="guide-outage">② 模擬意外斷線</button><button id="guide-stop">手動停止</button></div><p id="guide-message">連上後方塊會自動往返。接著按「模擬意外斷線」，等待它自己回來。</p><p class="guide-meaning">這一步只學：意外斷線會自動重試；自己按停止，就不會自動連回。</p></section><section class="bar"><strong id="status" role="status">正在連線…</strong><span id="identity">玩家 —</span></section>
+<section class="arena"><div class="legend"><span>藍色是你，橘色是其他玩家。</span><span>觀察斷線後，方塊是否自動重新出現。</span></div><canvas id="world" width="1100" height="560" tabindex="0" aria-label="預測與校正場地。關閉自動往返後點擊場地，以 WASD 或方向鍵移動。"></canvas><p id="hint">藍色：自己的預測與校正。橘色：其他玩家的插值平滑。</p></section>
+<details id="advanced" class="advanced-options"><summary>進階觀察：弱網、量測、時鐘與移動設定</summary><p>等你理解自動重連，再一次選一項觀察。</p><div class="choices"><button id="reconnect">重新連線</button><button id="disconnect">中斷</button></div><section class="network-panels">
+<div class="panel"><h2>弱網情境（應用訊息）</h2><label for="profile">預設情境</label><select id="profile"><option value="clean" selected>乾淨</option><option value="delay">往返額外約 150 ms</option><option value="high">往返額外約 300 ms</option><option value="jitter">抖動＋10% 損失</option><option value="loss">較差網路＋30% 損失</option><option value="custom">自訂</option></select>
+<label for="up">送出延遲 <output id="up-value">75 ms</output></label><input id="up" type="range" min="0" max="300" step="5" value="75">
+<label for="down">接收延遲 <output id="down-value">75 ms</output></label><input id="down" type="range" min="0" max="300" step="5" value="75">
+<label for="jitter-setting">雙向抖動 <output id="jitter-value">0 ms</output></label><input id="jitter-setting" type="range" min="0" max="100" step="10" value="0">
+<label for="loss">可替換訊息損失 <output id="loss-value">0%</output></label><input id="loss" type="range" min="0" max="30" step="1" value="0">
+<button id="pause">暫停快照 3 秒</button><p id="queue">待交付／丟失：—</p><p>損失只作用於輸入與快照；welcome、探測與推移控制不模擬丟失。改設定會清除待交付訊息。</p></div>
+<div class="panel"><h2>連線與自動重連</h2><label><input id="auto-retry" type="checkbox" checked>自動重連</label><div class="choices"><button id="outage">模擬這位玩家斷線 4 秒</button><button id="stop-retry">停止重試</button></div><p id="recovery-status">尚未開始重試</p><p>先連線成功才會自動重試；間隔 0.5 → 1 → 2 → 最多 3 秒，總期限 30 秒。手動中斷不會觸發重連。</p><p>恢復時以新玩家 ID 重新加入並清除舊資料；此課尚未實作席位／位置保留。</p><pre id="events" aria-live="polite">等待事件…</pre></div>
+</section>
+<section class="panel"><div class="diagnostic-heading"><h2>診斷與伺服器時鐘（本次連線）</h2><label><input id="diagnostics" type="checkbox" checked>記錄診斷</label><button id="reset-metrics">清除量測</button></div><div class="choices"><button id="clock-snapshot" aria-pressed="false">最後觀察 tick</button><button id="clock-disciplined" aria-pressed="true">RTT 校準時鐘</button></div>
+<div class="stats"><div>應用往返平均<strong id="rtt">—</strong></div><div>往返 P95<strong id="rtt-p95">—</strong></div><div>輸入回覆平均<strong id="input-reply">—</strong></div><div>快照間隔平均<strong id="snapshot-gap">—</strong></div><div>快照間隔 P95<strong id="snapshot-p95">—</strong></div><div>送出 JSON<strong id="sent">—</strong></div><div>收到 JSON<strong id="received">—</strong></div><div>估計伺服器 tick<strong id="clock-tick">—</strong></div><div>快照年齡<strong id="snapshot-age">—</strong></div><div>C# 更新間隔<strong id="frame-ms">—</strong></div></div>
+<p>往返包含模擬佇列與伺服器處理等待；不是外網 ping。流量是 JSON 內容位元組，不含 WebSocket／TCP 額外成本。時鐘估計有界，並不保證上下行延遲對稱。</p></section>
+
+<section class="stats"><div>權威 tick<strong id="tick">—</strong></div><div>已確認輸入<strong id="ack">—</strong></div><div>最後校正差距<strong id="error">—</strong></div><div>顯示偏移<strong id="offset">—</strong></div><div>重播步數<strong id="replay">0</strong></div></section>
+<details class="movement-options"><summary>移動呈現設定：本機預測、平滑校正、遠端插值（已啟用，可展開比較）</summary><section class="controls">
+<div><h2>1 · 本機預測</h2><div class="choices"><button id="mode-authority" aria-pressed="false">關閉：等待權威</button><button id="mode-prediction" aria-pressed="true">啟用預測</button></div><p id="explanation">立即模擬自己的輸入，收到權威後重播尚未確認的部分。</p><p>收送方向的延遲、抖動與損失可在下方分別調整。</p></div>
+<div><h2>2 · 校正呈現</h2><div class="choices"><button id="correction-snap" aria-pressed="false">直接校正</button><button id="correction-smooth" aria-pressed="true">平滑校正</button></div><p>預測內部狀態立即校正；平滑只保留短暫的顯示偏移。超過兩單位會直接校正。</p><button id="bump">伺服器向左推移一單位</button><p>這個按鈕真的改變自己的權威位置，不會控制其他玩家。</p></div>
+<div><h2>3 · 觀察或自己操作</h2><label><input id="auto" type="checkbox" checked>自動往返</label><label><input id="ghost" type="checkbox">顯示收到的權威位置外框</label><label><input id="target" type="checkbox">顯示預測內部位置黃點</label><p>取消自動往返，點擊場地，用 WASD／方向鍵體驗按下、放開與反向。失焦會停止輸入。</p></div>
+</section>
+<section class="remote-controls"><h2>其他玩家的平滑移動（遠端插值）</h2><div class="choices"><button id="remote-latest" aria-pressed="false">關閉</button><button id="remote-fixed" aria-pressed="false">固定平滑</button><button id="remote-adaptive" aria-pressed="true">自適應平滑</button><span id="remote-buffer">緩衝 —</span></div><p>只影響橘色的其他玩家；藍色自己仍由上方的預測與校正控制。開兩個並排視窗即可比較。</p></section>
+</details>
+</details><footer><p>先看懂「自動重新加入」，再展開進階觀察。重新加入時位置可能重設。</p></footer>
+</main><script type="module" src="/app.js"></script></body></html>

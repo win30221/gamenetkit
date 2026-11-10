@@ -1,0 +1,5 @@
+<linker>
+  <assembly fullname="Realtime.Examples.PredictionLesson" preserve="all" />
+  <assembly fullname="Realtime.Examples.PredictionLesson.Unity" preserve="all" />
+  <assembly fullname="Realtime.Examples.Presentation" preserve="all" />
+</linker>

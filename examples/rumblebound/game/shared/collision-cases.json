@@ -1,0 +1,1775 @@
+{
+  "crowds": [
+    {
+      "bodies": [
+        {
+          "id": "a",
+          "x": -0.8,
+          "z": 0,
+          "dx": 1,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "b",
+          "x": 0,
+          "z": 0,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        }
+      ],
+      "expected": [
+        {
+          "blocked": true,
+          "id": "a",
+          "stopped": false,
+          "x": -0.05,
+          "z": 0
+        },
+        {
+          "blocked": true,
+          "id": "b",
+          "stopped": false,
+          "x": 0.75,
+          "z": 0
+        }
+      ],
+      "frameRates": [
+        30,
+        60,
+        144
+      ],
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": null
+      },
+      "name": "walk-pushes-idle",
+      "radius": 0.4,
+      "seconds": 0.25,
+      "steps": 30,
+      "swapIDs": true,
+      "tolerance": 0.000002
+    },
+    {
+      "bodies": [
+        {
+          "id": "a",
+          "x": -2,
+          "z": 0,
+          "dx": 1,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "b",
+          "x": 0,
+          "z": 0,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        }
+      ],
+      "expected": [
+        {
+          "blocked": true,
+          "id": "a",
+          "stopped": false,
+          "x": 1.6,
+          "z": 0
+        },
+        {
+          "blocked": true,
+          "id": "b",
+          "stopped": false,
+          "x": 2.4,
+          "z": 0
+        }
+      ],
+      "frameRates": [
+        30,
+        60,
+        144
+      ],
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": null
+      },
+      "name": "free-approach-then-push",
+      "radius": 0.4,
+      "seconds": 1,
+      "steps": 30,
+      "swapIDs": true,
+      "tolerance": 0.000002
+    },
+    {
+      "bodies": [
+        {
+          "id": "a",
+          "x": -0.4,
+          "z": 0,
+          "dx": 1,
+          "dz": 0,
+          "speed": 5,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "b",
+          "x": 0.4,
+          "z": 0,
+          "dx": -1,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        }
+      ],
+      "expected": [
+        {
+          "blocked": true,
+          "id": "a",
+          "stopped": false,
+          "x": -0.4,
+          "z": 0
+        },
+        {
+          "blocked": true,
+          "id": "b",
+          "stopped": false,
+          "x": 0.4,
+          "z": 0
+        }
+      ],
+      "frameRates": [
+        30,
+        60,
+        144
+      ],
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": null
+      },
+      "name": "equal-counterdrive-different-hero-speed",
+      "radius": 0.4,
+      "seconds": 0.25,
+      "steps": 30,
+      "swapIDs": true,
+      "tolerance": 0.000002
+    },
+    {
+      "bodies": [
+        {
+          "id": "a",
+          "x": -1.6,
+          "z": 0,
+          "dx": 1,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "b",
+          "x": -0.8,
+          "z": 0,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "c",
+          "x": 0,
+          "z": 0,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        }
+      ],
+      "expected": [
+        {
+          "blocked": true,
+          "id": "a",
+          "stopped": false,
+          "x": -1.1,
+          "z": 0
+        },
+        {
+          "blocked": true,
+          "id": "b",
+          "stopped": false,
+          "x": -0.3,
+          "z": 0
+        },
+        {
+          "blocked": true,
+          "id": "c",
+          "stopped": false,
+          "x": 0.5,
+          "z": 0
+        }
+      ],
+      "frameRates": [
+        30,
+        60,
+        144
+      ],
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": null
+      },
+      "name": "one-pusher-two-idle-chain",
+      "radius": 0.4,
+      "seconds": 0.25,
+      "steps": 30,
+      "swapIDs": true,
+      "tolerance": 0.000002
+    },
+    {
+      "bodies": [
+        {
+          "id": "a",
+          "x": -1.6,
+          "z": 0,
+          "dx": 1,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "b",
+          "x": -0.8,
+          "z": 0,
+          "dx": 1,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "c",
+          "x": 0,
+          "z": 0,
+          "dx": -1,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        }
+      ],
+      "expected": [
+        {
+          "blocked": true,
+          "id": "a",
+          "stopped": false,
+          "x": -1.1,
+          "z": 0
+        },
+        {
+          "blocked": true,
+          "id": "b",
+          "stopped": false,
+          "x": -0.3,
+          "z": 0
+        },
+        {
+          "blocked": true,
+          "id": "c",
+          "stopped": false,
+          "x": 0.5,
+          "z": 0
+        }
+      ],
+      "frameRates": [
+        30,
+        60,
+        144
+      ],
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": null
+      },
+      "name": "two-pushers-one-counterdrive",
+      "radius": 0.4,
+      "seconds": 0.25,
+      "steps": 30,
+      "swapIDs": true,
+      "tolerance": 0.000002
+    },
+    {
+      "bodies": [
+        {
+          "id": "a",
+          "x": -1.6,
+          "z": 0,
+          "dx": 1,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "b",
+          "x": -0.8,
+          "z": 0,
+          "dx": 1,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "c",
+          "x": 0,
+          "z": 0,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        }
+      ],
+      "expected": [
+        {
+          "blocked": true,
+          "id": "a",
+          "stopped": false,
+          "x": -0.85,
+          "z": 0
+        },
+        {
+          "blocked": true,
+          "id": "b",
+          "stopped": false,
+          "x": -0.05,
+          "z": 0
+        },
+        {
+          "blocked": true,
+          "id": "c",
+          "stopped": false,
+          "x": 0.75,
+          "z": 0
+        }
+      ],
+      "frameRates": [
+        30,
+        60,
+        144
+      ],
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": null
+      },
+      "name": "two-pushers-idle-speed-capped",
+      "radius": 0.4,
+      "seconds": 0.25,
+      "steps": 30,
+      "swapIDs": true,
+      "tolerance": 0.000002
+    },
+    {
+      "bodies": [
+        {
+          "id": "a",
+          "x": -0.8,
+          "z": 0,
+          "dx": 1,
+          "dz": 0,
+          "speed": 15,
+          "dashing": true,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "b",
+          "x": 0,
+          "z": 0,
+          "dx": 0,
+          "dz": 0,
+          "speed": 5,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        }
+      ],
+      "expected": [
+        {
+          "blocked": true,
+          "id": "a",
+          "stopped": false,
+          "x": 0.4,
+          "z": 0
+        },
+        {
+          "blocked": true,
+          "id": "b",
+          "stopped": false,
+          "x": 1.2,
+          "z": 0
+        }
+      ],
+      "frameRates": [
+        30,
+        60,
+        144
+      ],
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": null
+      },
+      "name": "dash-push-idle-tank",
+      "radius": 0.4,
+      "seconds": 0.2,
+      "steps": 30,
+      "swapIDs": true,
+      "tolerance": 0.000002
+    },
+    {
+      "bodies": [
+        {
+          "id": "a",
+          "x": -0.8,
+          "z": 0,
+          "dx": 1,
+          "dz": 0,
+          "speed": 15,
+          "dashing": true,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "b",
+          "x": 0,
+          "z": 0,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        }
+      ],
+      "expected": [
+        {
+          "blocked": true,
+          "id": "a",
+          "stopped": false,
+          "x": 0.4,
+          "z": 0
+        },
+        {
+          "blocked": true,
+          "id": "b",
+          "stopped": false,
+          "x": 1.2,
+          "z": 0
+        }
+      ],
+      "frameRates": [
+        30,
+        60,
+        144
+      ],
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": null
+      },
+      "name": "dash-push-idle-ranger",
+      "radius": 0.4,
+      "seconds": 0.2,
+      "steps": 30,
+      "swapIDs": true,
+      "tolerance": 0.000002
+    },
+    {
+      "bodies": [
+        {
+          "id": "a",
+          "x": -2,
+          "z": 0,
+          "dx": 1,
+          "dz": 0,
+          "speed": 15,
+          "dashing": true,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "b",
+          "x": 2,
+          "z": 0,
+          "dx": -1,
+          "dz": 0,
+          "speed": 15,
+          "dashing": true,
+          "blocked": false,
+          "stopped": false
+        }
+      ],
+      "expected": [
+        {
+          "blocked": true,
+          "id": "a",
+          "stopped": true,
+          "x": -0.4,
+          "z": 0
+        },
+        {
+          "blocked": true,
+          "id": "b",
+          "stopped": true,
+          "x": 0.4,
+          "z": 0
+        }
+      ],
+      "frameRates": [
+        30,
+        60,
+        144
+      ],
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": null
+      },
+      "name": "opposing-dashes-do-not-tunnel",
+      "radius": 0.4,
+      "seconds": 0.2,
+      "steps": 30,
+      "swapIDs": true,
+      "tolerance": 0.000002
+    },
+    {
+      "bodies": [
+        {
+          "id": "a",
+          "x": 7.2,
+          "z": 0,
+          "dx": 1,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "b",
+          "x": 8,
+          "z": 0,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "c",
+          "x": 8.8,
+          "z": 0,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "d",
+          "x": 9.6,
+          "z": 0,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        }
+      ],
+      "expected": [
+        {
+          "blocked": true,
+          "id": "a",
+          "stopped": false,
+          "x": 7.2,
+          "z": 0
+        },
+        {
+          "blocked": false,
+          "id": "b",
+          "stopped": false,
+          "x": 8,
+          "z": 0
+        },
+        {
+          "blocked": false,
+          "id": "c",
+          "stopped": false,
+          "x": 8.8,
+          "z": 0
+        },
+        {
+          "blocked": false,
+          "id": "d",
+          "stopped": false,
+          "x": 9.6,
+          "z": 0
+        }
+      ],
+      "frameRates": [
+        30,
+        60,
+        144
+      ],
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": null
+      },
+      "name": "wall-blocked-queue",
+      "radius": 0.4,
+      "seconds": 0.25,
+      "steps": 30,
+      "swapIDs": true,
+      "tolerance": 0.000002
+    },
+    {
+      "bodies": [
+        {
+          "id": "a",
+          "x": 4,
+          "z": 0,
+          "dx": 1,
+          "dz": 0,
+          "speed": 15,
+          "dashing": true,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "b",
+          "x": 4.8,
+          "z": 0,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "c",
+          "x": 5.6,
+          "z": 0,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "d",
+          "x": 6.4,
+          "z": 0,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "e",
+          "x": 7.2,
+          "z": 0,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "f",
+          "x": 8,
+          "z": 0,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "g",
+          "x": 8.8,
+          "z": 0,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "h",
+          "x": 9.600000000000001,
+          "z": 0,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        }
+      ],
+      "expected": [
+        {
+          "blocked": true,
+          "id": "a",
+          "stopped": true,
+          "x": 4,
+          "z": 0
+        },
+        {
+          "blocked": false,
+          "id": "b",
+          "stopped": false,
+          "x": 4.8,
+          "z": 0
+        },
+        {
+          "blocked": false,
+          "id": "c",
+          "stopped": false,
+          "x": 5.6,
+          "z": 0
+        },
+        {
+          "blocked": false,
+          "id": "d",
+          "stopped": false,
+          "x": 6.4,
+          "z": 0
+        },
+        {
+          "blocked": false,
+          "id": "e",
+          "stopped": false,
+          "x": 7.2,
+          "z": 0
+        },
+        {
+          "blocked": false,
+          "id": "f",
+          "stopped": false,
+          "x": 8,
+          "z": 0
+        },
+        {
+          "blocked": false,
+          "id": "g",
+          "stopped": false,
+          "x": 8.8,
+          "z": 0
+        },
+        {
+          "blocked": false,
+          "id": "h",
+          "stopped": false,
+          "x": 9.600000000000001,
+          "z": 0
+        }
+      ],
+      "frameRates": [
+        30,
+        60,
+        144
+      ],
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": null
+      },
+      "name": "full-eight-body-wall-queue",
+      "radius": 0.4,
+      "seconds": 0.25,
+      "steps": 30,
+      "swapIDs": true,
+      "tolerance": 0.000002
+    },
+    {
+      "bodies": [
+        {
+          "id": "a",
+          "x": -0.4,
+          "z": 0,
+          "dx": 0.8660254037844386,
+          "dz": 0.5,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "b",
+          "x": 0.4,
+          "z": 0,
+          "dx": -0.8660254037844386,
+          "dz": 0.5,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "c",
+          "x": 0,
+          "z": 0.6928203230275509,
+          "dx": 0,
+          "dz": -1,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        }
+      ],
+      "expected": [
+        {
+          "blocked": true,
+          "id": "a",
+          "stopped": false,
+          "x": -0.4,
+          "z": 0
+        },
+        {
+          "blocked": true,
+          "id": "b",
+          "stopped": false,
+          "x": 0.4,
+          "z": 0
+        },
+        {
+          "blocked": true,
+          "id": "c",
+          "stopped": false,
+          "x": 0,
+          "z": 0.6928203230275509
+        }
+      ],
+      "frameRates": [
+        30,
+        60,
+        144
+      ],
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": null
+      },
+      "name": "three-way-angle-counterdrive",
+      "radius": 0.4,
+      "seconds": 0.25,
+      "steps": 30,
+      "swapIDs": true,
+      "tolerance": 0.000002
+    },
+    {
+      "bodies": [
+        {
+          "id": "a",
+          "x": 0,
+          "z": 0,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "b",
+          "x": 0,
+          "z": 0,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "c",
+          "x": 0,
+          "z": 0,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        }
+      ],
+      "expected": [
+        {
+          "blocked": false,
+          "id": "a",
+          "stopped": false,
+          "x": -0.8,
+          "z": 0
+        },
+        {
+          "blocked": false,
+          "id": "b",
+          "stopped": false,
+          "x": 0,
+          "z": 0
+        },
+        {
+          "blocked": false,
+          "id": "c",
+          "stopped": false,
+          "x": 0.8,
+          "z": 0
+        }
+      ],
+      "frameRates": [
+        30,
+        60,
+        144
+      ],
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": null
+      },
+      "name": "crowded-spawn-repair-without-drive",
+      "radius": 0.4,
+      "seconds": 0.25,
+      "steps": 30,
+      "swapIDs": false,
+      "tolerance": 0.000002
+    },
+    {
+      "bodies": [
+        {
+          "id": "a",
+          "x": -2,
+          "z": 0,
+          "dx": 0.8,
+          "dz": 0.6,
+          "speed": 15,
+          "dashing": true,
+          "blocked": false,
+          "stopped": false
+        }
+      ],
+      "expected": [
+        {
+          "blocked": true,
+          "id": "a",
+          "stopped": true,
+          "x": -1,
+          "z": 0.75
+        }
+      ],
+      "frameRates": [
+        30,
+        60,
+        144
+      ],
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": [
+          {
+            "id": "cover",
+            "x": 0,
+            "z": 0,
+            "halfX": 0.6,
+            "halfZ": 1.5,
+            "height": 1,
+            "blocksMovement": true,
+            "blocksProjectiles": true,
+            "visual": "wall"
+          }
+        ]
+      },
+      "name": "dash-wall-stops-tangent",
+      "radius": 0.4,
+      "seconds": 0.2,
+      "steps": 30,
+      "swapIDs": true,
+      "tolerance": 0.000002
+    },
+    {
+      "bodies": [
+        {
+          "id": "a",
+          "x": -1,
+          "z": 0,
+          "dx": 0.8,
+          "dz": 0.6,
+          "speed": 15,
+          "dashing": true,
+          "blocked": false,
+          "stopped": false
+        }
+      ],
+      "expected": [
+        {
+          "blocked": true,
+          "id": "a",
+          "stopped": true,
+          "x": -1,
+          "z": 0
+        }
+      ],
+      "frameRates": [
+        30,
+        60,
+        144
+      ],
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": [
+          {
+            "id": "cover",
+            "x": 0,
+            "z": 0,
+            "halfX": 0.6,
+            "halfZ": 1.5,
+            "height": 1,
+            "blocksMovement": true,
+            "blocksProjectiles": true,
+            "visual": "wall"
+          }
+        ]
+      },
+      "name": "dash-wall-inward-contact-stops",
+      "radius": 0.4,
+      "seconds": 0.2,
+      "steps": 30,
+      "swapIDs": true,
+      "tolerance": 0.000002
+    },
+    {
+      "bodies": [
+        {
+          "id": "a",
+          "x": -0.8,
+          "z": 0,
+          "dx": 1,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "b",
+          "x": 0,
+          "z": 0,
+          "dx": 1,
+          "dz": 0,
+          "speed": 5,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        }
+      ],
+      "expected": [
+        {
+          "blocked": true,
+          "id": "a",
+          "stopped": false,
+          "x": 0.2,
+          "z": 0
+        },
+        {
+          "blocked": false,
+          "id": "b",
+          "stopped": false,
+          "x": 1,
+          "z": 0
+        }
+      ],
+      "frameRates": [
+        30,
+        60,
+        144
+      ],
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": null
+      },
+      "name": "following-slower-hero-keeps-natural-speed",
+      "radius": 0.4,
+      "seconds": 0.2,
+      "steps": 30,
+      "swapIDs": true,
+      "tolerance": 0.000002
+    }
+  ],
+  "hits": [
+    {
+      "dx": 20,
+      "dz": 0,
+      "expectedT": 0.2405,
+      "hit": true,
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": [
+          {
+            "id": "thin",
+            "x": 0,
+            "z": 0,
+            "halfX": 0.01,
+            "halfZ": 3,
+            "height": 1,
+            "blocksMovement": true,
+            "blocksProjectiles": true,
+            "visual": "wall"
+          }
+        ]
+      },
+      "name": "projectile-thin-wall",
+      "normalX": -1,
+      "normalZ": 0,
+      "projectile": true,
+      "radius": 0.18,
+      "tolerance": 1e-7,
+      "x": -5,
+      "z": 0
+    },
+    {
+      "dx": 0.6,
+      "dz": 0,
+      "expectedT": 0.36666666666666664,
+      "hit": true,
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": [
+          {
+            "id": "thin",
+            "x": 0,
+            "z": 0,
+            "halfX": 0.01,
+            "halfZ": 3,
+            "height": 1,
+            "blocksMovement": true,
+            "blocksProjectiles": true,
+            "visual": "wall"
+          }
+        ]
+      },
+      "name": "muzzle-path-cannot-cross-wall",
+      "normalX": -1,
+      "normalZ": 0,
+      "projectile": true,
+      "radius": 0.18,
+      "tolerance": 1e-7,
+      "x": -0.41,
+      "z": 0
+    },
+    {
+      "dx": 2,
+      "dz": -2,
+      "expectedT": 0.5585786437626905,
+      "hit": true,
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": [
+          {
+            "id": "cover",
+            "x": 0,
+            "z": 0,
+            "halfX": 0.6,
+            "halfZ": 1.5,
+            "height": 1,
+            "blocksMovement": true,
+            "blocksProjectiles": true,
+            "visual": "wall"
+          }
+        ]
+      },
+      "name": "rounded-corner-normal",
+      "normalX": -0.7071067811865476,
+      "normalZ": 0.7071067811865476,
+      "projectile": false,
+      "radius": 0.4,
+      "tolerance": 1e-7,
+      "x": -2,
+      "z": 2.9
+    },
+    {
+      "dx": 6,
+      "dz": 0,
+      "expectedT": 1,
+      "hit": false,
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": [
+          {
+            "id": "cover",
+            "x": 0,
+            "z": 0,
+            "halfX": 0.6,
+            "halfZ": 1.5,
+            "height": 1,
+            "blocksMovement": true,
+            "blocksProjectiles": true,
+            "visual": "wall"
+          }
+        ]
+      },
+      "name": "tangent-is-not-blocked",
+      "normalX": 0,
+      "normalZ": 0,
+      "projectile": true,
+      "radius": 0.4,
+      "tolerance": 1e-7,
+      "x": -3,
+      "z": 1.9
+    },
+    {
+      "dx": 6,
+      "dz": 0,
+      "expectedT": 1,
+      "hit": false,
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": [
+          {
+            "id": "mesh",
+            "x": 0,
+            "z": 0,
+            "halfX": 0.6,
+            "halfZ": 1.5,
+            "height": 1,
+            "blocksMovement": true,
+            "blocksProjectiles": false,
+            "visual": "wall"
+          }
+        ]
+      },
+      "name": "projectile-filter",
+      "normalX": 0,
+      "normalZ": 0,
+      "projectile": true,
+      "radius": 0.18,
+      "tolerance": 1e-7,
+      "x": -3,
+      "z": 0
+    }
+  ],
+  "sweeps": [
+    {
+      "blocked": true,
+      "dx": 6,
+      "dz": 0,
+      "expectedX": -1,
+      "expectedZ": 0,
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": [
+          {
+            "id": "cover",
+            "x": 0,
+            "z": 0,
+            "halfX": 0.6,
+            "halfZ": 1.5,
+            "height": 1,
+            "blocksMovement": true,
+            "blocksProjectiles": true,
+            "visual": "wall"
+          }
+        ]
+      },
+      "name": "face",
+      "radius": 0.4,
+      "slide": true,
+      "tolerance": 1e-7,
+      "x": -3,
+      "z": 0
+    },
+    {
+      "blocked": true,
+      "dx": 3,
+      "dz": 2,
+      "expectedX": -1,
+      "expectedZ": 2,
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": [
+          {
+            "id": "cover",
+            "x": 0,
+            "z": 0,
+            "halfX": 0.6,
+            "halfZ": 1.5,
+            "height": 1,
+            "blocksMovement": true,
+            "blocksProjectiles": true,
+            "visual": "wall"
+          }
+        ]
+      },
+      "name": "walk-slides",
+      "radius": 0.4,
+      "slide": true,
+      "tolerance": 1e-7,
+      "x": -3,
+      "z": 0
+    },
+    {
+      "blocked": true,
+      "dx": 3,
+      "dz": 2,
+      "expectedX": -1,
+      "expectedZ": 1.3333333333333333,
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": [
+          {
+            "id": "cover",
+            "x": 0,
+            "z": 0,
+            "halfX": 0.6,
+            "halfZ": 1.5,
+            "height": 1,
+            "blocksMovement": true,
+            "blocksProjectiles": true,
+            "visual": "wall"
+          }
+        ]
+      },
+      "name": "dash-stops-diagonal",
+      "radius": 0.4,
+      "slide": false,
+      "tolerance": 1e-7,
+      "x": -3,
+      "z": 0
+    },
+    {
+      "blocked": false,
+      "dx": 0.2,
+      "dz": 0,
+      "expectedX": -0.8,
+      "expectedZ": 1.9,
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": [
+          {
+            "id": "cover",
+            "x": 0,
+            "z": 0,
+            "halfX": 0.6,
+            "halfZ": 1.5,
+            "height": 1,
+            "blocksMovement": true,
+            "blocksProjectiles": true,
+            "visual": "wall"
+          }
+        ]
+      },
+      "name": "rounded-corner-clear",
+      "radius": 0.4,
+      "slide": false,
+      "tolerance": 1e-7,
+      "x": -1,
+      "z": 1.9
+    },
+    {
+      "blocked": true,
+      "dx": 2,
+      "dz": -2,
+      "expectedX": -0.882842712474619,
+      "expectedZ": 1.7828427124746191,
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": [
+          {
+            "id": "cover",
+            "x": 0,
+            "z": 0,
+            "halfX": 0.6,
+            "halfZ": 1.5,
+            "height": 1,
+            "blocksMovement": true,
+            "blocksProjectiles": true,
+            "visual": "wall"
+          }
+        ]
+      },
+      "name": "rounded-corner-hit",
+      "radius": 0.4,
+      "slide": false,
+      "tolerance": 1e-7,
+      "x": -2,
+      "z": 2.9
+    },
+    {
+      "blocked": true,
+      "dx": 20,
+      "dz": 0,
+      "expectedX": -0.41,
+      "expectedZ": 0,
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": [
+          {
+            "id": "thin",
+            "x": 0,
+            "z": 0,
+            "halfX": 0.01,
+            "halfZ": 3,
+            "height": 1,
+            "blocksMovement": true,
+            "blocksProjectiles": true,
+            "visual": "wall"
+          }
+        ]
+      },
+      "name": "fast-thin-wall",
+      "radius": 0.4,
+      "slide": false,
+      "tolerance": 1e-7,
+      "x": -5,
+      "z": 0
+    },
+    {
+      "blocked": true,
+      "dx": 2,
+      "dz": 2,
+      "expectedX": 9.6,
+      "expectedZ": 9.6,
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": null
+      },
+      "name": "arena-diagonal-slide",
+      "radius": 0.4,
+      "slide": true,
+      "tolerance": 1e-7,
+      "x": 9,
+      "z": 8
+    },
+    {
+      "blocked": true,
+      "dx": 0,
+      "dz": 0,
+      "expectedX": -1,
+      "expectedZ": 0,
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": [
+          {
+            "id": "cover",
+            "x": 0,
+            "z": 0,
+            "halfX": 0.6,
+            "halfZ": 1.5,
+            "height": 1,
+            "blocksMovement": true,
+            "blocksProjectiles": true,
+            "visual": "wall"
+          }
+        ]
+      },
+      "name": "initial-penetration-repair",
+      "radius": 0.4,
+      "slide": true,
+      "tolerance": 1e-7,
+      "x": 0,
+      "z": 0
+    },
+    {
+      "blocked": false,
+      "dx": 0,
+      "dz": 8,
+      "expectedX": 0,
+      "expectedZ": 4,
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": [
+          {
+            "id": "west",
+            "x": -1,
+            "z": 0,
+            "halfX": 0.3,
+            "halfZ": 2,
+            "height": 1,
+            "blocksMovement": true,
+            "blocksProjectiles": true,
+            "visual": "wall"
+          },
+          {
+            "id": "east",
+            "x": 1,
+            "z": 0,
+            "halfX": 0.3,
+            "halfZ": 2,
+            "height": 1,
+            "blocksMovement": true,
+            "blocksProjectiles": true,
+            "visual": "wall"
+          }
+        ]
+      },
+      "name": "narrow-clear-corridor",
+      "radius": 0.4,
+      "slide": true,
+      "tolerance": 1e-7,
+      "x": 0,
+      "z": -4
+    },
+    {
+      "blocked": true,
+      "dx": 0,
+      "dz": 8,
+      "expectedX": 0,
+      "expectedZ": -1.6936491673103709,
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": [
+          {
+            "id": "west",
+            "x": -0.65,
+            "z": 0,
+            "halfX": 0.3,
+            "halfZ": 1.5,
+            "height": 1,
+            "blocksMovement": true,
+            "blocksProjectiles": true,
+            "visual": "wall"
+          },
+          {
+            "id": "east",
+            "x": 0.65,
+            "z": 0,
+            "halfX": 0.3,
+            "halfZ": 1.5,
+            "height": 1,
+            "blocksMovement": true,
+            "blocksProjectiles": true,
+            "visual": "wall"
+          }
+        ]
+      },
+      "name": "too-narrow-rounded-entry",
+      "radius": 0.4,
+      "slide": false,
+      "tolerance": 1e-7,
+      "x": 0,
+      "z": -4
+    },
+    {
+      "blocked": true,
+      "dx": 4,
+      "dz": 5,
+      "expectedX": 0.4,
+      "expectedZ": 1.4,
+      "map": {
+        "mapID": "fixture",
+        "version": 1,
+        "arenaHalfSize": 10,
+        "controlPoints": [],
+        "spawnLayouts": [],
+        "obstacles": [
+          {
+            "id": "vertical",
+            "x": 1,
+            "z": 1,
+            "halfX": 0.2,
+            "halfZ": 2,
+            "height": 1,
+            "blocksMovement": true,
+            "blocksProjectiles": true,
+            "visual": "wall"
+          },
+          {
+            "id": "horizontal",
+            "x": 0,
+            "z": 2,
+            "halfX": 2,
+            "halfZ": 0.2,
+            "height": 1,
+            "blocksMovement": true,
+            "blocksProjectiles": true,
+            "visual": "wall"
+          }
+        ]
+      },
+      "name": "inside-corner",
+      "radius": 0.4,
+      "slide": true,
+      "tolerance": 1e-7,
+      "x": -2,
+      "z": -2
+    },
+    {
+      "blocked": false,
+      "dx": 5,
+      "dz": 0,
+      "expectedX": 14,
+      "expectedZ": 0,
+      "map": null,
+      "name": "nil-map-laboratory",
+      "radius": 0.4,
+      "slide": true,
+      "tolerance": 1e-7,
+      "x": 9,
+      "z": 0
+    }
+  ],
+  "version": 1
+}

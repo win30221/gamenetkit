@@ -1,0 +1,82 @@
+{
+  "dependencies": {
+    "com.realtime.actions": {
+      "version": "file:../../../packages/unity/actions",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.core": "0.1.0"
+      }
+    },
+    "com.realtime.clock": {
+      "version": "file:../../../packages/unity/clock",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.core": "0.1.0"
+      }
+    },
+    "com.realtime.codec": {
+      "version": "file:../../../packages/unity/codec",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.core": "0.1.0"
+      }
+    },
+    "com.realtime.core": {
+      "version": "file:../../../packages/unity/core",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
+    "com.realtime.correction": {
+      "version": "file:../../../packages/unity/correction",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.core": "0.1.0"
+      }
+    },
+    "com.realtime.diagnostics": {
+      "version": "file:../../../packages/unity/diagnostics",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.core": "0.1.0"
+      }
+    },
+    "com.realtime.playback": {
+      "version": "file:../../../packages/unity/playback",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.core": "0.1.0"
+      }
+    },
+    "com.realtime.prediction": {
+      "version": "file:../../../packages/unity/prediction",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.core": "0.1.0"
+      }
+    },
+    "com.realtime.replication": {
+      "version": "file:../../../packages/unity/replication",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.core": "0.1.0"
+      }
+    },
+    "com.realtime.simulation": {
+      "version": "file:../../../packages/unity/simulation",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.core": "0.1.0"
+      }
+    }
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "dependencies": {
+    "com.realtime.actions": {
+      "version": "file:../../../../packages/unity/actions",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.core": "0.1.0"
+      }
+    },
+    "com.realtime.core": {
+      "version": "file:../../../../packages/unity/core",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
+    "com.realtime.correction": {
+      "version": "file:../../../../packages/unity/correction",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.core": "0.1.0"
+      }
+    },
+    "com.realtime.examples": {
+      "version": "file:../../../unity-common",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.transport": "0.1.0"
+      }
+    },
+    "com.realtime.interpolation": {
+      "version": "file:../../../../packages/unity/interpolation",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.core": "0.1.0"
+      }
+    },
+    "com.realtime.playback": {
+      "version": "file:../../../../packages/unity/playback",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.core": "0.1.0"
+      }
+    },
+    "com.realtime.prediction": {
+      "version": "file:../../../../packages/unity/prediction",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.core": "0.1.0"
+      }
+    },
+    "com.realtime.replication": {
+      "version": "file:../../../../packages/unity/replication",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.core": "0.1.0"
+      }
+    },
+    "com.realtime.simulation": {
+      "version": "file:../../../../packages/unity/simulation",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.core": "0.1.0"
+      }
+    },
+    "com.realtime.transport": {
+      "version": "file:../../../../packages/unity/transport",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
+    "com.unity.modules.imgui": {
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "dependencies": {}
+    },
+    "com.unity.modules.jsonserialize": {
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "dependencies": {}
+    },
+    "com.unity.modules.physics": {
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "dependencies": {}
+    },
+    "com.unity.modules.unitywebrequest": {
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "dependencies": {}
+    }
+  }
+}

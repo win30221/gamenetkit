@@ -1,0 +1,15 @@
+{
+  "mapID": "arena-01",
+  "version": 1,
+  "arenaHalfSize": 10,
+  "controlPoints": [{"x":0,"z":0},{"x":0,"z":5},{"x":0,"z":-5}],
+  "spawnLayouts": [
+    {"teamCount":2,"anchors":[{"x":-6,"z":0},{"x":6,"z":0}]},
+    {"teamCount":3,"anchors":[{"x":-6,"z":0},{"x":3,"z":-5},{"x":3,"z":5}]},
+    {"teamCount":4,"anchors":[{"x":-6,"z":-6},{"x":6,"z":-6},{"x":6,"z":6},{"x":-6,"z":6}]}
+  ],
+  "obstacles": [
+    {"id":"cover-west","x":-3.5,"z":0,"halfX":0.6,"halfZ":1.5,"height":0.8,"blocksMovement":true,"blocksProjectiles":true,"visual":"wall"},
+    {"id":"cover-east","x":3.5,"z":0,"halfX":0.6,"halfZ":1.5,"height":0.8,"blocksMovement":true,"blocksProjectiles":true,"visual":"wall"}
+  ]
+}

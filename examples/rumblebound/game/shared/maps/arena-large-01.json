@@ -1,0 +1,17 @@
+{
+  "mapID":"arena-large-01","version":2,"arenaHalfSize":30,"movementScale":0.8,
+  "controlPoints":[{"x":0,"z":0},{"x":-12,"z":10},{"x":12,"z":-10}],
+  "spawnLayouts":[
+    {"teamCount":2,"anchors":[{"x":-23,"z":0},{"x":23,"z":0}]},
+    {"teamCount":3,"anchors":[{"x":-23,"z":0},{"x":16,"z":-20},{"x":16,"z":20}]},
+    {"teamCount":4,"anchors":[{"x":-22,"z":-22},{"x":22,"z":-22},{"x":22,"z":22},{"x":-22,"z":22}]}
+  ],
+  "obstacles":[
+    {"id":"cover-west","x":-6,"z":0,"halfX":0.7,"halfZ":3,"height":1,"blocksMovement":true,"blocksProjectiles":true,"visual":"wall"},
+    {"id":"cover-east","x":6,"z":0,"halfX":0.7,"halfZ":3,"height":1,"blocksMovement":true,"blocksProjectiles":true,"visual":"wall"},
+    {"id":"north-ridge","x":0,"z":12,"halfX":7,"halfZ":0.7,"height":1.1,"blocksMovement":true,"blocksProjectiles":true,"visual":"wall"},
+    {"id":"south-ridge","x":0,"z":-12,"halfX":7,"halfZ":0.7,"height":1.1,"blocksMovement":true,"blocksProjectiles":true,"visual":"wall"},
+    {"id":"west-route","x":-16,"z":-7,"halfX":0.7,"halfZ":4,"height":1,"blocksMovement":true,"blocksProjectiles":true,"visual":"wall"},
+    {"id":"east-route","x":16,"z":7,"halfX":0.7,"halfZ":4,"height":1,"blocksMovement":true,"blocksProjectiles":true,"visual":"wall"}
+  ]
+}

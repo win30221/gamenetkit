@@ -1,0 +1,1 @@
+{"name":"com.realtime.prediction","version":"0.1.0","displayName":"Realtime Prediction","description":"Optional generic elapsed-time and fixed-step prediction/reconciliation; game simulation is supplied through a model.","unity":"6000.0","dependencies":{"com.realtime.core":"0.1.0"}}

@@ -1,0 +1,53 @@
+{
+  "manifestSchema": 2,
+  "generatedBy": "scripts/Prepare-HitAssets.py",
+  "maintenanceNotes": "asset-notes.json",
+  "title": "Cartoon FX Remaster Free",
+  "creator": "Jean Moreno",
+  "source": "https://assetstore.unity.com/packages/vfx/particles/cartoon-fx-remaster-free-109565",
+  "version": "R 1.5.1",
+  "publisherReleaseDate": "2025-12-18",
+  "acquiredOn": "2026-10-29",
+  "officialPackageSHA256": "8FC53D6A315C677E98F1E92DFA00D69174201A2216FA52EC4B2AE8C04E3E77E8",
+  "license": "Standard Unity Asset Store EULA; not CC0. Package acquired through the user Unity account. Do not redistribute raw assets as a standalone asset package.",
+  "selectedPrefabs": [
+    "CFXR Prefabs/Impacts/CFXR Hit A (Red).prefab",
+    "CFXR Prefabs/Impacts/CFXR Hit D 3D (Yellow).prefab"
+  ],
+  "files": [
+    "CFXR Assets/Graphics/cfxr hit triangle 2.png",
+    "CFXR Assets/Graphics/cfxr hit triangle diamond dissolve.png",
+    "CFXR Assets/Graphics/cfxr hit triangle dissolve.png",
+    "CFXR Assets/Graphics/cfxr hit triangle.png",
+    "CFXR Assets/Graphics/cfxr proc ring add.mat",
+    "CFXR Assets/Graphics/cfxr spikes impact add.mat",
+    "CFXR Assets/Graphics/cfxr spikes impact mesh.asset",
+    "CFXR Assets/Graphics/cfxr spikes impact.png",
+    "CFXR Assets/Graphics/cfxr stretch trait blur add.mat",
+    "CFXR Assets/Graphics/cfxr stretch trait blur.png",
+    "CFXR Assets/Graphics/cfxr stretch triangle smooth add.mat",
+    "CFXR Assets/Graphics/cfxr stretch triangle to diamond add.mat",
+    "CFXR Assets/Meshes/cfxr ring mesh.asset",
+    "CFXR Assets/Shaders/CFXR Particle Procedural Ring.shader",
+    "CFXR Assets/Shaders/CFXR Particle Ubershader.shader",
+    "CFXR Assets/Shaders/CFXR.cginc",
+    "CFXR Assets/Shaders/CFXR_PASSES.cginc",
+    "CFXR Assets/Shaders/CFXR_SETTINGS.cginc",
+    "CFXR Assets/Shaders/CFXR_URP.cginc",
+    "CFXR Prefabs/Impacts/CFXR Hit A (Red).prefab",
+    "CFXR Prefabs/Impacts/CFXR Hit D 3D (Yellow).prefab"
+  ],
+  "modifications": {
+    "prefabs": "Removed vendor MonoBehaviour and Light components and their GameObject component entries; original particle systems, renderer vertex streams, meshes, colors and materials retained.",
+    "removedComponentCounts": {
+      "CFXR Prefabs\\Impacts\\CFXR Hit D 3D (Yellow).prefab": 2,
+      "CFXR Prefabs\\Impacts\\CFXR Hit A (Red).prefab": 2
+    },
+    "shaders": "Resolved publisher cfxrshader conditional branches into ordinary .shader files; original GUIDs retained and material shader fileIDs remapped to 4800000; CustomEditor and two vendor-only Inspector drawer decorators removed; publisher Cg includes and serialized keywords retained.",
+    "pipeline": "urp",
+    "urpVersionMacro": 17,
+    "runtime": "Project presenter owns bounded pooling, clock, stop/clear and placement. No vendor executable or demo scripts imported.",
+    "urpAdapter": "Publisher URP branches regenerated without touching upgraded meshes/materials/prefabs; explicit UniversalPipeline tag and corrected CFXR_URP spelling in optional passes."
+  },
+  "importValidation": "Curated source only; Unity shader compilation, native visual inspection and WebGL validation required by build owner."
+}

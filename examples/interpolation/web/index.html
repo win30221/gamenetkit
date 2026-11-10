@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>插值組件 · 操作教學</title><link rel="stylesheet" href="/style.css"></head>
+<body><main>
+<header><p class="eyebrow">REALTIME FRAMEWORK · INTERPOLATION</p><h1>插值開關，差在哪裡？</h1><p>方塊會自動往返。先選「關閉」，再選「固定」或「自適應」，比較同一份快照的呈現。</p></header>
+<section class="controls">
+<div><h2>1 · 選擇呈現方式</h2><div class="choices"><button id="mode-latest" aria-pressed="false">關閉</button><button id="mode-fixed" aria-pressed="true">固定插值</button><button id="mode-adaptive" aria-pressed="false">自適應插值</button></div><p id="explanation">固定緩衝後在快照間取樣；移動更連續，但呈現會晚一點。</p></div>
+<div><h2>2 · 比較網路情境</h2><label for="profile">快照交付</label><select id="profile"><option value="clean">乾淨網路</option><option value="delay">額外延遲 150 ms</option><option value="jitter">延遲 150 ± 100 ms、丟失 15%</option></select><p>只影響快照呈現，輸入與連線控制維持直接交付。</p></div>
+<div><h2>3 · 觀察或自己操作</h2><label><input id="auto" type="checkbox" checked>自動往返</label><label><input id="self" type="checkbox" checked>自己的方塊也比較插值</label><label><input id="ghost" type="checkbox" checked>顯示最新快照參考框</label></div>
+</section>
+<section class="bar"><strong id="status" role="status">正在連線…</strong><span id="identity">玩家 —</span><button id="reconnect">重新連線</button><button id="disconnect">中斷</button></section>
+<section class="stats"><div>收到 tick<strong id="tick">—</strong></div><div>呈現 tick<strong id="render">—</strong></div><div>插值緩衝<strong id="buffer">—</strong></div><div>交付抖動<strong id="jitter">—</strong></div><div>快照丟失<strong id="dropped">0</strong></div></section>
+<section class="arena"><div class="legend"><span>實心：選定的呈現方式</span><span>外框：同一批交付資料的最新位置</span></div><canvas id="world" width="1100" height="560" tabindex="0" aria-label="插值教學場地。關閉自動往返後點擊場地，以 WASD 或方向鍵控制。"></canvas><p id="hint">藍色是自己，橘色是其他玩家。也可以開第二個並排視窗觀察彼此。</p></section>
+<footer><p>插值讓呈現更連續，不會降低網路延遲。此範例尚未加入本機預測；關閉「自己的方塊也比較插值」，即可只處理其他玩家。</p><p>畫面由同一份 C# SDK 插值接線計算。Unity 專案與加入步驟見 examples/interpolation/README.md。</p></footer>
+</main><script type="module" src="/app.js"></script></body></html>

@@ -1,0 +1,14 @@
+param([switch]$Preview)
+$ErrorActionPreference='Stop'
+$root=Split-Path -Parent $PSScriptRoot
+$sample=Join-Path $root 'samples/rumblebound'
+$log=Join-Path $root 'artifacts/playback-smoke.log'
+$saved=$env:RF_PLAYBACK_PREVIEW_DIR
+try{
+ $arguments=@('-force-d3d11','-screen-fullscreen','0','-rf-playback-smoke','-logFile',"`"$log`"")
+ if($Preview){$env:RF_PLAYBACK_PREVIEW_DIR=Join-Path $root 'artifacts/playback-ui'}else{$arguments+=@('-batchmode','-nographics')}
+ $player=Start-Process -FilePath (Join-Path $sample 'client/Builds/Windows/Rumblebound.exe') -ArgumentList $arguments -WorkingDirectory $sample -WindowStyle Hidden -PassThru
+ if(-not $player.WaitForExit(45000)){Stop-Process -Id $player.Id;throw "Playback test timeout: $log"}
+ if($player.ExitCode -ne 0 -or -not(Select-String -LiteralPath $log -SimpleMatch 'RF_PLAYBACK_SMOKE PASS' -Quiet)){throw "Playback smoke failed: $log"}
+ Select-String -LiteralPath $log -SimpleMatch 'RF_PLAYBACK_SMOKE PASS'|ForEach-Object{$_.Line}
+}finally{$env:RF_PLAYBACK_PREVIEW_DIR=$saved}

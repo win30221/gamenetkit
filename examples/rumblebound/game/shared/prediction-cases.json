@@ -1,0 +1,546 @@
+{
+  "tickRate": 30,
+  "cases": [
+    {
+      "name": "free",
+      "DX": 1,
+      "DZ": 0,
+      "initial": [
+        {
+          "id": "p1",
+          "x": -6,
+          "z": 6,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        }
+      ],
+      "samples": [
+        {
+          "tick": 5,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -5.0000000000000036,
+              "z": 6,
+              "dx": 1,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": false,
+              "stopped": false
+            }
+          ]
+        },
+        {
+          "tick": 10,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -4.000000000000007,
+              "z": 6,
+              "dx": 1,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": false,
+              "stopped": false
+            }
+          ]
+        },
+        {
+          "tick": 15,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -3.0000000000000107,
+              "z": 6,
+              "dx": 1,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": false,
+              "stopped": false
+            }
+          ]
+        },
+        {
+          "tick": 20,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -2.000000000000014,
+              "z": 6,
+              "dx": 1,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": false,
+              "stopped": false
+            }
+          ]
+        },
+        {
+          "tick": 25,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -1.0000000000000133,
+              "z": 6,
+              "dx": 1,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": false,
+              "stopped": false
+            }
+          ]
+        },
+        {
+          "tick": 30,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -1.2947976024690888e-14,
+              "z": 6,
+              "dx": 1,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": false,
+              "stopped": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cover-stop",
+      "DX": 1,
+      "DZ": 0,
+      "initial": [
+        {
+          "id": "p1",
+          "x": -4.6,
+          "z": 0,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        }
+      ],
+      "samples": [
+        {
+          "tick": 5,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -4.5,
+              "z": 0,
+              "dx": 1,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": true,
+              "stopped": false
+            }
+          ]
+        },
+        {
+          "tick": 10,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -4.5,
+              "z": 0,
+              "dx": 1,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": true,
+              "stopped": false
+            }
+          ]
+        },
+        {
+          "tick": 15,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -4.5,
+              "z": 0,
+              "dx": 1,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": true,
+              "stopped": false
+            }
+          ]
+        },
+        {
+          "tick": 20,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -4.5,
+              "z": 0,
+              "dx": 1,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": true,
+              "stopped": false
+            }
+          ]
+        },
+        {
+          "tick": 25,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -4.5,
+              "z": 0,
+              "dx": 1,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": true,
+              "stopped": false
+            }
+          ]
+        },
+        {
+          "tick": 30,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -4.5,
+              "z": 0,
+              "dx": 1,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": true,
+              "stopped": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cover-slide",
+      "DX": 1,
+      "DZ": 1,
+      "initial": [
+        {
+          "id": "p1",
+          "x": -4.6,
+          "z": 1.7,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        }
+      ],
+      "samples": [
+        {
+          "tick": 5,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -3.8928932188134535,
+              "z": 2.4071067811865463,
+              "dx": 1,
+              "dz": 1,
+              "speed": 6,
+              "dashing": false,
+              "blocked": false,
+              "stopped": false
+            }
+          ]
+        },
+        {
+          "tick": 10,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -3.1857864376269074,
+              "z": 3.1142135623730924,
+              "dx": 1,
+              "dz": 1,
+              "speed": 6,
+              "dashing": false,
+              "blocked": false,
+              "stopped": false
+            }
+          ]
+        },
+        {
+          "tick": 15,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -2.4786796564403613,
+              "z": 3.8213203435596386,
+              "dx": 1,
+              "dz": 1,
+              "speed": 6,
+              "dashing": false,
+              "blocked": false,
+              "stopped": false
+            }
+          ]
+        },
+        {
+          "tick": 20,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -1.7715728752538151,
+              "z": 4.528427124746185,
+              "dx": 1,
+              "dz": 1,
+              "speed": 6,
+              "dashing": false,
+              "blocked": false,
+              "stopped": false
+            }
+          ]
+        },
+        {
+          "tick": 25,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -1.064466094067269,
+              "z": 5.235533905932731,
+              "dx": 1,
+              "dz": 1,
+              "speed": 6,
+              "dashing": false,
+              "blocked": false,
+              "stopped": false
+            }
+          ]
+        },
+        {
+          "tick": 30,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -0.35735931288072104,
+              "z": 5.942640687119277,
+              "dx": 1,
+              "dz": 1,
+              "speed": 6,
+              "dashing": false,
+              "blocked": false,
+              "stopped": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "crowd-push",
+      "DX": 1,
+      "DZ": 0,
+      "initial": [
+        {
+          "id": "p1",
+          "x": -3.4,
+          "z": 3,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        },
+        {
+          "id": "p2",
+          "x": -2.6,
+          "z": 3,
+          "dx": 0,
+          "dz": 0,
+          "speed": 6,
+          "dashing": false,
+          "blocked": false,
+          "stopped": false
+        }
+      ],
+      "samples": [
+        {
+          "tick": 5,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -2.9000000000000017,
+              "z": 3,
+              "dx": 1,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": true,
+              "stopped": false
+            },
+            {
+              "id": "p2",
+              "x": -2.100000000000002,
+              "z": 3,
+              "dx": 0,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": true,
+              "stopped": false
+            }
+          ]
+        },
+        {
+          "tick": 10,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -2.4000000000000035,
+              "z": 3,
+              "dx": 1,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": true,
+              "stopped": false
+            },
+            {
+              "id": "p2",
+              "x": -1.6000000000000036,
+              "z": 3,
+              "dx": 0,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": true,
+              "stopped": false
+            }
+          ]
+        },
+        {
+          "tick": 15,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -1.9000000000000052,
+              "z": 3,
+              "dx": 1,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": true,
+              "stopped": false
+            },
+            {
+              "id": "p2",
+              "x": -1.1000000000000054,
+              "z": 3,
+              "dx": 0,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": true,
+              "stopped": false
+            }
+          ]
+        },
+        {
+          "tick": 20,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -1.400000000000007,
+              "z": 3,
+              "dx": 1,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": true,
+              "stopped": false
+            },
+            {
+              "id": "p2",
+              "x": -0.6000000000000054,
+              "z": 3,
+              "dx": 0,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": true,
+              "stopped": false
+            }
+          ]
+        },
+        {
+          "tick": 25,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -0.9000000000000083,
+              "z": 3,
+              "dx": 1,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": true,
+              "stopped": false
+            },
+            {
+              "id": "p2",
+              "x": -0.10000000000000514,
+              "z": 3,
+              "dx": 0,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": true,
+              "stopped": false
+            }
+          ]
+        },
+        {
+          "tick": 30,
+          "bodies": [
+            {
+              "id": "p1",
+              "x": -0.4000000000000079,
+              "z": 3,
+              "dx": 1,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": true,
+              "stopped": false
+            },
+            {
+              "id": "p2",
+              "x": 0.39999999999999497,
+              "z": 3,
+              "dx": 0,
+              "dz": 0,
+              "speed": 6,
+              "dashing": false,
+              "blocked": true,
+              "stopped": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Realtime.Examples.InterestLesson",
+  "rootNamespace": "Realtime.Examples.InterestLesson",
+  "references": [
+    "Realtime.Core",
+    "Realtime.Transport",
+    "Realtime.Prediction",
+    "Realtime.Correction",
+    "Realtime.Interpolation",
+    "Realtime.Simulation",
+    "Realtime.Replication",
+    "Realtime.Actions"
+  ],
+  "noEngineReferences": true
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Realtime.Examples.ObjectsActions.Unity",
+  "references": [
+    "Realtime.Examples.ObjectsActions",
+    "Realtime.Examples.Presentation",
+    "Realtime.Transport",
+    "Realtime.Core"
+  ]
+}

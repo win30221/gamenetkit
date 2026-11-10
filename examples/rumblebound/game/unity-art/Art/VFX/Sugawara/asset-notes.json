@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "records": {
+    "renderPipeline": "URP17.6.0 on Unity6000.6.6f1",
+    "urpMigration": "2026-10-29 user approved; originalmaterialsnapshot preserved, texture/UV/color mapping verified, actualnativecamera renders passed; sourceart license unchanged",
+    "validation": "2026-10-29 URP17.6 Windows/WebGL builds passed; actual nativecamera renders of sourceart, hits/flash and occupiedloop at7s; simulatedpointparticles beyond60s; UI/two-player/private/recovery/practice passed; HTTP200 forwebfiles; no browser GPU/performance claim."
+  }
+}

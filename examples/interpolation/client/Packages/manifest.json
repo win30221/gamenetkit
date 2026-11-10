@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "com.realtime.core": "file:../../../../packages/unity/core",
+    "com.realtime.transport": "file:../../../../packages/unity/transport",
+    "com.realtime.interpolation": "file:../../../../packages/unity/interpolation",
+    "com.realtime.simulation": "file:../../../../packages/unity/simulation",
+    "com.unity.modules.jsonserialize": "1.0.0",
+    "com.unity.modules.imgui": "1.0.0",
+    "com.unity.modules.physics": "1.0.0"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "Realtime.Examples.PredictionLesson",
+  "rootNamespace": "Realtime.Examples.PredictionLesson",
+  "references": [
+    "Realtime.Core",
+    "Realtime.Transport",
+    "Realtime.Prediction",
+    "Realtime.Correction",
+    "Realtime.Interpolation",
+    "Realtime.Simulation"
+  ],
+  "noEngineReferences": true
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Realtime.Examples.InterestLesson.Editor",
+  "references": [
+    "Realtime.Examples.Presentation.Editor"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}

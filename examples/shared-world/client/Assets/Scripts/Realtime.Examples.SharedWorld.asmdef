@@ -1,0 +1,6 @@
+{
+  "name": "Realtime.Examples.SharedWorld",
+  "rootNamespace": "Realtime.Examples.SharedWorld",
+  "references": ["Realtime.Core", "Realtime.Transport"],
+  "noEngineReferences": true
+}

@@ -1,0 +1,137 @@
+{
+  "manifestSchema": 2,
+  "generatedBy": "scripts/Prepare-MageAssets.py",
+  "maintenanceNotes": "asset-notes.json",
+  "title": "(Free) StylizedVFX Fire Pack",
+  "author": "Hun0FX",
+  "version": "2.0.0",
+  "source": "https://assetstore.unity.com/packages/vfx/particles/fire-explosions/free-stylizedvfx-fire-pack-321082",
+  "license": "Standard Unity Asset Store EULA; not CC0. No redistribution as a standalone asset pack.",
+  "archiveSHA256": "ed892cd61bce3589d3a9886e5cf018d0f42a76bbf61aa017412453b685fe5115",
+  "selectedPrefabs": [
+    "FX/FireFX_vol1/Prefabs/FX_Fire_03.prefab"
+  ],
+  "files": [
+    {
+      "path": "client/Assets/Art/VFX/Hun0FX/FX/BasicMaterial/M_Ember_01.mat",
+      "sourcePath": ".cache/vfx-source/hun0fx-original/Assets/Hun0FX/FX/BasicMaterial/M_Ember_01.mat",
+      "sourceSHA256": "00d880dfeb6053fe7d877ee9d92c5e8b1473d447dfdece48a3ca9e0cf89b929e",
+      "status": "curated-source"
+    },
+    {
+      "path": "client/Assets/Art/VFX/Hun0FX/FX/BasicMaterial/M_Fire_directional_13.mat",
+      "sourcePath": ".cache/vfx-source/hun0fx-original/Assets/Hun0FX/FX/BasicMaterial/M_Fire_directional_13.mat",
+      "sourceSHA256": "4ecfe0bd15d015824069a19f534eee05648734c9f988817743b86e08b036e7c3",
+      "status": "curated-source"
+    },
+    {
+      "path": "client/Assets/Art/VFX/Hun0FX/FX/BasicMaterial/M_Fire_radial_07.mat",
+      "sourcePath": ".cache/vfx-source/hun0fx-original/Assets/Hun0FX/FX/BasicMaterial/M_Fire_radial_07.mat",
+      "sourceSHA256": "bfe93449af04e90a67fa39cdf1ed6d896e56d3255fb6e03c29185ae1f76b7f3e",
+      "status": "curated-source"
+    },
+    {
+      "path": "client/Assets/Art/VFX/Hun0FX/FX/BasicMaterial/M_Fire_seq_04.mat",
+      "sourcePath": ".cache/vfx-source/hun0fx-original/Assets/Hun0FX/FX/BasicMaterial/M_Fire_seq_04.mat",
+      "sourceSHA256": "e69e9f4e78d22c5c82390c852609f91270968ff4a6e8dc99767e50cee4078194",
+      "status": "curated-source"
+    },
+    {
+      "path": "client/Assets/Art/VFX/Hun0FX/FX/FireFX_vol1/Prefabs/FX_Fire_03.prefab",
+      "sourcePath": ".cache/vfx-source/hun0fx-original/Assets/Hun0FX/FX/FireFX_vol1/Prefabs/FX_Fire_03.prefab",
+      "sourceSHA256": "cbd02ff810e825eda5b4eafe65d9c7a1b53cfd473c80286c42013a20a2f1ef7a",
+      "status": "curated-source"
+    },
+    {
+      "path": "client/Assets/Art/VFX/Hun0FX/FX/FireFX_vol1/UniqueMaterials/M_FireFX_1.mat",
+      "sourcePath": ".cache/vfx-source/hun0fx-original/Assets/Hun0FX/FX/FireFX_vol1/UniqueMaterials/M_FireFX_1.mat",
+      "sourceSHA256": "e6ed4238dc93b07fbd3f170fd1785b28f8bbea63154a208307c1a2bcb62a1003",
+      "status": "curated-source"
+    },
+    {
+      "path": "client/Assets/Art/VFX/Hun0FX/FX/SmokeFX/Materials/M_Smoke_14.mat",
+      "sourcePath": ".cache/vfx-source/hun0fx-original/Assets/Hun0FX/FX/SmokeFX/Materials/M_Smoke_14.mat",
+      "sourceSHA256": "16c52097a9d5362bfe73c459b3df795c52ad4dc3818af0a6c799e77855075fd4",
+      "status": "curated-source"
+    },
+    {
+      "path": "client/Assets/Art/VFX/Hun0FX/Meshes/ME_Curve_06_2.fbx",
+      "sourcePath": ".cache/vfx-source/hun0fx-original/Assets/Hun0FX/Meshes/ME_Curve_06_2.fbx",
+      "sourceSHA256": "0a26f2daa64e9558e2c1ebb45fbdec23101dd649962e47835082e5bd8fe82719",
+      "status": "curated-source"
+    },
+    {
+      "path": "client/Assets/Art/VFX/Hun0FX/Meshes/ME_Cylinder_02.fbx",
+      "sourcePath": ".cache/vfx-source/hun0fx-original/Assets/Hun0FX/Meshes/ME_Cylinder_02.fbx",
+      "sourceSHA256": "ae7963c93dc4d789f9fb2db3a3c386b867d79de333a10a850d0e154ebbeffafb",
+      "status": "curated-source"
+    },
+    {
+      "path": "client/Assets/Art/VFX/Hun0FX/Meshes/ME_Sphere_04.fbx",
+      "sourcePath": ".cache/vfx-source/hun0fx-original/Assets/Hun0FX/Meshes/ME_Sphere_04.fbx",
+      "sourceSHA256": "daaae23e9f5620f4efed7b71a24761713f7232e6478379dc3186c01d3710c06a",
+      "status": "curated-source"
+    },
+    {
+      "path": "client/Assets/Art/VFX/Hun0FX/Meshes/ME_wind_03.fbx",
+      "sourcePath": ".cache/vfx-source/hun0fx-original/Assets/Hun0FX/Meshes/ME_wind_03.fbx",
+      "sourceSHA256": "296cafb74514c102ca4333c946399f420593e2b10bf414c1d42532d243c8af49",
+      "status": "curated-source"
+    },
+    {
+      "path": "client/Assets/Art/VFX/Hun0FX/Shader/SH_HunFX_common.shader",
+      "sourcePath": ".cache/vfx-source/hun0fx-original/Assets/Hun0FX/Shader/SH_HunFX_common.shader",
+      "sourceSHA256": "db4221a1e31813af4ca88705579788de2e220052917deacbc33a52073bbc9d84",
+      "status": "curated-source"
+    },
+    {
+      "path": "client/Assets/Art/VFX/Hun0FX/Shader/SH_HunFX_simple.shader",
+      "sourcePath": ".cache/vfx-source/hun0fx-original/Assets/Hun0FX/Shader/SH_HunFX_simple.shader",
+      "sourceSHA256": "2eea9daa7e541501f41298c71361144cbd8df83b660f69fcf52cd5a451c7c852",
+      "status": "curated-source"
+    },
+    {
+      "path": "client/Assets/Art/VFX/Hun0FX/Textures/Tx_Ember_01.png",
+      "sourcePath": ".cache/vfx-source/hun0fx-original/Assets/Hun0FX/Textures/Tx_Ember_01.png",
+      "sourceSHA256": "204a21137dfc7fa398bb7e754122b126f9fe023f1fc93b2a8d4b4a1c14dd914b",
+      "status": "curated-source"
+    },
+    {
+      "path": "client/Assets/Art/VFX/Hun0FX/Textures/Tx_Ember_02.png",
+      "sourcePath": ".cache/vfx-source/hun0fx-original/Assets/Hun0FX/Textures/Tx_Ember_02.png",
+      "sourceSHA256": "85134ac2d5e3691ad30a3b7176162f3cda21ced52243b73d03dbae9bfd35a3a9",
+      "status": "curated-source"
+    },
+    {
+      "path": "client/Assets/Art/VFX/Hun0FX/Textures/Tx_Fire_directional_13.png",
+      "sourcePath": ".cache/vfx-source/hun0fx-original/Assets/Hun0FX/Textures/Tx_Fire_directional_13.png",
+      "sourceSHA256": "c693308ac85c25d6a410eb82d94179dde7ee102f6a32d92654914089744e7e48",
+      "status": "curated-source"
+    },
+    {
+      "path": "client/Assets/Art/VFX/Hun0FX/Textures/Tx_Fire_radial_07.png",
+      "sourcePath": ".cache/vfx-source/hun0fx-original/Assets/Hun0FX/Textures/Tx_Fire_radial_07.png",
+      "sourceSHA256": "45bee9020df057e9cb5b05d655100a9b7e0075eb02f22cc27a878a08dd11549a",
+      "status": "curated-source"
+    },
+    {
+      "path": "client/Assets/Art/VFX/Hun0FX/Textures/Tx_Fire_seq_04.png",
+      "sourcePath": ".cache/vfx-source/hun0fx-original/Assets/Hun0FX/Textures/Tx_Fire_seq_04.png",
+      "sourceSHA256": "50a07f5c6a9be0b2370b589746ab1fe5062fb11d915a012d54440503b287025b",
+      "status": "curated-source"
+    },
+    {
+      "path": "client/Assets/Art/VFX/Hun0FX/Textures/Tx_Flame_02.png",
+      "sourcePath": ".cache/vfx-source/hun0fx-original/Assets/Hun0FX/Textures/Tx_Flame_02.png",
+      "sourceSHA256": "d744a2eef83aa485a79b5a5c39dbdac7d21f44e9dbe60fde24bf90d8f884d63d",
+      "status": "curated-source"
+    },
+    {
+      "path": "client/Assets/Art/VFX/Hun0FX/Textures/Tx_Smoke_Radial_06.png",
+      "sourcePath": ".cache/vfx-source/hun0fx-original/Assets/Hun0FX/Textures/Tx_Smoke_Radial_06.png",
+      "sourceSHA256": "46741a7f9fc2d1738339d9ac51e6e94bb47056f30d729feb8684a28798359135",
+      "status": "curated-source"
+    }
+  ],
+  "modifications": "Removed publisher MonoBehaviour/Light components. Retained particle vertex streams, mesh file IDs and shader behavior; added explicit UniversalPipeline subshader tags. Project presenter controls lifetime, scale and world-space trail."
+}

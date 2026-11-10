@@ -1,0 +1,985 @@
+{
+    "date": "2026-10-29",
+    "materials": [
+        {
+            "path": "Assets/Art/VFX/CartoonFXLegacy/Materials/Light/CFX3_AuraRunic ADD.mat",
+            "guid": "5bf91ad953f78d54baebb31d5f5ae4a5",
+            "shader": "Legacy Shaders/Particles/Additive",
+            "textures": [
+                {
+                    "property": "_MainTex",
+                    "path": "Assets/Art/VFX/CartoonFXLegacy/Textures/CFX3_T_AuraRunic.png",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                }
+            ],
+            "colors": [
+                {
+                    "property": "_TintColor",
+                    "color": {
+                        "r": 0.5,
+                        "g": 0.5,
+                        "b": 0.5,
+                        "a": 0.5
+                    }
+                }
+            ],
+            "floats": []
+        },
+        {
+            "path": "Assets/Art/VFX/CartoonFXLegacy/Materials/Light/CFX3_CircleSoft ADDSOFT.mat",
+            "guid": "c26f3dc2706e5764eb5100c273a349d7",
+            "shader": "Legacy Shaders/Particles/Additive (Soft)",
+            "textures": [
+                {
+                    "property": "_MainTex",
+                    "path": "Assets/Art/VFX/CartoonFXLegacy/Textures/CFX3_T_CircleSoft.png",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                }
+            ],
+            "colors": [],
+            "floats": []
+        },
+        {
+            "path": "Assets/Art/VFX/CartoonFXLegacy/Materials/Light/CFX3_GlowStar ADD.mat",
+            "guid": "6b22999712355474795091cef25021b4",
+            "shader": "Legacy Shaders/Particles/Additive",
+            "textures": [
+                {
+                    "property": "_MainTex",
+                    "path": "Assets/Art/VFX/CartoonFXLegacy/Textures/CFX3_T_GlowStar.png",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                }
+            ],
+            "colors": [
+                {
+                    "property": "_TintColor",
+                    "color": {
+                        "r": 0.5,
+                        "g": 0.5,
+                        "b": 0.5,
+                        "a": 0.5
+                    }
+                }
+            ],
+            "floats": []
+        },
+        {
+            "path": "Assets/Art/VFX/CartoonFXLegacy/Materials/Light/CFX3_HollowCircle ADD.mat",
+            "guid": "0438adcdefc12d349a285d0ec6295fc2",
+            "shader": "Legacy Shaders/Particles/Additive",
+            "textures": [
+                {
+                    "property": "_MainTex",
+                    "path": "Assets/Art/VFX/CartoonFXLegacy/Textures/CFX3_T_HollowCircle.png",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                }
+            ],
+            "colors": [
+                {
+                    "property": "_TintColor",
+                    "color": {
+                        "r": 0.5,
+                        "g": 0.5,
+                        "b": 0.5,
+                        "a": 0.5
+                    }
+                }
+            ],
+            "floats": []
+        },
+        {
+            "path": "Assets/Art/VFX/CartoonFXLegacy/Materials/Light/CFX3_RayStraight ADD.mat",
+            "guid": "695873166113ab64997efed81c2426c7",
+            "shader": "Legacy Shaders/Particles/Additive",
+            "textures": [
+                {
+                    "property": "_MainTex",
+                    "path": "Assets/Art/VFX/CartoonFXLegacy/Textures/CFX3_T_RayStraight.png",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                }
+            ],
+            "colors": [
+                {
+                    "property": "_TintColor",
+                    "color": {
+                        "r": 0.5,
+                        "g": 0.5,
+                        "b": 0.5,
+                        "a": 0.5
+                    }
+                }
+            ],
+            "floats": []
+        },
+        {
+            "path": "Assets/Art/VFX/CartoonFXLegacy/Materials/Light/CFX3_SmallRay ADDSOFT.mat",
+            "guid": "d9f8ab332ba6f4a45bd1913a9ff33b10",
+            "shader": "Legacy Shaders/Particles/Additive (Soft)",
+            "textures": [
+                {
+                    "property": "_MainTex",
+                    "path": "Assets/Art/VFX/CartoonFXLegacy/Textures/CFX3_T_SmallRay.png",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                }
+            ],
+            "colors": [],
+            "floats": []
+        },
+        {
+            "path": "Assets/Art/VFX/CartoonFXLegacy/Materials/Stretched/CFX_RayRounded.mat",
+            "guid": "7cd73ef8e5a31a244a672ae32c0f6ddb",
+            "shader": "Legacy Shaders/Particles/Additive (Soft)",
+            "textures": [
+                {
+                    "property": "_MainTex",
+                    "path": "Assets/Art/VFX/CartoonFXLegacy/Textures/CFX_T_RayRounded.png",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                }
+            ],
+            "colors": [],
+            "floats": []
+        },
+        {
+            "path": "Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr proc ring add.mat",
+            "guid": "f99a4d6e0727b6c47b5a03d567bbcf75",
+            "shader": "Cartoon FX/Remaster/Particle Procedural Ring",
+            "textures": [
+                {
+                    "property": "_MainTex",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                }
+            ],
+            "colors": [],
+            "floats": []
+        },
+        {
+            "path": "Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr spikes impact add.mat",
+            "guid": "04d0f020002082e4db140d8c0954e83e",
+            "shader": "Cartoon FX/Remaster/Particle Ubershader",
+            "textures": [
+                {
+                    "property": "_MainTex",
+                    "path": "Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr spikes impact.png",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_BumpMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                }
+            ],
+            "colors": [],
+            "floats": [
+                {
+                    "property": "_Cutoff",
+                    "value": 0.10000000149011612
+                }
+            ]
+        },
+        {
+            "path": "Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr stretch trait blur add.mat",
+            "guid": "2175ac793e235894da12a78ea274cb1f",
+            "shader": "Cartoon FX/Remaster/Particle Ubershader",
+            "textures": [
+                {
+                    "property": "_MainTex",
+                    "path": "Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr stretch trait blur.png",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_BumpMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                }
+            ],
+            "colors": [],
+            "floats": [
+                {
+                    "property": "_Cutoff",
+                    "value": 0.10000000149011612
+                }
+            ]
+        },
+        {
+            "path": "Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr stretch triangle smooth add.mat",
+            "guid": "9c0d180acd07ffd4183763050b4d1d22",
+            "shader": "Cartoon FX/Remaster/Particle Ubershader",
+            "textures": [
+                {
+                    "property": "_MainTex",
+                    "path": "Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr hit triangle.png",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_BumpMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                }
+            ],
+            "colors": [],
+            "floats": [
+                {
+                    "property": "_Cutoff",
+                    "value": 0.10000000149011612
+                }
+            ]
+        },
+        {
+            "path": "Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr stretch triangle to diamond add.mat",
+            "guid": "6736a9c9adab91a48960113bc5758c7b",
+            "shader": "Cartoon FX/Remaster/Particle Ubershader",
+            "textures": [
+                {
+                    "property": "_MainTex",
+                    "path": "Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr hit triangle 2.png",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_BumpMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                }
+            ],
+            "colors": [],
+            "floats": [
+                {
+                    "property": "_Cutoff",
+                    "value": 0.10000000149011612
+                }
+            ]
+        },
+        {
+            "path": "Assets/Art/VFX/Sugawara/MeleeSlash.mat",
+            "guid": "f1ae64bb95e3f8647badf2497ee81ff0",
+            "shader": "Rumblebound/Slash Flipbook",
+            "textures": [
+                {
+                    "property": "_MainTex",
+                    "path": "Assets/Art/VFX/Sugawara/MeleeSlash.png",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                }
+            ],
+            "colors": [
+                {
+                    "property": "_Color",
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "floats": []
+        },
+        {
+            "path": "Assets/Resources/G0Surface.mat",
+            "guid": "28a6cd6fe8c6744438b1e35074b67c9a",
+            "shader": "Standard",
+            "textures": [
+                {
+                    "property": "_MainTex",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_BumpMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_MetallicGlossMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_EmissionMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                }
+            ],
+            "colors": [
+                {
+                    "property": "_Color",
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    }
+                },
+                {
+                    "property": "_EmissionColor",
+                    "color": {
+                        "r": 0.0,
+                        "g": 0.0,
+                        "b": 0.0,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "floats": [
+                {
+                    "property": "_Metallic",
+                    "value": 0.0
+                },
+                {
+                    "property": "_Glossiness",
+                    "value": 0.5
+                },
+                {
+                    "property": "_Cutoff",
+                    "value": 0.5
+                },
+                {
+                    "property": "_Mode",
+                    "value": 0.0
+                }
+            ]
+        },
+        {
+            "path": "Assets/Resources/KayKit/KnightPalette.mat",
+            "guid": "cfd5050e9f0d94540ac2de69b4f9d1fb",
+            "shader": "Standard",
+            "textures": [
+                {
+                    "property": "_MainTex",
+                    "path": "Assets/Art/KayKit/Textures/knight_texture.png",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_BumpMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_MetallicGlossMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_EmissionMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                }
+            ],
+            "colors": [
+                {
+                    "property": "_Color",
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    }
+                },
+                {
+                    "property": "_EmissionColor",
+                    "color": {
+                        "r": 0.0,
+                        "g": 0.0,
+                        "b": 0.0,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "floats": [
+                {
+                    "property": "_Metallic",
+                    "value": 0.0
+                },
+                {
+                    "property": "_Glossiness",
+                    "value": 0.05999999865889549
+                },
+                {
+                    "property": "_Cutoff",
+                    "value": 0.5
+                },
+                {
+                    "property": "_Mode",
+                    "value": 0.0
+                }
+            ]
+        },
+        {
+            "path": "Assets/Resources/KayKit/RangerPalette.mat",
+            "guid": "02d8e1c4051e1d04792c36d985d6f602",
+            "shader": "Standard",
+            "textures": [
+                {
+                    "property": "_MainTex",
+                    "path": "Assets/Art/KayKit/Textures/ranger_texture.png",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_BumpMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_MetallicGlossMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_EmissionMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                }
+            ],
+            "colors": [
+                {
+                    "property": "_Color",
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    }
+                },
+                {
+                    "property": "_EmissionColor",
+                    "color": {
+                        "r": 0.0,
+                        "g": 0.0,
+                        "b": 0.0,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "floats": [
+                {
+                    "property": "_Metallic",
+                    "value": 0.0
+                },
+                {
+                    "property": "_Glossiness",
+                    "value": 0.05999999865889549
+                },
+                {
+                    "property": "_Cutoff",
+                    "value": 0.5
+                },
+                {
+                    "property": "_Mode",
+                    "value": 0.0
+                }
+            ]
+        },
+        {
+            "path": "Assets/Resources/KayKit/RoguePalette.mat",
+            "guid": "0e6822f843ca5ea49a77ce9edbbe1b87",
+            "shader": "Standard",
+            "textures": [
+                {
+                    "property": "_MainTex",
+                    "path": "Assets/Art/KayKit/Textures/rogue_texture.png",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_BumpMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_MetallicGlossMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_EmissionMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                }
+            ],
+            "colors": [
+                {
+                    "property": "_Color",
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    }
+                },
+                {
+                    "property": "_EmissionColor",
+                    "color": {
+                        "r": 0.0,
+                        "g": 0.0,
+                        "b": 0.0,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "floats": [
+                {
+                    "property": "_Metallic",
+                    "value": 0.0
+                },
+                {
+                    "property": "_Glossiness",
+                    "value": 0.05999999865889549
+                },
+                {
+                    "property": "_Cutoff",
+                    "value": 0.5
+                },
+                {
+                    "property": "_Mode",
+                    "value": 0.0
+                }
+            ]
+        },
+        {
+            "path": "Assets/Resources/Kenney/ArenaPalette.mat",
+            "guid": "2c775317d6d641141a668d498c46fea6",
+            "shader": "Standard",
+            "textures": [
+                {
+                    "property": "_MainTex",
+                    "path": "Assets/Art/Kenney/MiniArena/Models/Textures/colormap.png",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_BumpMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_MetallicGlossMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_EmissionMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                }
+            ],
+            "colors": [
+                {
+                    "property": "_Color",
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    }
+                },
+                {
+                    "property": "_EmissionColor",
+                    "color": {
+                        "r": 0.0,
+                        "g": 0.0,
+                        "b": 0.0,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "floats": [
+                {
+                    "property": "_Metallic",
+                    "value": 0.0
+                },
+                {
+                    "property": "_Glossiness",
+                    "value": 0.07999999821186066
+                },
+                {
+                    "property": "_Cutoff",
+                    "value": 0.5
+                },
+                {
+                    "property": "_Mode",
+                    "value": 0.0
+                }
+            ]
+        },
+        {
+            "path": "Assets/Resources/Kenney/DungeonPalette.mat",
+            "guid": "7251bf31d41872b41890d6046301b7d9",
+            "shader": "Standard",
+            "textures": [
+                {
+                    "property": "_MainTex",
+                    "path": "Assets/Art/Kenney/MiniDungeon/Models/Textures/colormap.png",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_BumpMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_MetallicGlossMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "property": "_EmissionMap",
+                    "path": "",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                }
+            ],
+            "colors": [
+                {
+                    "property": "_Color",
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    }
+                },
+                {
+                    "property": "_EmissionColor",
+                    "color": {
+                        "r": 0.0,
+                        "g": 0.0,
+                        "b": 0.0,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "floats": [
+                {
+                    "property": "_Metallic",
+                    "value": 0.0
+                },
+                {
+                    "property": "_Glossiness",
+                    "value": 0.07999999821186066
+                },
+                {
+                    "property": "_Cutoff",
+                    "value": 0.5
+                },
+                {
+                    "property": "_Mode",
+                    "value": 0.0
+                }
+            ]
+        },
+        {
+            "path": "Assets/Resources/UI/RumbleboundUI.ttf",
+            "guid": "e97eadd64fb3d534faae73b3328cf44e",
+            "shader": "GUI/Text Shader",
+            "textures": [
+                {
+                    "property": "_MainTex",
+                    "path": "Assets/Resources/UI/RumbleboundUI.ttf",
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                }
+            ],
+            "colors": [
+                {
+                    "property": "_Color",
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "floats": []
+        }
+    ]
+}

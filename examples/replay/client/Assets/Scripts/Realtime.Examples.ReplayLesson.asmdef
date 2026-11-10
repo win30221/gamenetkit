@@ -1,0 +1,16 @@
+{
+  "name": "Realtime.Examples.ReplayLesson",
+  "rootNamespace": "Realtime.Examples.ReplayLesson",
+  "references": [
+    "Realtime.Core",
+    "Realtime.Transport",
+    "Realtime.Prediction",
+    "Realtime.Correction",
+    "Realtime.Interpolation",
+    "Realtime.Simulation",
+    "Realtime.Replication",
+    "Realtime.Actions",
+    "Realtime.Playback"
+  ],
+  "noEngineReferences": true
+}

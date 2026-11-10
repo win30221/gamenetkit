@@ -1,0 +1,9 @@
+{
+  "name": "Realtime.Examples.NetworkRecovery.Unity",
+  "references": [
+    "Realtime.Examples.NetworkRecovery",
+    "Realtime.Examples.Presentation",
+    "Realtime.Transport",
+    "Realtime.Core"
+  ]
+}

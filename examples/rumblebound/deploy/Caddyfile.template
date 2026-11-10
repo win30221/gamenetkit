@@ -1,0 +1,30 @@
+{
+    admin off
+}
+
+__DOMAIN__ {
+    encode zstd gzip
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy same-origin
+        Cache-Control no-cache
+    }
+    request_body {
+        max_size 64KB
+    }
+    @api path /api/* /ws /healthz
+    handle @api {
+        reverse_proxy 127.0.0.1:18179
+    }
+    @legacy path /unity /unity/ /unity/index.html
+    redir @legacy / 308
+    @player path / /Build/* /TemplateData/* /StreamingAssets/* /rf-battle-build.txt
+    handle @player {
+        root * /srv/current/public/unity
+        file_server
+    }
+    handle {
+        root * /srv/current/public
+        file_server
+    }
+}

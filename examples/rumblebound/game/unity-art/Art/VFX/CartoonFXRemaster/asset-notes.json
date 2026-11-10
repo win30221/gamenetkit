@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "records": {
+    "validation": "2026-10-29 URP17.6 Windows/WebGL builds passed; actual nativecamera renders of sourceart, hits/flash and occupiedloop at7s; simulatedpointparticles beyond60s; UI/two-player/private/recovery/practice passed; HTTP200 forwebfiles; no browser GPU/performance claim.",
+    "serializationUpgrade": "Official older serialized meshes/materials/prefabs re-saved by installed Unity 6000.3.27f1 in isolated .cache/vfx-upgrade project using Upgrade-ParticleAssets.ps1; main project remains 6000.6.6f1; GUIDs and authored vertex data retained.",
+    "resourceAdaptation": "Shared authored hit materials/streams; resource model scales .23 red/.25 yellow, simulationSpeed1.6, burst-only duration tightened, soft-particle fading disabled without depth texture. Runtime pooled paused ParticleSystems advanced only by presentation clock; max64 lazy instances.",
+    "renderPipeline": "URP17.6.0 on Unity6000.6.6f1",
+    "urpMigration": "2026-10-29 user approved; originalmaterialsnapshot preserved, texture/UV/color mapping verified, actualnativecamera renders passed; sourceart license unchanged"
+  }
+}

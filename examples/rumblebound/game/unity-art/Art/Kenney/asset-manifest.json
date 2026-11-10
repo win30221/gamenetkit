@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Curated visual assets for the Rumblebound arena and generic animated soldier. Gameplay collision and movement remain server data.",
+  "acquiredOn": "2026-10-27",
+  "license": "CC0-1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attributionRequired": false,
+  "credit": "Kenney (www.kenney.nl); Mini Arena additional credit: Tony Schär",
+  "packs": [
+    {
+      "id": "kenney-mini-arena",
+      "version": "1.1",
+      "source": "https://kenney.nl/assets/mini-arena",
+      "archive": "https://kenney.nl/media/pages/assets/mini-arena/88f977a0cb-1709220730/kenney_mini-arena.zip",
+      "archiveSha256": "514760c2bc2457027451534a0b06a23f98beece166fb11ed2321226276b83c2c",
+      "licenseFile": "MiniArena/License.txt",
+      "sourceDirectory": "MiniArena/Models",
+      "models": [
+        "character-soldier.fbx",
+        "floor.fbx",
+        "floor-detail.fbx",
+        "wall.fbx",
+        "wall-gate.fbx",
+        "wall-corner.fbx",
+        "column.fbx",
+        "column-damaged.fbx",
+        "statue.fbx",
+        "banner.fbx",
+        "tree.fbx",
+        "bricks.fbx",
+        "border-straight.fbx",
+        "border-corner.fbx"
+      ],
+      "textures": ["Textures/colormap.png"]
+    },
+    {
+      "id": "kenney-mini-dungeon",
+      "version": "2.0",
+      "source": "https://kenney.nl/assets/mini-dungeon",
+      "archive": "https://kenney.nl/media/pages/assets/mini-dungeon/6cd72dc849-1785314274/kenney_mini-dungeon.zip",
+      "archiveSha256": "19c4648680cb1d2e8836cade96cbf9781c0c1f45fbc6d2ce41cee8239a3ec4d8",
+      "licenseFile": "MiniDungeon/License.txt",
+      "sourceDirectory": "MiniDungeon/Models",
+      "models": ["barrel.fbx", "chest.fbx", "rocks.fbx", "shield-round.fbx"],
+      "textures": ["Textures/colormap.png"]
+    }
+  ],
+  "import": {
+    "script": "Assets/Editor/KenneyArtBuild.cs",
+    "entryPoint": "KenneyArtBuild.Prepare",
+    "characterHeight": 1.4,
+    "rig": "Generic",
+    "rootMotion": false,
+    "clips": ["idle", "walk", "sprint", "die", "holding-right-shoot"],
+    "materials": "Built-in Standard shader with original per-pack color atlases; point filtering and no mipmaps",
+    "colliders": false,
+    "modifications": "Original source files unchanged. Generated prefabs share a uniform family scale, centered horizontal pivots, grounded props and floor-top origin. Static props retain CPU mesh data for runtime batching.",
+    "report": "import-report.json"
+  }
+}

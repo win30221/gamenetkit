@@ -1,0 +1,41 @@
+{
+  "protocol": 5,
+  "content": "g2-targeted-combat-2",
+  "tickRate": 30,
+  "snapshotRate": 15,
+  "maxPlayers": 8,
+  "speed": 6,
+  "arenaHalfSize": 10,
+  "playerRadius": 0.4,
+  "collision": {"pushSpeed":3,"dashPushSpeed":6,"pushStrength":1,"bodyMass":1,"iterations":12},
+  "inputTimeoutTicks": 8,
+  "reconnectTicks": 900,
+  "maxHP": 100,
+  "maxProjectiles": 24,
+  "maxActiveGroundCasts": 8,
+  "projectileSpeed": 12,
+  "projectileRadius": 0.18,
+  "projectileDamage": 25,
+  "projectileLifetimeTicks": 30,
+  "fireCooldownTicks": 90,
+  "dashSpeed": 15,
+  "dashTicks": 6,
+  "dashCooldownTicks": 90,
+  "respawnTicks": 90,
+  "loadTimeoutSeconds": 45,
+  "matchDurationTicks": 5400,
+  "scoreGoal": 120,
+  "pointRotationTicks": 1200,
+  "pointWarningTicks": 150,
+  "controlPointRadius": 2.5,
+  "heroes": [
+    {"heroID": "ranger", "basicRange": 6, "basicDamage": 18, "basicWindupTicks": 6, "basicCooldownTicks": 21, "attackKind": "ranged", "maxHP": 100, "speed": 6, "projectileDamage": 25, "projectileSpeed": 12, "projectileLifetimeTicks": 30, "fireCooldownTicks": 90, "attackStopTicks": 9, "dashSpeed": 15, "dashCooldownTicks": 90},
+    {"heroID": "tank", "basicRange": 2.2, "basicDamage": 24, "basicWindupTicks": 8, "basicCooldownTicks": 27, "attackKind": "melee", "meleeRange": 2.2, "meleeDamage": 30, "meleeArcDegrees": 150, "maxHP": 160, "speed": 5, "projectileDamage": 30, "projectileSpeed": 10, "projectileLifetimeTicks": 15, "fireCooldownTicks": 120, "attackStopTicks": 6, "dashSpeed": 12, "dashCooldownTicks": 105},
+    {"heroID": "mage", "basicRange": 5.5, "basicDamage": 16, "basicWindupTicks": 7, "basicCooldownTicks": 24, "attackKind": "ground", "maxHP": 90, "speed": 5.5, "castRange": 7.5, "impactRadius": 1.6, "groundDamage": 35, "castWindupTicks": 6, "fallTicks": 18, "fireCooldownTicks": 150, "attackStopTicks": 12, "dashSpeed": 14, "dashCooldownTicks": 95}
+  ],
+  "controlPoints": [
+    {"x": 0, "z": 0},
+    {"x": 0, "z": 5},
+    {"x": 0, "z": -5}
+  ]
+}

@@ -1,0 +1,36 @@
+using System;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
+using Rumblebound.Gameplay;
+using Rumblebound.G0;
+
+// Runs original algorithm verifiers outside Unity. This adapter is test-only;
+// it supplies JSON/logging, never gameplay, prediction or geometry substitutes.
+namespace UnityEngine
+{
+    public static class JsonUtility
+    {
+        private static JsonSerializerOptions Options(){
+            var resolver=new DefaultJsonTypeInfoResolver();
+            resolver.Modifiers.Add(info=>{if(info.Kind==JsonTypeInfoKind.Object&&!info.Type.IsAbstract&&info.Type.GetConstructor(System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance,null,Type.EmptyTypes,null)!=null)info.CreateObject=()=>Activator.CreateInstance(info.Type,true);});
+            return new JsonSerializerOptions{IncludeFields=true,TypeInfoResolver=resolver};
+        }
+        public static T FromJson<T>(string json)=>JsonSerializer.Deserialize<T>(json,Options());
+        public static string ToJson(object value)=>JsonSerializer.Serialize(value,value.GetType(),Options());
+    }
+    public static class Debug{public static void Log(object message)=>Console.WriteLine(message);}
+}
+public static class GameDomainTests
+{
+    public static int Main(){
+        try{
+            string shared="../../../examples/rumblebound/game/shared/";
+            var rules=UnityEngine.JsonUtility.FromJson<Rules>(File.ReadAllText(shared+"rules.json"));
+            CollisionVerification.Verify(File.ReadAllText(shared+"maps/arena-01.json"),File.ReadAllText(shared+"collision-cases.json"),rules.collision);
+            FixedPredictionVerification.Verify(rules);MovementViewVerification.Verify(rules);RemoteMotionVerification.Verify(rules);RecoveryVerification.Verify();
+            Console.WriteLine("GAME_DOMAIN_NATIVE PASS original collision/fixed-prediction/movement/remote/recovery verifiers against shared pure C# gameplay + actual SDK; test JSON/log adapter, no Unity runtime claim");
+            return 0;
+        }catch(Exception error){Console.Error.WriteLine(error);return 1;}
+    }
+}

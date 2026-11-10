@@ -1,0 +1,15 @@
+{
+  "name": "Realtime.Examples.ObjectsActions",
+  "rootNamespace": "Realtime.Examples.ObjectsActions",
+  "references": [
+    "Realtime.Core",
+    "Realtime.Transport",
+    "Realtime.Prediction",
+    "Realtime.Correction",
+    "Realtime.Interpolation",
+    "Realtime.Simulation",
+    "Realtime.Replication",
+    "Realtime.Actions"
+  ],
+  "noEngineReferences": true
+}

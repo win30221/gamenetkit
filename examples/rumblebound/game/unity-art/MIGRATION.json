@@ -1,0 +1,1802 @@
+[
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit.meta",
+    "sha256": "408aff2bf416362d3f9153bc0f494761ec81e27738dcef1f26c056fa53a59883"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney.meta",
+    "sha256": "696ca3b2d35ed69ff054b4183ec8d59d4a5e66305993147e1447b7a6f4a99834"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/UI.meta",
+    "sha256": "4e9098bcd03e3883f27698d397134286b059f92bd3dc5e72119bea42f7318685"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX.meta",
+    "sha256": "0e04e4c94d61e3c0805bb0db06d27594761ad452aa7f8dcfed8b3f48bb78d558"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Adventurers-LICENSE.txt",
+    "sha256": "d4adc31660d1db22eb60eba648e01db41577548f6fa1a3576cb4a6283dae0a58"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Adventurers-LICENSE.txt.meta",
+    "sha256": "603e40ffd2760aa5f1002c90b1d24c55b5d2840dd7b069e14af3475ef0cec15a"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Animations-LICENSE.txt",
+    "sha256": "373b159044d1a886ed15f57ca5a7673ba14e2623c460283452705f2056912ed9"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Animations-LICENSE.txt.meta",
+    "sha256": "178495c146d55068dc7252e047136574d7323e182b282cd493edbf16ed0f7490"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Animations.meta",
+    "sha256": "3148933b95bb463ce2d522ce36ba39af2b4500171a62dc85302c9f9120aeb176"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/asset-manifest.json",
+    "sha256": "7694d6a2e7890e92f72de9feb0dff9a7a4e222957439a36c2c1cea4d5d2c4e0c"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/asset-manifest.json.meta",
+    "sha256": "02e94b9801b9f719a0aaea523aaec7507cf938e2ab7ecf8c8f45b95133baae8c"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Characters.meta",
+    "sha256": "2e044e75f68427583d5cdb6d1f9a902ee8db6e671eb932c75c1a21b871bce70c"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Equipment.meta",
+    "sha256": "b549f5e922f6d3f0097fca8ae2a7ddfa4ea211921010ebca63e465280025f2ba"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/generated-version.txt",
+    "sha256": "d89467518a3a530bf192a72e370a13de4fd000e28e47c0f866a6b2a5c92d2b59"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/generated-version.txt.meta",
+    "sha256": "2be9215ef39520f6e2f5f903cedc40ec76b4f63a86a5b19e7788f743b6516a55"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/import-report.txt",
+    "sha256": "07388a50c9003ce0249573d2f9ee333311c7d7395c1c0ea5f7aa094f0fcdf4a6"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/import-report.txt.meta",
+    "sha256": "12f7ffec551010f5c2a91d3c79bb3c4698ffa87bc53a9759fcc8f2707bdabb4f"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Textures.meta",
+    "sha256": "2ed33022b9d16864336bfd7f520e4fba0bff463e75e714a13bf90d7d509814f9"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/asset-manifest.json",
+    "sha256": "05c510be540bc975e4a4f049faa7c3e77886bf52b5d464831707c157409a2148"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/asset-manifest.json.meta",
+    "sha256": "c1a3000b588107dada0b2ec10b3955d0dfd6b9145b6a7ed37a67c4d0307a202b"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/generated-version.txt",
+    "sha256": "a67cc4086c0826c681690087e427231bed110d9509ef2f543fc50669571f3020"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/generated-version.txt.meta",
+    "sha256": "da88e56bef6df339c00dd3306e1048076c69f7058c95deebc1c57153bdb2ad57"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/import-report.json",
+    "sha256": "10df920c6266bec4d85580b31c584b717a2b195393c9c82c35ef9fc37795cbd8"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/import-report.json.meta",
+    "sha256": "063514372a33397a0c9adeba13b2ec5e154c6f7d26a883590cbe133920e93156"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena.meta",
+    "sha256": "6b2d7bcb5a7c36a1d3a28478a0594e60c9f223e7f0369166714fe4107636c152"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniDungeon.meta",
+    "sha256": "be2fd0f4a2e4d8b586beb55c219429dff38432d8bce6ffa71dab304292c120ea"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/UI/asset-manifest.json",
+    "sha256": "25ddd5a9ef336c13490d612f0f4fdf803819bdc13a93f61257003aee793868d6"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/UI/asset-manifest.json.meta",
+    "sha256": "5c61886ef298b4ea47caee11096756e6ce22e222b72fd33d4b9bffabed86c403"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/UI/font-manifest.json",
+    "sha256": "d883bb35c68502e9241a1cd8a1637f0c6061a5b327440aacd354ac9024c9a1cb"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/UI/font-manifest.json.meta",
+    "sha256": "a37f4cea1309e3682b766759196d28c169b6bc1114e3d58d8f0f0ffebd772472"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/UI/Font.meta",
+    "sha256": "78a29648b13b620d8d8703ed6e61256c0d38e4e85598bfa130d914dd3a836f8e"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/UI/Kenney-License.txt",
+    "sha256": "69f7eaa5e05913b4d09cf5848f75390b5c3c9a409ef8555777803d9ca0c171fb"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/UI/Kenney-License.txt.meta",
+    "sha256": "e99af4a1522466371c6c3301fe484180a4984e7f4687ca64be3e0badffff678c"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy.meta",
+    "sha256": "993347f193677cbcf3fd6249d89cbba36fede4666e08cd5052d21de9994acc74"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster.meta",
+    "sha256": "64014b0bb16f8b4d8c43e11db76849444c0c2b8100c1b185fec06dbec5cce75c"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX.meta",
+    "sha256": "9f1dfc4df1e39a565c7cee6c03ce965dea2ac394cdf22f668616d8a511426100"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/LegacyParticleURP.shader",
+    "sha256": "ca26b9d63ad7d708556dc8421c1abe39c21082b7d507771272c47169576cbbeb"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/LegacyParticleURP.shader.meta",
+    "sha256": "72ca03e3f315fe1a24064210b5c6a48442dd0a98fb46e14bc53bd6b01f63bb97"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/SlashFlipbook.shader",
+    "sha256": "d16063f9a3c7fe643bdba46dc508c2ad8860e639b8f2e3291e26df080223346e"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/SlashFlipbook.shader.meta",
+    "sha256": "c91931bf9582de41bd2c0fc038681a21826e99f67de79834d1e48a6722b460c0"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Sugawara.meta",
+    "sha256": "2636d9642536e61fb68a1047808ef5e2c8639a4f4ed077bea74958049f97bb00"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/urp-material-snapshot.json",
+    "sha256": "ec56420dd654b8080869ef4b8020d178cbf5bc02f07c7def2f518a9c5ad58256"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/urp-material-snapshot.json.meta",
+    "sha256": "54d796db1a5d0c9fa7566abc66d0fb5a34097f8f0346fa54b897b2c3047809cf"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Animations/Rig_Medium_CombatMelee.fbx",
+    "sha256": "018ba1c4f2ad30e9d4b051f12c46eb3fa3da01c1d4cba3603f673dca3bf899ca"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Animations/Rig_Medium_CombatMelee.fbx.meta",
+    "sha256": "c4772986e8c55f49bd2c811efbbb0cbc1464daef8d2627da69956bbc6f1aa88d"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Animations/Rig_Medium_CombatRanged.fbx",
+    "sha256": "b70e1d5ef64fafaad5c50ca2225c238f33ec9622876014f38478deeb10ee2ba4"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Animations/Rig_Medium_CombatRanged.fbx.meta",
+    "sha256": "24da8c0bce17439d521f353c3679e3147b34fef06f83bdaca7d62a35ece85629"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Animations/Rig_Medium_General.fbx",
+    "sha256": "0a3420d6cbbf00694e625d84e55c2afbf0a7284c4280c46642f62f066dbd3950"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Animations/Rig_Medium_General.fbx.meta",
+    "sha256": "7cd3955f3dcc6b1a61d12d73dd0f10528807bb5866e1a7c411347a62a8f1ef44"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Animations/Rig_Medium_MovementBasic.fbx",
+    "sha256": "6b0339d304a07d87ac0a02028d1822078e581924eddf9c7c7f2049132ad89ec4"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Animations/Rig_Medium_MovementBasic.fbx.meta",
+    "sha256": "886b94da218d70337753ab4969ab0f9c4f533f9dad103ded00604497d4973917"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Characters/Knight.fbx",
+    "sha256": "e293bb352e62ddaa9ef79734026a9a86ddee71c2bca93f99b2c449afccdf62ab"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Characters/Knight.fbx.meta",
+    "sha256": "8a860da0f909d9b648fa95b44420b472bc0741401c6ca0afd3ddfd58b942c245"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Characters/Mage.fbx",
+    "sha256": "f766ccbcdc332209abf5a7be56af4ffc65dda8abdb29db5496cc619fed44ac87"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Characters/Mage.fbx.meta",
+    "sha256": "5429093fbb6caf7a5b3c1c7eae262792c4d1b4b4397ba81a97baaa7a19cfa190"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Characters/Ranger.fbx",
+    "sha256": "0058f761d01d6465717badb13565f1ad1cfbc3afa7841b993cc6902e3a9bea08"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Characters/Ranger.fbx.meta",
+    "sha256": "2b481d1acb1c3777c060789d7ea39e24b0532e1a86c2db11cb45efaa65628fb2"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Equipment/arrow_bow.fbx",
+    "sha256": "5df79fe0537ae4772084e06ff28cf0604c3c78ddffed0ac54fd92fbe39cfd512"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Equipment/arrow_bow.fbx.meta",
+    "sha256": "f1433456d098da5231fb5ac75612c3cb2d0e6a9c527b2caade0753c8a0cda19b"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Equipment/bow_withString.fbx",
+    "sha256": "3f9ab46d945748bd8a067c56bdb9abc30ad4493187349b56da13a49556f96056"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Equipment/bow_withString.fbx.meta",
+    "sha256": "57a9616e744209c2e6b3262718653617055ac97984b775c6209c325d63e31441"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Equipment/crossbow_1handed.fbx",
+    "sha256": "9b32cd2e7aa4099342145c08587b85bef17562850abe19ef0332544f03b71821"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Equipment/crossbow_1handed.fbx.meta",
+    "sha256": "40fffe0dc0f2c02e9f11e19c73c4d2788bde02d0ea07c071e360968c490c595d"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Equipment/shield_badge.fbx",
+    "sha256": "77607a8bb6a91e07e9c396f57fef71bb0babcdbbfddc5652c34102968afcea1b"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Equipment/shield_badge.fbx.meta",
+    "sha256": "abc7207058c51d52fc4ea71113b0e5ab8c9920e55169bb2454bde3cbacb48441"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Equipment/staff.fbx",
+    "sha256": "4fb88bce730368e362fb833769000a8a0d84e956c09531b7564d63d293339182"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Equipment/staff.fbx.meta",
+    "sha256": "b0c5e1e9bb91e066d812f3788b87edb9f1de531eb5b0139cb6434198214eaeea"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Equipment/sword_1handed.fbx",
+    "sha256": "bc018b8251fae18c7c2cb247ad9492344855ee53df974447534967c8d7c59ba1"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Equipment/sword_1handed.fbx.meta",
+    "sha256": "59c62c8c24da39bba4f1680c6fa9d43778b3b22728552ec050efd9d40f517f12"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Textures/knight_texture.png",
+    "sha256": "028db4d1cd8b3471e6ba21686515abd4e36ae582f8b314b71ad2ab1fb5453b12"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Textures/knight_texture.png.meta",
+    "sha256": "e66105d2e3117a73685c82f65afbf1feff43a384d216b3a139c3989ad56af101"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Textures/mage_texture.png",
+    "sha256": "9ef9672e93b231fc4e0e19238edfae3be22513aaf634df1898f45842ce6e4b5f"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Textures/mage_texture.png.meta",
+    "sha256": "db7fb9df4e5cfafb90268ebd1d59764050d1fb717e51f4011d9edd0226135cf1"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Textures/ranger_texture.png",
+    "sha256": "639cd0ba5106fbdf65370b52b9290091d3bd92fe267693abc8dc474471bb800f"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Textures/ranger_texture.png.meta",
+    "sha256": "25d733541040d1f2030988a303de22084d4e8d861922664c3ec9ff74392868e3"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Textures/rogue_texture.png",
+    "sha256": "2e2fc741e20e7e2c85b176c8143b49b769bca0d2ed1a1cfc1807a758a0e4d3e1"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/KayKit/Textures/rogue_texture.png.meta",
+    "sha256": "08c286dafcc7c9c56af523b1e915ce7804856b57dae86c95a9c967e2293c6e69"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/License.txt",
+    "sha256": "f90537c9edc22b1e4cb65ae43ae9d784b2479a614b4bf75a7ea796822fe288e0"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/License.txt.meta",
+    "sha256": "1f28ec3cdc48582fb353371742539dc0a7eef68e5acfe80759c0b84bcc613966"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models.meta",
+    "sha256": "ed274751d58b2c9a061418fd55b86ffc9e3bb6a9c928bd04a197dbf52bbf68ce"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniDungeon/License.txt",
+    "sha256": "f8b470068a1c043854101c9ff7161d376ba02c36239da3c1dbdfa928b08444b6"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniDungeon/License.txt.meta",
+    "sha256": "27dd2275feb0d90f1a93d5887f0d2f45c94cd80b4d6f37e4a12f7691173fcae0"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniDungeon/Models.meta",
+    "sha256": "fd5887bb4aac380b665548da6a61b4dca3a8c2bc3abaef861634252c5f36a4da"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/banner.fbx",
+    "sha256": "1857dc721750a37d08fa4c9809462bcfb6412bdde1a40c035a4fa067cb486808"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/banner.fbx.meta",
+    "sha256": "04903aa5ee591cc594ae0136c2a1967a7327c3ed480c252446c16078051c69d3"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/border-corner.fbx",
+    "sha256": "9ec79ac88bb7596a2c962864f3d46bbb725b6a301ab645166a8d7accf0b2995b"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/border-corner.fbx.meta",
+    "sha256": "6d58a57fc675d98cb7fb92986b9a17dca72a9597886fea66aecb3ad746e0fb22"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/border-straight.fbx",
+    "sha256": "ec88163af005b89e23f6fcbd7567d647055021e298ddf6bf3beedfd9993edd68"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/border-straight.fbx.meta",
+    "sha256": "2cdcb468ae62dca457829418d6229853940ccebd77f10f8076c7ea3f7b77e798"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/bricks.fbx",
+    "sha256": "994f444c0a6b453ab0333536984c4f4e707e938bb1149c6146198a17ca1e5b70"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/bricks.fbx.meta",
+    "sha256": "18696f565c0e5507778361abe0738f9027a95e089e00d281e1110786eb0f0550"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/character-soldier.fbx",
+    "sha256": "3e941786ad065cee41d7c667e78ce766e0d9a2fcfaf58da16de2e421d26cb064"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/character-soldier.fbx.meta",
+    "sha256": "abd65de53bbac7774d0c0d253df8194979a7ad5f89de2cb0efacf0d3fa58b1da"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/column-damaged.fbx",
+    "sha256": "4e6eac1474eaf4d693436a51c3234db39073edd3b82a91adfcb72e4db08add46"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/column-damaged.fbx.meta",
+    "sha256": "8362c98003a033eeeed0b41f64694b46d573b850c93f03f53a412a9a04cf7b32"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/column.fbx",
+    "sha256": "58a2ce05acea88000c9ad117c52e6c2a5b7be9a273c4571cde396c4f2633c2c7"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/column.fbx.meta",
+    "sha256": "fcd6abb06d68b0539c8d8c033c9c08be9fee1b4f7797881f7068ade63d92d3c8"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/floor-detail.fbx",
+    "sha256": "df5a39cd78faad12d6423d4f9a80ec062462f6709410e9c2858a05a541278494"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/floor-detail.fbx.meta",
+    "sha256": "260a9ce96f0573e15d7b13c6f6565e9f08aae8a7cbbf71cf0051def2333f9d00"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/floor.fbx",
+    "sha256": "c906a548eafbd457bcc511ccd171e0bba46dc4a29b44ef62bb754f91835deea9"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/floor.fbx.meta",
+    "sha256": "13e1adc73293d41de7f68ece1a4c715a019f99066723d914c267ca1ee45d29df"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/statue.fbx",
+    "sha256": "a0c8b0470d3e45cdc678979b00a1fa602f5d249864481fdbf59bebc3a1e68537"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/statue.fbx.meta",
+    "sha256": "2230e08cbb5a250f9adad2fc14847ff8dcafbb3f176dc7f8c543ac2b8b7fb593"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/Textures.meta",
+    "sha256": "3068233d147a0ae465a19a96d0d60b674fe07ad5636002d665315c594d653496"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/tree.fbx",
+    "sha256": "5a6890ac67dd894ef99f6dde31cb7d355e9c95026790a9b2e616c07200459f5d"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/tree.fbx.meta",
+    "sha256": "1f56bfef23edf1b5d37586dffb492afde227ae5239c047e90787257a8605e231"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/wall-corner.fbx",
+    "sha256": "64b8a77b7f123ad08a857440c43e116f2e82e481ecd01570733960810bbe238f"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/wall-corner.fbx.meta",
+    "sha256": "8f50d70c5c9b3458121061230869fdaf860d00fc0c98b7320128bbced2049843"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/wall-gate.fbx",
+    "sha256": "fbafc8a0ca48373331e2dd87841c36bbd79e1e1cb2fa4a6b525df90d9d11453c"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/wall-gate.fbx.meta",
+    "sha256": "956decb7c591b0e682460238c2b5e2485ae12f2f9f9e0401e038a74702b2542f"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/wall.fbx",
+    "sha256": "c766b31e9e6f8c574428563183b3ab016c767da1e47ff420bb9c8abc345aeddb"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/wall.fbx.meta",
+    "sha256": "037496841ccd52def193b9bca8f8ef0371db7fdf5887c7fff93d9d32051afe1a"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/Textures/colormap.png",
+    "sha256": "96d350eebb783edba72caeab2c7778f67ee4b702b5357cdecb3fc34d52824658"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniArena/Models/Textures/colormap.png.meta",
+    "sha256": "3366982f2f0c0980a1de315d6f52459474c55847929a2c0e16c11ec6ebe12beb"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniDungeon/Models/barrel.fbx",
+    "sha256": "f13f901ae07c3183a4716689869aebbb487d67d7d5676afc00f6e5f73e168f97"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniDungeon/Models/barrel.fbx.meta",
+    "sha256": "6a3806dcd974616834b35968644349df4ba4fa82cae30f26d1546be338649d2c"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniDungeon/Models/chest.fbx",
+    "sha256": "bfab9f2623544ce480159b57db45db2a14d71e0b4a8971f2b55be44212857ac4"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniDungeon/Models/chest.fbx.meta",
+    "sha256": "6f070cb3648ac7a650af54af5b103bb79e30eb7fd246f05c6309494c1a80ea41"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniDungeon/Models/rocks.fbx",
+    "sha256": "135dbf6bd9a31f3850ddbafb3a5597ffa81aac61d92822150dcd9f0aaaa39408"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniDungeon/Models/rocks.fbx.meta",
+    "sha256": "362fa123282a44073d419ea6a02b2e8ec74a1e95030ab03337e9df65c7835292"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniDungeon/Models/shield-round.fbx",
+    "sha256": "d5cc44fae1edb364b09c7a5f04e13d65313ee11829ccb387367d83a4902149bc"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniDungeon/Models/shield-round.fbx.meta",
+    "sha256": "d913174c2dad28402a84fb1d53e6fae9822eb9c286b97f5773974f3a23217c7d"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniDungeon/Models/Textures.meta",
+    "sha256": "e48959fde8858a3ea8328b88fe8b68b93fc2b46192fcfe5706d74d09e7078f98"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniDungeon/Models/Textures/colormap.png",
+    "sha256": "bc492d755caf9e64924447f065681be0d5438a33cd0acddc72f3d00fd75893be"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/Kenney/MiniDungeon/Models/Textures/colormap.png.meta",
+    "sha256": "7c2a42146a8a1f88c046db0a17debf0a92f29d877f516f0c213145cf4575fae8"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/UI/Font/OFL.txt",
+    "sha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/UI/Font/OFL.txt.meta",
+    "sha256": "b3fcacf6485c8824cd87328841da70dfb9acec56eaa338c607a92f6b612a146a"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/asset-manifest.json",
+    "sha256": "e77332ba6dd776220cd6fe2e4efda9aaa2840b5d323214e8619d4c3f3bacdfef"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/asset-manifest.json.meta",
+    "sha256": "2cd7ae338ec3b88cd94ccc23c6336169cce686a5e789314691e1da30d90e78e2"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/asset-notes.json",
+    "sha256": "a3d00e51ef95d2f29a32ccefba2481851a24a0170200f627895d0146bcf16bb6"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/asset-notes.json.meta",
+    "sha256": "a9761ae3e06638fe9323f56b1601b7f3e816320b18c69bc72d353c2211a3dc7a"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/CFX3 Prefabs.meta",
+    "sha256": "975f22b6448fc657d43198956236527fd530386a0f749fbb16d484972a2cf770"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Materials.meta",
+    "sha256": "e0e84d36c6665a19b436155c9ba5f36d333d1cd0d605939d4a31c78215dff018"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Mesh.meta",
+    "sha256": "53673224b060f7368e862f8134e9ce6afc12ba3cde67011c2a397db858344fd1"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Textures.meta",
+    "sha256": "81fcad7cf8bc0de9c15c0d19c4f237eb5676eb9c63ad4005ed279f0028ce03c1"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/asset-manifest.json",
+    "sha256": "551c5febb21fdc5c431937ea294ecd3ca17b9b559968d912435a7fb959bd186b"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/asset-manifest.json.meta",
+    "sha256": "80134a17beebc2af494de65f4fb3f1db4e446108dafa0e969fb510126c504381"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/asset-notes.json",
+    "sha256": "f262020ad4380e5f39debfa4575720d0287330ab7570f6abf6aebe33a922648b"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/asset-notes.json.meta",
+    "sha256": "830ebe98380e69d1f6fd1dcc1b4ea7e533d3339b3c2fa5e3831f47a539f7123e"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets.meta",
+    "sha256": "cfbac7489c0da225867824f49ebdaf35acebfd74cc490c57f8faacb842b913ba"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Prefabs.meta",
+    "sha256": "c2a31dd2c1b082cfdbff264c2469d2fe8e4aa94945c2368f553749160a9f3e75"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/mage-asset-manifest.json",
+    "sha256": "ae6d4312c2f5c3d4329045372d0cf98cca392595cff09703f3d0e2fa8057f5d6"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/mage-asset-manifest.json.meta",
+    "sha256": "6f3da2bbb90c4cb88fe3b9073bf6cff37b82a41522732aa7f2ea6ef3f6bf5193"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/asset-manifest.json",
+    "sha256": "b02b996f05726c86dc7d531b4c2cdd1cc5ad9fe24d0122e746fcb43a3ad82b83"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/asset-manifest.json.meta",
+    "sha256": "002f2970ec206380ec430d5694db71c28726bb5a8b806ddeb639d3b1b5289b5c"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/asset-notes.json",
+    "sha256": "4433fc83b4915c8ad9b891f237c2d014e234f24cc4f037219fcd6c6d36d36c1e"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/asset-notes.json.meta",
+    "sha256": "98ea7bb0ed831c2435074f6f73329a5c89a8718d61f7a8c99b5d875ee690ceed"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/FX.meta",
+    "sha256": "f353c78b811c96aabed1681bc445f6cea543e194e30d59e848df851556e346f8"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Meshes.meta",
+    "sha256": "eb97cdb24ff8bd9a39d45b119c001234136d8165357470028c606fd1c9b005f6"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Publisher-README.md",
+    "sha256": "9679d0a6bdada56346d48ba3e91ee68056cf1d545485f13bcb5f8a4b37aea6ea"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Publisher-README.md.meta",
+    "sha256": "764a041cd77d039ecebb223946a210d0022a5a77de5a15d10f3f6f3c1b7aef3e"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Shader.meta",
+    "sha256": "9f7b093aeb3d70536d26018bc05c7f37b589ed69a524f69bdeba60fb760dfe82"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Textures.meta",
+    "sha256": "53fd2d95b74db7d0345eae4db52aa0268f2c0307fc822533048ca08e6f109315"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Sugawara/asset-manifest.json",
+    "sha256": "f5cbd65e7732a8d25f0a8895c1bf263853786fc0b6d4718745a6c928fcf38772"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Sugawara/asset-manifest.json.meta",
+    "sha256": "5bf1cbcfdacf94390ad3f7c0ec137012e07c5c53c6829887854812847ead3206"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Sugawara/asset-notes.json",
+    "sha256": "68e8ee669dabe1a6b68ccccc437996388db0f284ad23dcaf2e4fa03c3561c557"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Sugawara/asset-notes.json.meta",
+    "sha256": "8b84d5e85350e3553380b5dfd7028a6bfd34d5d47c2500a1ffa34e1aa0816bf3"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Sugawara/MeleeSlash.mat",
+    "sha256": "02831ca0455b22e1e7c1ea5f38e1424cdd6d011322bcda081f2d0b41fa8f5195"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Sugawara/MeleeSlash.mat.meta",
+    "sha256": "af245da89eff35b29c4adeb98c1cfdfc61be01c436837983c4bd4b7069600bdd"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Sugawara/MeleeSlash.png",
+    "sha256": "1f38a2575076583472109fe76d0202459173bc9aeabca2e7eb315f394de7d026"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Sugawara/MeleeSlash.png.meta",
+    "sha256": "186d9d54dc2c6ba7fc880777767afa98d585259c008b5f746607d55f83b10b52"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Sugawara/SlashPlane.asset",
+    "sha256": "82da70bf915706421abf2ddf72b17276b6125e4c1e12a43f7374c7728a8f1823"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Sugawara/SlashPlane.asset.meta",
+    "sha256": "5cb19979b23274c3fa14590402dfe40b93c92aeb7ba9fd7f90e2d567d83528ec"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/CFX3 Prefabs/Light.meta",
+    "sha256": "907e43ae9bed4200cbc8f31e6e332a384145251d880ea61fcddd47504e5a4184"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/CFX3 Prefabs/Magic Misc.meta",
+    "sha256": "3b604ee4e4fe2ed4c5daaba4f61b400e502c282f1cbd6f44be4faaa38eac5fda"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Materials/Light.meta",
+    "sha256": "75e5d0716eb6e2829a80dc4b034ef3a6a3594cafebe8ca60a1e67e68c5059ff8"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Materials/Stretched.meta",
+    "sha256": "8a3f72e356d693ff4b1d405217bb40c25486213cad52170c166918dac8dd1db1"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Mesh/CFX_Mesh_Circular.FBX",
+    "sha256": "d9d055a6d140b2cd41b6aec40bc8f1cffbf194e948ffbe01f0a41995c1b89600"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Mesh/CFX_Mesh_Circular.FBX.meta",
+    "sha256": "862af47868fd182fc8ce2fc9cb553a14295b391bc813020c5324183425421a84"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Mesh/CFX_Mesh_Circular1.5.asset",
+    "sha256": "09fc6c7148f359f1c49a826ea430a1338bbfaea9cbbe7652a08adf49267821e4"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Mesh/CFX_Mesh_Circular1.5.asset.meta",
+    "sha256": "a8dc09e154994bebadc13cf70fe490728e5177c0c27593a8fabc09f41acb92f6"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Mesh/CFX_Mesh_CircularAngle.FBX",
+    "sha256": "d522f3f0785b1166d566cca8e8dd456493d7fe22aaa3b7b7051a889ec83f3c35"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Mesh/CFX_Mesh_CircularAngle.FBX.meta",
+    "sha256": "5a8710e1e3bfc46ed69478109088086103dac56deae3283bd27fc394e037a617"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Textures/CFX3_T_AuraRunic.png",
+    "sha256": "f16880e8b39551774a25a91252f80c107da9be1e0be4675bdb5a60f60e969da5"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Textures/CFX3_T_AuraRunic.png.meta",
+    "sha256": "a925e334275180aaaf1079fd8ca94157cedf63ab0a7991cee1d9f395c3ffb3bf"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Textures/CFX3_T_CircleSoft.png",
+    "sha256": "be5a8ddef7b42271f1d913d9d3dd6175b5e5d30bf090e582907bcc81e80b1185"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Textures/CFX3_T_CircleSoft.png.meta",
+    "sha256": "4c43283722fb5445d118c7227cdeec97cf4e1a2aeb5910d05f92cae764c3d090"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Textures/CFX3_T_GlowStar.png",
+    "sha256": "72fc9d43b79b665c1536ee9ddfb7f4dd64d1270f8bd9eb9d375db9ccac3f4c67"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Textures/CFX3_T_GlowStar.png.meta",
+    "sha256": "3de3664182c1bed7fcd3f6360e4cf218f515003462f31857de8d210ff06da569"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Textures/CFX3_T_HollowCircle.png",
+    "sha256": "d26a629d9586e325734bef2c81646fe22cbd92c35b6e21160444f73ca533de29"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Textures/CFX3_T_HollowCircle.png.meta",
+    "sha256": "c78461a1e20e209ff360cd079704827d5be69c4e5981f24aaf5c6312dbf7cd17"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Textures/CFX3_T_RayStraight.png",
+    "sha256": "fcce6425a1e7972dabbae77f270b3dbb31daabcb74411b795e699cfc4680473a"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Textures/CFX3_T_RayStraight.png.meta",
+    "sha256": "ea757453740d3b519e16878058690bc20a395f4896c916a50669943ce3378ddf"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Textures/CFX3_T_SmallRay.png",
+    "sha256": "fbf7613157412ae301a9b68bfbe43f91bdeeeebbb088fbbde3480cc1b526a0e4"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Textures/CFX3_T_SmallRay.png.meta",
+    "sha256": "4c7edb0aa18c9eaa90d78081eccbc0e4c2bba163d419593585f87b99c58c6d6d"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Textures/CFX_T_RayRounded.png",
+    "sha256": "996e6393d611e834780d75601f5249e01a65adbc2d4fd08d0778a84099ca2b43"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Textures/CFX_T_RayRounded.png.meta",
+    "sha256": "8869050d6fdb551349c4ee4d7c61defeaa7722b9db520dbf4572971ec7d507cf"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/CFX3 Prefabs/Light/CFX3_ResurrectionLight_Circle.prefab",
+    "sha256": "b2a9295964aa4e1d4c0400140163aad77e1484d5fed5f87de77d9c826c0a873a"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/CFX3 Prefabs/Light/CFX3_ResurrectionLight_Circle.prefab.meta",
+    "sha256": "265913318d5c7387181f83c0dc20c04dd490d9a738ce3e5933c7040662fa08fb"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/CFX3 Prefabs/Magic Misc/CFX3_MagicAura_B_Runic.prefab",
+    "sha256": "0441f564720b9f0858642e9f790de548dec41408671ea4cce14f68a3d232e9b1"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/CFX3 Prefabs/Magic Misc/CFX3_MagicAura_B_Runic.prefab.meta",
+    "sha256": "56ec9efc9d041de53cab7eafebe5750e9a300da5443db26fdfc7f52843824dca"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/CFX3 Prefabs/Magic Misc/CFX3_MagicAura_D_Runic.prefab",
+    "sha256": "58d1f041ff2c4e4dfe792026bdb51f9fd2ba5c77080458d65a56719fbf35ed7a"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/CFX3 Prefabs/Magic Misc/CFX3_MagicAura_D_Runic.prefab.meta",
+    "sha256": "af13ba19144568a9ce964b55352374d06516aad52a76a5983b5b96f100a3549e"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Materials/Light/CFX3_AuraRunic ADD.mat",
+    "sha256": "e86a389aee71fe3db6d3accdb968c527445742752961fd2a4f487e1f169934eb"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Materials/Light/CFX3_AuraRunic ADD.mat.meta",
+    "sha256": "7155f9027219adde847823980d146b2a6853c92e1609a16e12e3fc894f0b7944"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Materials/Light/CFX3_CircleSoft ADDSOFT.mat",
+    "sha256": "1de50cba77559f0df7789dbb7d030f9d8c32a38a43f79753cb923566d9bd325a"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Materials/Light/CFX3_CircleSoft ADDSOFT.mat.meta",
+    "sha256": "6a5f25924825ebb6b5763fb46029fe073271d246ca68cd6ba066d7c79346a60b"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Materials/Light/CFX3_GlowStar ADD.mat",
+    "sha256": "2d3f5902fbfdec55df81be3c31762b4a72c4b7bb6b0318fee36cc11260b15c24"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Materials/Light/CFX3_GlowStar ADD.mat.meta",
+    "sha256": "240d58e75a744842748aa3fab4916d9b23684e3506c64c282f3a63ab399cbcb4"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Materials/Light/CFX3_HollowCircle ADD.mat",
+    "sha256": "b8759e3419516587d5ee5f40c06711133625eeb2a60063b9abb6def3fcc210c4"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Materials/Light/CFX3_HollowCircle ADD.mat.meta",
+    "sha256": "ecf1d23538bc5258e8f7cbc6a58c5e2708bee5fff5286649c1e4fe18b5ad771c"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Materials/Light/CFX3_RayStraight ADD.mat",
+    "sha256": "262d527b5d6e7dfc99caabf2c1643fe72eb3e6dd7e0730de963d3e4f9c846d14"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Materials/Light/CFX3_RayStraight ADD.mat.meta",
+    "sha256": "4088575cc88d2e17fac542d0efe3772f935e4325d08b89c847afdf03f711df54"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Materials/Light/CFX3_SmallRay ADDSOFT.mat",
+    "sha256": "1766f33560ab303063b23f8cbabcc8f56528bff89e7af4fb7cc5ed93681bd04a"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Materials/Light/CFX3_SmallRay ADDSOFT.mat.meta",
+    "sha256": "eec42f566296479ba0171c718d063b160963fc9fca8763ff8edfa18a46e7d0f1"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Materials/Stretched/CFX_RayRounded.mat",
+    "sha256": "7bc6a5915f5af2548eaa91b04dbb7cac247318016cadbb78bf9bbd07459a24c8"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXLegacy/Materials/Stretched/CFX_RayRounded.mat.meta",
+    "sha256": "fd7ed1f34127096c78a98ad9bffe244904e10c72f610bb638da4cab424d1e514"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics.meta",
+    "sha256": "2b121ccb4a0231d792423368f861564405778f2e7a45e7f8ddfbb091af95dc75"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Meshes.meta",
+    "sha256": "bcadf361c4662ac45e9cf5b346846dc312a6e57a139031c518c3ef59d343ff4c"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Shaders.meta",
+    "sha256": "0e6236bfb4d0aa5b944a67536506c22e09c07847e320e76c8b24791c74556a6e"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Prefabs/Explosions.meta",
+    "sha256": "866d06fdecffcd776ab32bf7b571d3eda0f58c85048cce65b4e45cd4a33efa7c"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Prefabs/Impacts.meta",
+    "sha256": "4ec3af49924d2f6d2053b270c941dbdda7d79b9685db7f049a275d2b8dd17ade"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr ember blur hdr ab.mat",
+    "sha256": "2544a9c040c1cdefac47d1dc2d8679fb8d02a637c8dbf4ba3cda12616e60b55b"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr ember blur hdr ab.mat.meta",
+    "sha256": "e76444da832d616555aea46002aa11fd330a7ca6414c14e9710fc636b50ce758"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr ember blur.png",
+    "sha256": "9428e154ef5e7abd07bb9c75de3401899925c1539ab5a7b6aa7824873ee697f3"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr ember blur.png.meta",
+    "sha256": "1d204ac97f38e928567bb6be152995fccdebd5c54adedc17d366802aa65124c5"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr fire small anim blurred hdr ab.mat",
+    "sha256": "9cf0ecc01c43c75f4d80bdf1254f8fdd287b154d585470ea582de2f3a2506497"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr fire small anim blurred hdr ab.mat.meta",
+    "sha256": "692b32df0fcdc198bbc25dcb0d26a856f04022be85a99645bc54680caec0e77f"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr fire small anim blurred.png",
+    "sha256": "09f9c8f26488c939ed650207487328789d46a9706c397ad065f4188137f263af"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr fire small anim blurred.png.meta",
+    "sha256": "76472c64e4b821312dcdb58161ee77959dacfce47e27f491cba48114de217d61"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr hit triangle 2.png",
+    "sha256": "3b30f7d7be5a7d2f90e15ab1c2c10ed3c876ce3a5857d29b2e791b35605110ef"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr hit triangle 2.png.meta",
+    "sha256": "ab217306f66cd9a766c439529008f42aee41f272ae0356e37534a8ad6f6cc614"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr hit triangle diamond dissolve.png",
+    "sha256": "35b494f2b610276c20c999a4ef1056f3d04956f23875c99509dae2fd57cb5017"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr hit triangle diamond dissolve.png.meta",
+    "sha256": "e482fc7d0d99382168c04447018beb913f45edb8351b54ab5cad22209cbfc3fc"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr hit triangle dissolve.png",
+    "sha256": "2012acb1bfd270986b31403cd93a3a12474d65b60c12431e195dfa282a11a1ce"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr hit triangle dissolve.png.meta",
+    "sha256": "09028538888674183443a947102591458da2300037d48c859dcc941f4526da6f"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr hit triangle.png",
+    "sha256": "906f339670ee02556c3416c1d911d72b3dad76efd4ce0416e7f18ac37262150d"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr hit triangle.png.meta",
+    "sha256": "9865b509713076858a59bcf6c55982ba3c598ae9656cb11fa9f9eb69e237cc28"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr proc ring add.mat",
+    "sha256": "a915968f0b010292fe99138747891cce8add7fcd0b7283d30b2f7d9fdb97ef16"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr proc ring add.mat.meta",
+    "sha256": "8be205bde0f0561dfddc4691dda93fe948d51f73dfd3cce6087d7144e139ec84"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr proc ring hdr ab.mat",
+    "sha256": "7c41e278a6bee51ca592f6c5af1d038723c65592a5d4c4b1893f89f63068e632"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr proc ring hdr ab.mat.meta",
+    "sha256": "33eac49907befbb540846ce6cb3cc24415261a111a75933c422ca1b952532b19"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr smoke cloud x4 ab.mat",
+    "sha256": "56c7a3165ee6c501865ab48122f42f6182f4ff92f9108561fc8e2aae26cddcf6"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr smoke cloud x4 ab.mat.meta",
+    "sha256": "8939ca28f183b34c509ef05e64030abafb8d190c30b8017a5d884552d5446432"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr smoke cloud x4 dissolve.png",
+    "sha256": "b3695e72ba064cf0892fa957595b3e68accaadb76dc8b03214fc8de4fdbde7d4"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr smoke cloud x4 dissolve.png.meta",
+    "sha256": "fd8d5a15f1c27ab3f2b4fda9b14b535ac11263f74b0c2602a59fd865aa751187"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr smoke cloud x4.png",
+    "sha256": "8ff676114122e30573501a98e530b6b9bc46bb657ede70197416345f97db90dd"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr smoke cloud x4.png.meta",
+    "sha256": "3a5d4befa8744e0b38c66b2c50bddf6c5bc0b051b26161bbb4635b1bd713acf1"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr spikes impact add.mat",
+    "sha256": "b66d83b2ea093c3a688ab73ec1e90a65964a08af07f8e132d5ef58d5949bab22"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr spikes impact add.mat.meta",
+    "sha256": "6b7c7912c1cb4051a4a4dd493d93b33f5999f41d94bb0352a60265c819508a60"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr spikes impact mesh.asset",
+    "sha256": "1428bebc3094477a9b5f9816aa1477e3e5c2f7808baea4f829fcf8dd0f943361"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr spikes impact mesh.asset.meta",
+    "sha256": "489b2c5068115bc9f6d1dec7388f2e04aa2480b3b5f6f9479fdc1a594e692c62"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr spikes impact.png",
+    "sha256": "2dbc6741aec2b48a8ee375baf66340c982d655ff1a14bcd0c5156f817643b850"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr spikes impact.png.meta",
+    "sha256": "b8bd59c80879c3f2ff7952396707a5fdf246a814361d5fadcb7de7b86d201144"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr stretch trait blur add.mat",
+    "sha256": "a4918fb384914023c4bf4cb6cbb13004acbb2e44072efdf1577f6e75638fb801"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr stretch trait blur add.mat.meta",
+    "sha256": "985f0c7664f239dade389e468f1cc92095bd3cadb13ebcfd27f069786e22b0e7"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr stretch trait blur.png",
+    "sha256": "f2cdd6d20e666598f4253b0cce6fc563be657223e1770eeeadc3dacc89b12258"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr stretch trait blur.png.meta",
+    "sha256": "7921b88490bf59147d5dcad4567cf385bdade02fba8d987d39eec38e81547054"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr stretch triangle smooth add.mat",
+    "sha256": "7fd646e746c80d9943ab89df293558db134e54d60e45579fc054aaff8bddb527"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr stretch triangle smooth add.mat.meta",
+    "sha256": "a92980951074769bea013289af1dc60cd4fc97c3021b4a982693109ed16bf8ab"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr stretch triangle to diamond add.mat",
+    "sha256": "d4dadcc0d1c909dfd6178be6de4d30fd3388ba0862262f42d35067a119daae18"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr stretch triangle to diamond add.mat.meta",
+    "sha256": "bebddc296d19729ffeb1718413256f93810ea633cf4f4cc18be672ebdf0dcec0"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Meshes/cfxr ring mesh.asset",
+    "sha256": "f54bafa098d29af680cb5dd15052d601ba568094fe8e131470f8f89e70447c1f"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Meshes/cfxr ring mesh.asset.meta",
+    "sha256": "f3a0fc9e6a32a56d1e616e6a5abe1db5f5b45768b6ced549d3e2f364615c73c2"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Shaders/CFXR Particle Procedural Ring.shader",
+    "sha256": "0184d445a45e9e8a910152ac32b6de06cd39ca93320944f7c792c660dae23315"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Shaders/CFXR Particle Procedural Ring.shader.meta",
+    "sha256": "765b943de86b0db14fc1a2e84b23fe4a9394806f0db31335e812f108da7a6e11"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Shaders/CFXR Particle Ubershader.shader",
+    "sha256": "ed1a1a06acc331ccdd6c30d6a6d84c6d56065f0969fa726db3e43e9ac6dfa2d4"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Shaders/CFXR Particle Ubershader.shader.meta",
+    "sha256": "e54f4164da7e813feac1fef2f7e42d77e3c3c280365597454b9df774806fb267"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Shaders/CFXR.cginc",
+    "sha256": "ff630e2b3a3b0bacf03e26667cc10128941a49c53bfe128d75c3b0c729d07bcf"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Shaders/CFXR.cginc.meta",
+    "sha256": "1f77b2b9be23f50335860dce3eb7de11b27fd3d3ef24de70c371c3b6e8b9a076"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Shaders/CFXR_PASSES.cginc",
+    "sha256": "61c5ae22cac7097053b397eea91ce5e34e1f4b99287bf8d8a93378d110ae8828"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Shaders/CFXR_PASSES.cginc.meta",
+    "sha256": "7a517efb295b8d08de5e114d3870daeabe916742fa87960b89bc44ca7b419e86"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Shaders/CFXR_SETTINGS.cginc",
+    "sha256": "480d072e9f6f407a52d62749ebda55680c630658daffda596241f231aa810a14"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Shaders/CFXR_SETTINGS.cginc.meta",
+    "sha256": "f6e14e3ecf8f1c0a3cadcd5dab82cdbad4b623da8fbbbca07c0e4a02788c2c58"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Shaders/CFXR_URP.cginc",
+    "sha256": "0ad0a5dbf1145ff0916c7af7ee4673860430fbad46473b8e88a2ae2e9b65eb9a"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Shaders/CFXR_URP.cginc.meta",
+    "sha256": "4724b38f8285144a0beb154885274f4820b63312119660666dcb7a0da9587d07"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Prefabs/Explosions/CFXR3 Fire Explosion B.prefab",
+    "sha256": "368de5b3f5094d6cec52cef95b9689acdf1ba127a99eec3e8cb994c682c82e63"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Prefabs/Explosions/CFXR3 Fire Explosion B.prefab.meta",
+    "sha256": "84fe2987677d96b423218e81c0410202e4326ed8ed5d3bc506049fe79ddfbcc7"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Prefabs/Impacts/CFXR Hit A (Red).prefab",
+    "sha256": "f9d5d26d0cb9c4e0e7cb24c0eb5318e6c53b1b2dc1996a140db272d776b38c91"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Prefabs/Impacts/CFXR Hit A (Red).prefab.meta",
+    "sha256": "7664b73c7145cb596f74a069d7614c0516a621eafab13b1d992568c637fed791"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Prefabs/Impacts/CFXR Hit D 3D (Yellow).prefab",
+    "sha256": "ac6af80825c2cb0e256a814690542b84f797be207ca2799b0a987e75fca5aca5"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/CartoonFXRemaster/CFXR Prefabs/Impacts/CFXR Hit D 3D (Yellow).prefab.meta",
+    "sha256": "fdf99531da5c2e538040b165c333d50059e146c168cf643c9b4d8586535919a4"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/FX/BasicMaterial.meta",
+    "sha256": "7e1e39d8a8ee282264a4716e853e6cef01b5065fc5330f9fd0039511e17e6279"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/FX/FireFX_vol1.meta",
+    "sha256": "5d688b6884de7fbbb1a49c8e7907e6a1254d442b0824861750693b388e2d0c67"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/FX/SmokeFX.meta",
+    "sha256": "11fd5da26e4e98eb36a49cf84d7f120d3309adc6be97ad8279bc086646429593"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Meshes/ME_Curve_06_2.fbx",
+    "sha256": "0a26f2daa64e9558e2c1ebb45fbdec23101dd649962e47835082e5bd8fe82719"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Meshes/ME_Curve_06_2.fbx.meta",
+    "sha256": "0d75ea51239bacaacfcff59f0336f3dd73696401e1538cda9b6bb9631af29a9a"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Meshes/ME_Cylinder_02.fbx",
+    "sha256": "ae7963c93dc4d789f9fb2db3a3c386b867d79de333a10a850d0e154ebbeffafb"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Meshes/ME_Cylinder_02.fbx.meta",
+    "sha256": "5e43fefdf9f95f2c401789109b3b6ceed08c3604417d73c90961dc1977f45f4d"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Meshes/ME_Sphere_04.fbx",
+    "sha256": "daaae23e9f5620f4efed7b71a24761713f7232e6478379dc3186c01d3710c06a"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Meshes/ME_Sphere_04.fbx.meta",
+    "sha256": "f94f0299cac3cc2d73cdc563a9b61e326f105b7a5a805b87605b11458b2c56cd"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Meshes/ME_wind_03.fbx",
+    "sha256": "296cafb74514c102ca4333c946399f420593e2b10bf414c1d42532d243c8af49"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Meshes/ME_wind_03.fbx.meta",
+    "sha256": "39bf04bfdbb0cb55a744e67f8e19e27fa3d8788e54216835403b867209bb2bbb"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Shader/SH_HunFX_common.shader",
+    "sha256": "eeff3b5d7ef8c10d1ff2e3546b64e3239b1e7147f8f5afd0d2b1c1ad0975ba85"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Shader/SH_HunFX_common.shader.meta",
+    "sha256": "e190df1d5fe1c2b39558edda86b10c8d5b3391af59def32bb0eed34071350631"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Shader/SH_HunFX_simple.shader",
+    "sha256": "082715eec0d258ae3903376a3944444d3afb4182ea7547f77699c1b29a868418"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Shader/SH_HunFX_simple.shader.meta",
+    "sha256": "dd446c4d280aa719822b3d18f25002ac13373fb509865e38801c5f324a12bf4a"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Textures/Tx_Ember_01.png",
+    "sha256": "204a21137dfc7fa398bb7e754122b126f9fe023f1fc93b2a8d4b4a1c14dd914b"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Textures/Tx_Ember_01.png.meta",
+    "sha256": "89f22ffe4935d449c65bdb3327c2a8972776422370f80bc70d8cf2daf5297e6c"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Textures/Tx_Ember_02.png",
+    "sha256": "85134ac2d5e3691ad30a3b7176162f3cda21ced52243b73d03dbae9bfd35a3a9"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Textures/Tx_Ember_02.png.meta",
+    "sha256": "33a75dbfd0a718cad77328728d02e9b0db57a0f94a31a683a8c386b6f102c6f7"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Textures/Tx_Fire_directional_13.png",
+    "sha256": "c693308ac85c25d6a410eb82d94179dde7ee102f6a32d92654914089744e7e48"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Textures/Tx_Fire_directional_13.png.meta",
+    "sha256": "cefbcce5b1dc1af63340bc58cf6a6420d76d3540d72f4cc61aa9c5c52ae84eee"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Textures/Tx_Fire_radial_07.png",
+    "sha256": "45bee9020df057e9cb5b05d655100a9b7e0075eb02f22cc27a878a08dd11549a"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Textures/Tx_Fire_radial_07.png.meta",
+    "sha256": "5acb1c96f8609927c20f22a93b98f55200cd214f2f3c674ad1c7f2e3c9c541ee"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Textures/Tx_Fire_seq_04.png",
+    "sha256": "50a07f5c6a9be0b2370b589746ab1fe5062fb11d915a012d54440503b287025b"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Textures/Tx_Fire_seq_04.png.meta",
+    "sha256": "636efef225016b6add9a0eb6c55d58e8bcee03a260b8432fcf39f40bcefb3004"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Textures/Tx_Flame_02.png",
+    "sha256": "d744a2eef83aa485a79b5a5c39dbdac7d21f44e9dbe60fde24bf90d8f884d63d"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Textures/Tx_Flame_02.png.meta",
+    "sha256": "97f896a1fb41799a6c0d53495f1f3b80f6e6c52291ef3fad43d8456612d35192"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Textures/Tx_Smoke_Radial_06.png",
+    "sha256": "46741a7f9fc2d1738339d9ac51e6e94bb47056f30d729feb8684a28798359135"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/Textures/Tx_Smoke_Radial_06.png.meta",
+    "sha256": "b92b2a0c869b041c0e00358e9ec8bfef6fee94dd8f95b15a9a6faa18a2d99c5a"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/FX/BasicMaterial/M_Ember_01.mat",
+    "sha256": "00d880dfeb6053fe7d877ee9d92c5e8b1473d447dfdece48a3ca9e0cf89b929e"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/FX/BasicMaterial/M_Ember_01.mat.meta",
+    "sha256": "dd580fcd1cdf3f363f84f119fa42ec463dc26c6a01a4ec9b380143010a9bdbff"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/FX/BasicMaterial/M_Fire_directional_13.mat",
+    "sha256": "4ecfe0bd15d015824069a19f534eee05648734c9f988817743b86e08b036e7c3"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/FX/BasicMaterial/M_Fire_directional_13.mat.meta",
+    "sha256": "1941600260bee21b13631bc5f6c84a386bec6ee317b68ba6a83e851b35c254e4"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/FX/BasicMaterial/M_Fire_radial_07.mat",
+    "sha256": "bfe93449af04e90a67fa39cdf1ed6d896e56d3255fb6e03c29185ae1f76b7f3e"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/FX/BasicMaterial/M_Fire_radial_07.mat.meta",
+    "sha256": "7230cf1ab89bfb37c81c6479be9a6f52ab91840632fbe4f516984233011edd29"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/FX/BasicMaterial/M_Fire_seq_04.mat",
+    "sha256": "e69e9f4e78d22c5c82390c852609f91270968ff4a6e8dc99767e50cee4078194"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/FX/BasicMaterial/M_Fire_seq_04.mat.meta",
+    "sha256": "3de5793a5d346b37413f2f3052d5ebf18dab450b59c6309ed1546bbd5ece4d44"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/FX/FireFX_vol1/Prefabs.meta",
+    "sha256": "e8a6ec328f36db76f5fb3c6125b109a0a7184847528c1a6e3768e6827ef919e8"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/FX/FireFX_vol1/UniqueMaterials.meta",
+    "sha256": "f3e2164139f3279fbf94b006c9bec52ad8cf66d5afc52e8511bded16cd6d4ade"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/FX/SmokeFX/Materials.meta",
+    "sha256": "eb27f818d72a641d9bb72f84abb09e804291b0f7149af30f76e2a44c2fb04473"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/FX/FireFX_vol1/Prefabs/FX_Fire_03.prefab",
+    "sha256": "487dae7b6b61d1f129d9d9ee7e61a9bc5caac89b93e5912532b99caf5c4aef68"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/FX/FireFX_vol1/Prefabs/FX_Fire_03.prefab.meta",
+    "sha256": "d2c6e7c769cb40125c8f9a7d713b6e4e309e3ea3c0d24dab2d73945b4365d4e7"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/FX/FireFX_vol1/UniqueMaterials/M_FireFX_1.mat",
+    "sha256": "e6ed4238dc93b07fbd3f170fd1785b28f8bbea63154a208307c1a2bcb62a1003"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/FX/FireFX_vol1/UniqueMaterials/M_FireFX_1.mat.meta",
+    "sha256": "7665a59aa24a3d967ee3ca80ff933e803f4c1b22fd1be14bb9d6bdb7af2b0c3c"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/FX/SmokeFX/Materials/M_Smoke_14.mat",
+    "sha256": "16c52097a9d5362bfe73c459b3df795c52ad4dc3818af0a6c799e77855075fd4"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Art/VFX/Hun0FX/FX/SmokeFX/Materials/M_Smoke_14.mat.meta",
+    "sha256": "918f4e437b9dd139c46753057f3709c9c25cf31fbe3b7c9ec6181bc342fb0d48"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Settings/Rendering/ArenaRenderer.asset",
+    "sha256": "fea4a2c773b3d6ca98ef01db53beb6aeaf5a95d060b60037a0b2927e36e5cf07"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Settings/Rendering/ArenaRenderer.asset.meta",
+    "sha256": "73897b414f2a6d8b6311cc2765da84e23f7da83b1844d3d98247dd400a1ff287"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Settings/Rendering/RumbleboundURP.asset",
+    "sha256": "383d094ad6e1371870948fd650aacbae6e36596c5f01a545027b90900b4a6683"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Settings/Rendering/RumbleboundURP.asset.meta",
+    "sha256": "6ce842e0d33a25822ee5d07bc57a59f55f99dd1d7b95af57bf685aa896279383"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Settings/Rendering/RuntimeLighting.lighting",
+    "sha256": "82f945bccf2d496efcabe0a1e1b16e2edb1c4631cd75528e0c232515d9c39bd9"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Settings/Rendering/RuntimeLighting.lighting.meta",
+    "sha256": "d3c4293452c151964dbbc60a30815ce33a3c2f56ff11e44de1cd2ab56acb8fcf"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/CombatAudio/player.wav",
+    "sha256": "4c4614d781195825c151d6c12a7cf9563a8729ae2a55fcadbc5618afdfb6ba54"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/CombatAudio/player.wav.meta",
+    "sha256": "77de3c0e3561025e4e7db2f5944d5de8bc0f056330cc4c258410418284186062"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/CombatAudio/shot.wav",
+    "sha256": "637f79483ca936ac4ef11afe4f17d6035a2bedd2bf5f62bcc162d879652a673e"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/CombatAudio/shot.wav.meta",
+    "sha256": "cbec30c9cb58287e902fa6650ef690cf696cc8e9ad2d456d2dc22f40750f3419"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/CombatAudio/swing.wav",
+    "sha256": "fb08a59b4bd38e809b7925e364b6429bce94363113509b28dc5c9cc2ef113de4"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/CombatAudio/swing.wav.meta",
+    "sha256": "074b33893db830af9fe40996fe59a1409ae3ed50572f53927c435c2dcf1186c6"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/CombatAudio/wall.wav",
+    "sha256": "8f088ebe6361512fd53d30b02fd37853cbcca3cf70bcd2152bc31ab7f1e90db5"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/CombatAudio/wall.wav.meta",
+    "sha256": "732c351c91e9d619b4f2d9ef273f3e98aa295b476151b76c9903652a490dc173"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/G0Actor.prefab",
+    "sha256": "a708df8f9e61dd85e1bb5c22416df03d3b6d2598288118bec4722bdb0a3bd721"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/G0Floor.prefab",
+    "sha256": "14a8b1139d76ead8cdf1bb4c3af3014632b621b9e670b01faff4a3f91e65b1bb"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/G0Surface.mat",
+    "sha256": "b8dabc98066604454bbf74be75e1b4f27c4e6944b62f15eff3715c073b3d7dc4"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/Arrow.prefab",
+    "sha256": "b92275182d15c41c124aaf037db8dc54938321eaa026d7983a7c0619e88d8477"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/Arrow.prefab.meta",
+    "sha256": "1759dacf7a9987b7daba856dad2bb84a5162358093db43af6568c254a666893a"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/Knight.controller",
+    "sha256": "97fbc44886e4428df93253c7000533feac0eb9408d3880224d073f2120301b54"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/Knight.controller.meta",
+    "sha256": "a3407ac360386ab6003be2694fbe46c59910fd9f13476c0f5e81aa243c4f7a98"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/Knight.prefab",
+    "sha256": "76059105934e2f4f56102c7aef45884fcb46674261c778b0db9148daeeda3913"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/Knight.prefab.meta",
+    "sha256": "6be642a02ced9c2a54cce27d715490679b1cf73a2c92af6fa0ccb6f096188d76"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/KnightPalette.mat",
+    "sha256": "633d1c61622906595d02ba690b47b471f8c86f89ff9715cbaf8281891eea3aad"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/KnightPalette.mat.meta",
+    "sha256": "6a485470da6b73f8ee0df835f97e4fdc78c5da1a6b53a305b06064fdd5b37178"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/Mage.controller",
+    "sha256": "a686050086a0ebd6158c21e00bc2e9d27754511d1c58e881104ca70c2e41b00d"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/Mage.controller.meta",
+    "sha256": "9dfd96a6c96572b7a77fa4fad4bb7d4a50322552f5ab6aa13f01b9146da9836e"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/Mage.prefab",
+    "sha256": "3e6d79484183d31455a527a593abbcbf0fcb3450039c01eaa24617b582216d52"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/Mage.prefab.meta",
+    "sha256": "1b9f7f211787cef57d7fb977e04ab1b75aa0b9393ff4090d32cd8bf4efdf259b"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/MagePalette.mat",
+    "sha256": "ea18bb2f5cc63c266ca8268650a858e1a098cd6e82225adae6591c5026ff0671"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/MagePalette.mat.meta",
+    "sha256": "617d87cca13c6f39f0d972e9a602e5f2f8de3535fd655a5ab8128bbb6fe3b177"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/Ranged_1H_Aiming.anim",
+    "sha256": "f4d4cda758a343479374b1eb3464bbdff67911a2412feafcc86e9c7501498b1b"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/Ranged_1H_Aiming.anim.meta",
+    "sha256": "6176473a5d4b138422d2a0aa3fff72ab3ae2e03e53f15df6e1f3431bfe3e19f6"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/Ranged_1H_Shoot.anim",
+    "sha256": "57c1c603ff2ac15a5b094385925e84786188d815193d2afe3a6e7f5c60c78200"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/Ranged_1H_Shoot.anim.meta",
+    "sha256": "14468130dd5f5753ec593f7f0316d95590266126203a087d0c512a3349ed88fe"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/Ranger.controller",
+    "sha256": "0baa847160630b41498aea9ad9131de76e267138ad798e03520c7c314980f831"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/Ranger.controller.meta",
+    "sha256": "143c13028b3659332f368a149bbd1cc964f73636bb748814792b75a22b1d554c"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/Ranger.prefab",
+    "sha256": "2d7750a9ddf1a8349314eb4a113b733218f66c2941e2181fa778b77a0f669800"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/Ranger.prefab.meta",
+    "sha256": "d651187d88a7747d6efa1de9302f3b234245158b8595991d68b7b4a6d5258959"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/RangerPalette.mat",
+    "sha256": "1f2fa09517fd4986d616044c3ef29ea950495c7b5da198abb34e06e96b2aa5ad"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/RangerPalette.mat.meta",
+    "sha256": "181cee1819d60336c52c6de22dc7d99b46055fefd2d718f31150a732e7807618"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/RoguePalette.mat",
+    "sha256": "cf82a8260588d973b919b6d9aaf964a20c60e9db45eeafb5ab72f3eb1ef320bd"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/KayKit/RoguePalette.mat.meta",
+    "sha256": "fd49af1a5ca6aa93e41780087f9a6f6d25004da873b6c536941384c094b82ab6"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena.meta",
+    "sha256": "81500d7697c199e3efb93c3554d05ea7a982efb0fa7d6cd9d8bc3db069679b13"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/ArenaPalette.mat",
+    "sha256": "ecbd40c7d480e6266b3788773388e8100f324e0aefcb7f9a8e72f16d3baa5039"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/ArenaPalette.mat.meta",
+    "sha256": "ea2cdeafdf89a6254ab231d7b159eaa64c774cb45ee7eb1250af81dae1155519"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Character.prefab",
+    "sha256": "6882253554334498643309e7a9c4055ce111f4a680f58f23342b0f467d154399"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Character.prefab.meta",
+    "sha256": "4dde7ca1f9d0105c777c11930f41eacd68f18fefa0c9d5bfe8f49f863e8cc386"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Dungeon.meta",
+    "sha256": "975bfdc85083e5c89d46090fe6d2fe82cd98b2bb20d2cc0b9ad63ff233ec31da"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/DungeonPalette.mat",
+    "sha256": "4b82e0720d1de5a66a248fdfcf88567fe0f01c7f80942fa3e5a18b4c5f7fc354"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/DungeonPalette.mat.meta",
+    "sha256": "6c27906df71da9f3c03c8d5286a781a66add9b4b77d9224e420ecea5189aa219"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/MiniCharacter.controller",
+    "sha256": "b2a92ef2a1cb6da5c269486f0fe87c87e1d81f20123e0439942cb0be117c7c1d"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/MiniCharacter.controller.meta",
+    "sha256": "aa34145b5cd6301f112f365e86d66e87b322ad0e199e8a703481041f482a9bf2"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/banner.prefab",
+    "sha256": "31e2ee06de85bd5b38c188593742090468affce6cb72e402e941ca5c6e24dd29"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/banner.prefab.meta",
+    "sha256": "83293951939d6100597069920475885f41903de56babfa69935646b34db43a2c"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/border-corner.prefab",
+    "sha256": "02d4fde916b61f858e5fdcc42a9f3055d94d3d7464f991104104aecb6f647293"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/border-corner.prefab.meta",
+    "sha256": "38a2ea009583fd61ab9a8ba9b0b40869f4f6cffdc8717641c478e62fa11633fd"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/border-straight.prefab",
+    "sha256": "1af8258cf1c3d5a632e93905f64d624a7661b6f9b0fd855a69e9c56c9967eab7"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/border-straight.prefab.meta",
+    "sha256": "dbfb585f70e3d2733475aef99d05f705458140bb56124680803071035b86225f"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/bricks.prefab",
+    "sha256": "a808e7e84f4dcdd858a5a47f4ae0b35bcc1d47e890f3d9df2273522136083f9d"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/bricks.prefab.meta",
+    "sha256": "06ecad4723c43ada1da554a22dc03c3e38464e8d05cccbb8eb5c0bbd048368a9"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/column-damaged.prefab",
+    "sha256": "8297ae253efecff1ee2bec4c20de0542c3a98c69d33c01aa21d8fc4197eda964"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/column-damaged.prefab.meta",
+    "sha256": "d2df49476173df834615920238fc66d32be4b5d978fab8b48df9e15e4db61f85"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/column.prefab",
+    "sha256": "00027e44c894ce5c8d34e5a12be9d267817f7b66f0d99d53514805eed074e1dc"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/column.prefab.meta",
+    "sha256": "af24d0e922af948ec2434d339bf2a3ee5524c1059b927e079319925a0bd37c1e"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/floor-detail.prefab",
+    "sha256": "c536d8de8f9212dc272400f2f2d9c61c15f30009ff715139c744e5d74befe487"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/floor-detail.prefab.meta",
+    "sha256": "9d986ee52176d4e20f8c7455e3d45f3fc0ff23f778196d74200dd1256c1ae598"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/floor.prefab",
+    "sha256": "2c46c4a4262ffff5bfc844785911b3c7b15fa411aca923ea08da521128081880"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/floor.prefab.meta",
+    "sha256": "0b6dc9c86426bd7bd05ae0eb55e485882a9268d8bf2f534e1698e33ebf16ff1b"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/statue.prefab",
+    "sha256": "4e02be24ff6e1f02281350aaf96823346c319f24d435a4c7fa62f01161a1fbf5"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/statue.prefab.meta",
+    "sha256": "f932fa61b27aa34f3882fc68208903d16177b4fb0d8cf449f9e2d8e25d61f7ec"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/tree.prefab",
+    "sha256": "05ab0403549c9d1a5c18f93c445348643111ccc5e41e68523761f299287a6aaa"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/tree.prefab.meta",
+    "sha256": "0b888c2176af728bb82192cd4a12672fccb0a11b1d65d6d9b8588395b623ae13"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/wall-corner.prefab",
+    "sha256": "5c8cccbe33cade901747cc65f24f74ddbb60abb7bb07eb4aaf7359155ef3ebd1"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/wall-corner.prefab.meta",
+    "sha256": "ece02077d7870c4f9b3d8414c2dd2884a547b44afdf4aea8d0eb95f8f33e9fe0"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/wall-gate.prefab",
+    "sha256": "b81212584973cde7e2c9aa288f78c8d2a3576a19547f3a26000120b73db37e3d"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/wall-gate.prefab.meta",
+    "sha256": "ac6f344d8400ab4d0f1a991babf06129c2ceb0ed5988cc82e7a8b5a7e1d448dc"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/wall.prefab",
+    "sha256": "31b59435b367ab51159b6d98287a0530639f061a1193492bc7c119885ba3385a"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Arena/wall.prefab.meta",
+    "sha256": "4b86f295b28690b797e3a22980be9ea18be1d6b52750ccf853379a164f6f4667"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Dungeon/barrel.prefab",
+    "sha256": "9af73ff6e1dbab2a4280f65c4f8406ae709da3518506143c66a462ad87b6b316"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Dungeon/barrel.prefab.meta",
+    "sha256": "e23850aa4e684b93510c7841ae67012bb524e4ac14c4706bb909cdd0b6a1b80d"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Dungeon/chest.prefab",
+    "sha256": "0d4a76cd19dad9c8fcce0fd212f5b35311556cf7862a2380d1e3c3b57a9d3ab1"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Dungeon/chest.prefab.meta",
+    "sha256": "ef694f9f79e59ed4b362872cbffbe360d8e2fde5af951ac3d8dd7f946b66745b"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Dungeon/rocks.prefab",
+    "sha256": "4b838dee9bfd047921209e693d81746f8f98f2d7b990e3adb453fea6979cdc92"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Dungeon/rocks.prefab.meta",
+    "sha256": "91438388fa9f9e7c7b6ca34b9b304e9f1a05e5c070e90b2cf8532efd1464d99b"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Dungeon/shield-round.prefab",
+    "sha256": "96a5e037af8ab5e25041443bdf7aa14af0aacc96e6012b85f4f88a20ed790233"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Kenney/Dungeon/shield-round.prefab.meta",
+    "sha256": "6d06585177c98776c435cbff5e3ef6e49665b71eb7074e0921376af173506e36"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Mage/FireballDrop.prefab",
+    "sha256": "8699c61e720ecc9646ae07fc1b0a87daec8c13b2a4e0eb682ce0c4d3df724671"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Mage/FireballDrop.prefab.meta",
+    "sha256": "02392ad7942c81ebfca3826453ad335e52e1dd8294188711c7b396855542211e"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Mage/GroundImpact.prefab",
+    "sha256": "b4f9ccc106b7311d9f94edd3634febcedf4699fc4fca14d9789f7eba03ae9014"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Mage/GroundImpact.prefab.meta",
+    "sha256": "de7c560a4e9066f12982ef13a477ceff4aba5b6171f47194988391a967a711d6"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Mage/TargetCircle.mat",
+    "sha256": "d5d885f1ff8a9d5339b3f18cc504649fbd9a66cda323f975cf45a2735fd37549"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/Mage/TargetCircle.mat.meta",
+    "sha256": "ce69ec4b064401952d7c88b89183277effeb52cf92dce19cf987fa0b05a8eb62"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/UI/GamePanelSettings.asset",
+    "sha256": "33679dd907cfce6a2a2a7e6f5b0f403a284fbd8b90869b7b33737f5f59fe5995"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/UI/GamePanelSettings.asset.meta",
+    "sha256": "f30bb7b7d14d968136588b67b69e8659d91285afdec06003c5baa799a7180551"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/UI/GameTheme.tss",
+    "sha256": "42cab81f989025a22fad1702e7957606c5145aff5c36c58fe4be667c1908be34"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/UI/GameTheme.tss.meta",
+    "sha256": "29bff23c4ab43820703413c9ad8e0ba17f97323bcdbeb1dc8ff3fdb3dd2f136f"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/UI/GameTheme.uss",
+    "sha256": "367f1e6293a62afcd51394b26e28f34c4b7d8540ca70e7509a54c250707abc6f"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/UI/GameTheme.uss.meta",
+    "sha256": "4369090e4c7e122aa6c2104df7d174662e27e7883d8bd5a59a0f7c1364232f7a"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/UI/RumbleboundUI.ttf",
+    "sha256": "f39489f61798d46cd225ba3c12b1b8379e27104b3081fa9c4c0d5cb529d0b054"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/UI/RumbleboundUI.ttf.meta",
+    "sha256": "e2bd0e37dd27e6432c957c560eba87b4dfcf5056ca06fc314acfe4fdcb0c271f"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/UI/Textures.meta",
+    "sha256": "d7d84fbc432b80c5b863816f96f6443f441b57990de49c5b2168b3abcb465ce9"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/UI/Textures/button-danger.png",
+    "sha256": "9a81bc718ef329250481de16e74438132f529942888b95d4ee7272b0001eb47d"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/UI/Textures/button-danger.png.meta",
+    "sha256": "885bc90de6cc081e828eedd94bdcfb0b6e0edd2b30b07000e0c27fb7cae62694"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/UI/Textures/button-primary.png",
+    "sha256": "91fbaa6c2568e832fc2f72c574535d55673e8a2a7f5df9da260ca449c5c228f2"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/UI/Textures/button-primary.png.meta",
+    "sha256": "9989cc0534986f3e5867dd21a59fbe0e0d13dde32e63a264fbfc17fb14b6e7d0"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/UI/Textures/button-secondary.png",
+    "sha256": "f0f3d52f110768bf93a10b44f4ec3c727924c25734ce85e1275464c9b02cfe18"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/UI/Textures/button-secondary.png.meta",
+    "sha256": "1528d6449ea38fc421f221044d47c096c02b2004e576965280404f5c235156f2"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/UI/Textures/icon-ready.png",
+    "sha256": "423aad84d0f89e441b4cf7167b135f2afee6515a66d149cc0f1f095cdd7348c9"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/UI/Textures/icon-ready.png.meta",
+    "sha256": "cad1267f4ff60daab6544191b112f8f97fa3b51a79873dc92e3adb3b421fd4f5"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/UI/Textures/icon-star.png",
+    "sha256": "3b985be792f2f73f0d5b2827c806236723f44f8cd03c39fc73a4e273ec03e4f8"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/UI/Textures/icon-star.png.meta",
+    "sha256": "098a436f643db32d312aaa244c45cd1ec23ea78fdcfe27f06fc23ddd4413ae05"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/VFX/MeleeSlash.prefab",
+    "sha256": "d5f5b5e3c66175015b6489413dea030fc8b95f381cee52ed28aa4fc8fd69062e"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/VFX/MeleeSlash.prefab.meta",
+    "sha256": "27b17786462cbf7b475a0b8e470c0fae88985e463ec43de08fdac200be96a29c"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/VFX/PlayerHit.prefab",
+    "sha256": "3c1f4dae50e4fd239597c3b526fb55c308d7ec9f7c750558ae83abf6c480997c"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/VFX/PlayerHit.prefab.meta",
+    "sha256": "38d28c1eeab364ede31905d94dba8072515dce1c3f0ad41bd70c9c30af8e2e08"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/VFX/PointAura.prefab",
+    "sha256": "0fa989844c9284cb6cceb3a60819f94257e6b122c75d9d2e93a28374ef2d7a86"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/VFX/PointAura.prefab.meta",
+    "sha256": "a7abe72ab84b18b7948fba8b7b0be919c8621af99261ec5febb50aff929d0d80"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/VFX/PointCapture.prefab",
+    "sha256": "419924dc46127f376c5fd71e7d2091fe313138ab361c9b26b327ca974e69c5e2"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/VFX/PointCapture.prefab.meta",
+    "sha256": "ec37e0d5c501e4c8d13bf9c189dbeda95262cfeffe94f19b7b2dab5487dc840b"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/VFX/PointOccupied.prefab",
+    "sha256": "d395c2cab63fcf37f407a7cdd7ddf74b1597e129fdbb64f4bfdc72d0ede0a8d6"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/VFX/PointOccupied.prefab.meta",
+    "sha256": "e47f4918d28ad6d2db61ec407c28659896867d718eaccd2f8b8678e99866b2f4"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/VFX/WallHit.prefab",
+    "sha256": "4f6814fe6b69ad5a87e73f91cf1c315832919bdd396af73bf17d11d34e082156"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Resources/VFX/WallHit.prefab.meta",
+    "sha256": "674b57d2f7f07a18bf0a2c444308438b7640db6982eb9069381a931665790692"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Scripts/MiniActorView.cs",
+    "sha256": "22fc77046184870d24b19061f87d80f63a18383d74cb3982f809920ac861cc46"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Scripts/ArenaStage.cs",
+    "sha256": "c47dc5c11409c47c6967e55fa091b202f4205223fb665912dac022854f5e1934"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Scripts/URPCameras.cs",
+    "sha256": "d596a01007692e665b7b42898086106fedf904189acbf4736729a5e556f37ddf"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Scripts/SlashFlipbook.cs",
+    "sha256": "75d167481de7d4744aa24b87508169d05100dd22cb4162b2cbee0a60ecfb27a6"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Scripts/ParticleFeedback.cs",
+    "sha256": "37436cc079ea68cf2db7185bb07d9e63ee62c454c572a629a37cfd246b2824f2"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Scripts/CombatEffects.cs",
+    "sha256": "20877864de97e7e50f01ab7fbfeafeb892710c130a68eacebc9770ba29317857"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Scripts/CombatAudio.cs",
+    "sha256": "74ea8e93c5f8226055a3c5cc15d20b9aee3c52c16ce544761d98b38368ef7954"
+  },
+  {
+    "source": "samples/rumblebound/client/Assets/Scripts/PointEffects.cs",
+    "sha256": "7da1340ab54240e4d265f20e06ba78bd1b6ccb6a133d709cbd30667444b01073"
+  }
+]

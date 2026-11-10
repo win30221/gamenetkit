@@ -1,0 +1,4 @@
+<linker>
+  <assembly fullname="Realtime.Examples.SharedWorld" preserve="all" />
+  <assembly fullname="Realtime.Examples.SharedWorld.Unity" preserve="all" />
+</linker>

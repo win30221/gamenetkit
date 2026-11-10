@@ -1,0 +1,8 @@
+{
+  "name": "com.realtime.examples",
+  "version": "0.1.0",
+  "displayName": "Realtime teaching presentation",
+  "description": "Presentation and build helpers shared by the teaching examples. Application sessions remain in each lesson.",
+  "unity": "6000.0",
+  "dependencies": {"com.realtime.transport": "0.1.0"}
+}

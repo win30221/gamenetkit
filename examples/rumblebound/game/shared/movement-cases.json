@@ -1,0 +1,9 @@
+{
+  "cases": [
+    { "name": "cardinal", "x": 0, "z": 0, "dx": 1, "dz": 0, "steps": 1, "expectedX": 0.2, "expectedZ": 0 },
+    { "name": "normalized-diagonal", "x": 0, "z": 0, "dx": 1, "dz": 1, "steps": 1, "expectedX": 0.1414213562373095, "expectedZ": 0.1414213562373095 },
+    { "name": "boundary", "x": 9.59, "z": -9.59, "dx": 1, "dz": -1, "steps": 1, "expectedX": 9.6, "expectedZ": -9.6 },
+    { "name": "analog-30-ticks", "x": 0, "z": 0, "dx": 0.3, "dz": -0.4, "steps": 30, "expectedX": 1.8, "expectedZ": -2.4 },
+    { "name": "idle", "x": -3, "z": 4, "dx": 0, "dz": 0, "steps": 120, "expectedX": -3, "expectedZ": 4 }
+  ]
+}

@@ -1,0 +1,1 @@
+{"name":"com.realtime.correction","version":"0.1.0","displayName":"Realtime Correction","description":"Optional engine-independent local presentation correction policies.","unity":"6000.0","dependencies":{"com.realtime.core":"0.1.0"}}

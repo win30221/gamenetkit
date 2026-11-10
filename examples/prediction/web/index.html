@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>預測與校正 · 操作教學</title><link rel="stylesheet" href="/style.css"></head>
+<body><main>
+<header><p class="eyebrow">REALTIME FRAMEWORK · PREDICTION + CORRECTION</p><h1>按下就移動，回包後怎麼修正？</h1><p>先比較預測關閉與啟用，再讓伺服器推移角色，觀察直接校正和平滑校正。</p></header>
+<section class="controls">
+<div><h2>1 · 本機預測</h2><div class="choices"><button id="mode-authority" aria-pressed="false">關閉：等待權威</button><button id="mode-prediction" aria-pressed="true">啟用預測</button></div><p id="explanation">立即模擬自己的輸入，收到權威後重播尚未確認的部分。</p><label for="profile">快照回包額外延遲</label><select id="profile"><option value="clean">0 ms</option><option value="delay" selected>150 ms</option><option value="high">300 ms</option></select></div>
+<div><h2>2 · 校正呈現</h2><div class="choices"><button id="correction-snap" aria-pressed="false">直接校正</button><button id="correction-smooth" aria-pressed="true">平滑校正</button></div><p>預測內部狀態立即校正；平滑只保留短暫的顯示偏移。超過兩單位會直接校正。</p><button id="bump">伺服器向左推移一單位</button><p>這個按鈕真的改變自己的權威位置，不會控制其他玩家。</p></div>
+<div><h2>3 · 觀察或自己操作</h2><label><input id="auto" type="checkbox" checked>自動往返</label><label><input id="ghost" type="checkbox" checked>顯示收到的權威位置外框</label><label><input id="target" type="checkbox" checked>顯示預測內部位置黃點</label><p>取消自動往返，點擊場地，用 WASD／方向鍵體驗按下、放開與反向。失焦會停止輸入。</p></div>
+</section>
+<section class="remote-controls"><h2>其他玩家的平滑移動（遠端插值）</h2><div class="choices"><button id="remote-latest" aria-pressed="false">關閉</button><button id="remote-fixed" aria-pressed="false">固定平滑</button><button id="remote-adaptive" aria-pressed="true">自適應平滑</button><span id="remote-buffer">緩衝 —</span></div><p>只影響橘色的其他玩家；藍色自己仍由上方的預測與校正控制。開兩個並排視窗即可比較。</p></section>
+<section class="bar"><strong id="status" role="status">正在連線…</strong><span id="identity">玩家 —</span><button id="reconnect">重新連線</button><button id="disconnect">中斷</button></section>
+<section class="stats"><div>權威 tick<strong id="tick">—</strong></div><div>已確認輸入<strong id="ack">—</strong></div><div>最後校正差距<strong id="error">—</strong></div><div>顯示偏移<strong id="offset">—</strong></div><div>重播步數<strong id="replay">0</strong></div></section>
+<section class="arena"><div class="legend"><span>實心：顯示位置 · 黃點：自己的預測內部位置</span><span>外框：收到的權威快照</span></div><canvas id="world" width="1100" height="560" tabindex="0" aria-label="預測與校正場地。關閉自動往返後點擊場地，以 WASD 或方向鍵移動。"></canvas><p id="hint">藍色：自己的預測與校正。橘色：其他玩家的插值平滑。</p></section>
+<footer><p>只有回包被額外延後，輸入直接送往伺服器；這不是 RTT 量測。權威位置仍由 Go 伺服器決定。</p><p>使用實際 C# ReplayPrediction／ExponentialCorrection；加入步驟與接線見 examples/prediction/README.md。</p></footer>
+</main><script type="module" src="/app.js"></script></body></html>

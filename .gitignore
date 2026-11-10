@@ -1,0 +1,11 @@
+**/Library/
+**/Temp/
+**/Obj/
+**/Builds/
+**/Logs/
+**/UserSettings/
+**/.cache/
+**/.local/
+**/artifacts/
+**/out/
+**/client/Data/

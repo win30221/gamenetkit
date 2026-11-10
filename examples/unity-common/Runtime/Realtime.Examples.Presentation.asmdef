@@ -1,0 +1,5 @@
+{
+  "name": "Realtime.Examples.Presentation",
+  "rootNamespace": "Realtime.Examples.Presentation",
+  "references": ["Realtime.Transport"]
+}

@@ -1,0 +1,5 @@
+<linker>
+  <assembly fullname="Realtime.Examples.ReplayLesson" preserve="all" />
+  <assembly fullname="Realtime.Examples.ReplayLesson.Unity" preserve="all" />
+  <assembly fullname="Realtime.Examples.Presentation" preserve="all" />
+</linker>

@@ -1,0 +1,16 @@
+{
+  "name": "Realtime.Examples.CodecLesson",
+  "rootNamespace": "Realtime.Examples.CodecLesson",
+  "references": [
+    "Realtime.Core",
+    "Realtime.Transport",
+    "Realtime.Prediction",
+    "Realtime.Correction",
+    "Realtime.Interpolation",
+    "Realtime.Simulation",
+    "Realtime.Replication",
+    "Realtime.Actions",
+    "Realtime.Codec"
+  ],
+  "noEngineReferences": true
+}

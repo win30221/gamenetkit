@@ -1,0 +1,30 @@
+{
+  "dependencies": {
+    "com.realtime.core": "file:../../../../packages/unity/core",
+    "com.realtime.transport": "file:../../../../packages/unity/transport",
+    "com.unity.modules.jsonserialize": "1.0.0",
+    "com.unity.modules.imgui": "1.0.0",
+    "com.unity.modules.uielements": "1.0.0",
+    "com.unity.modules.imageconversion": "1.0.0",
+    "com.unity.modules.screencapture": "1.0.0",
+    "com.unity.modules.physics": "1.0.0",
+    "com.realtime.interpolation": "file:../../../../packages/unity/interpolation",
+    "com.realtime.prediction": "file:../../../../packages/unity/prediction",
+    "com.realtime.correction": "file:../../../../packages/unity/correction",
+    "com.realtime.clock": "file:../../../../packages/unity/clock",
+    "com.realtime.replication": "file:../../../../packages/unity/replication",
+    "com.realtime.actions": "file:../../../../packages/unity/actions",
+    "com.realtime.codec": "file:../../../../packages/unity/codec",
+    "com.realtime.diagnostics": "file:../../../../packages/unity/diagnostics",
+    "com.realtime.simulation": "file:../../../../packages/unity/simulation",
+    "com.realtime.playback": "file:../../../../packages/unity/playback",
+    "com.rumblebound.gameplay": "file:../../game/unity",
+    "com.rumblebound.presentation": "file:../../game/unity-art",
+    "com.unity.render-pipelines.universal": "17.6.0",
+    "com.unity.modules.animation": "1.0.0",
+    "com.unity.modules.particlesystem": "1.0.0",
+    "com.unity.modules.audio": "1.0.0",
+    "com.unity.modules.unitywebrequest": "1.0.0",
+    "com.unity.nuget.newtonsoft-json": "3.2.2"
+  }
+}

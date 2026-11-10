@@ -1,0 +1,27 @@
+{
+  "manifestSchema": 2,
+  "generatedBy": "scripts/Prepare-VFXAssets.py",
+  "maintenanceNotes": "asset-notes.json",
+  "creator": "sugawara_studio",
+  "title": "Cel-Shaded Style Slash Animation Asset (Free), red",
+  "source": "https://sugawara-studio.itch.io/cel-shaded-style-slash-animation-asset-free",
+  "downloadedOn": "2026-10-29",
+  "archive": "slash_arc_loop_red_free.zip",
+  "sha256": "2672a82f701a86b6163a320f95be133685657b92b7f9014fb2826fab6cb59c72",
+  "license": "Author permits commercial use and modification; raw or modified asset redistribution/resale is prohibited. Optional credit: Sugawara_Studio.",
+  "normalization": "Original 24 fps sequence frames 2..11, empty frames removed; rotated 180 degrees to face local +Z; resized to 252px with 2px transparent border; row-major top-first 4x4 RGBA atlas, 1024x1024; mipmaps disabled.",
+  "runtime": "10 visible frames over 0.24s, clipped to authoritative melee arc, scaled to melee reach. Decorative only; no collision or damage changes.",
+  "sourceFrames": [
+    "slash_arc_loop_red_00002.png",
+    "slash_arc_loop_red_00003.png",
+    "slash_arc_loop_red_00004.png",
+    "slash_arc_loop_red_00005.png",
+    "slash_arc_loop_red_00006.png",
+    "slash_arc_loop_red_00007.png",
+    "slash_arc_loop_red_00008.png",
+    "slash_arc_loop_red_00009.png",
+    "slash_arc_loop_red_00010.png",
+    "slash_arc_loop_red_00011.png"
+  ],
+  "otherColors": "Preview GIFs in the free archive are references only; no paid color variant was imported."
+}

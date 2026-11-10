@@ -1,0 +1,12 @@
+{
+  "cases": [
+    {"name":"initial connection failure does not loop","steps":[{"op":"fail","now":0,"code":"connection_closed","pending":false},{"op":"poll","now":1,"result":"none"}]},
+    {"name":"backoff and conservative deadline","steps":[{"op":"connected"},{"op":"fail","now":10,"code":"connection_closed","pending":true},{"op":"poll","now":10.49,"result":"none"},{"op":"poll","now":10.5,"result":"retry"},{"op":"poll","now":11,"result":"none"},{"op":"fail","now":11,"code":"network_error","pending":true},{"op":"poll","now":11.99,"result":"none"},{"op":"poll","now":12,"result":"retry"},{"op":"fail","now":13,"code":"takeover_required","pending":true},{"op":"poll","now":15,"result":"retry"},{"op":"fail","now":16,"code":"server_unavailable","pending":true},{"op":"poll","now":19,"result":"retry"},{"op":"fail","now":39,"code":"connection_timeout","pending":true},{"op":"poll","now":40,"result":"expired"}]},
+    {"name":"manual stop cancels retry","steps":[{"op":"connected"},{"op":"fail","now":0,"code":"send_failed","pending":true},{"op":"stop"},{"op":"poll","now":5,"result":"none"}]},
+    {"name":"initial takeover rejection stops","steps":[{"op":"fail","now":0,"code":"takeover_required","pending":false}]},
+    {"name":"expired seat never retries","steps":[{"op":"connected"},{"op":"fail","now":0,"code":"snapshot_timeout","pending":true},{"op":"fail","now":1,"code":"seat_expired","pending":false},{"op":"poll","now":2,"result":"none"}]},
+    {"name":"invalid session never retries","steps":[{"op":"connected"},{"op":"fail","now":0,"code":"network_error","pending":true},{"op":"fail","now":1,"code":"invalid_session","pending":false}]},
+    {"name":"welcome resets outage budget","steps":[{"op":"connected"},{"op":"fail","now":0,"code":"connection_closed","pending":true},{"op":"poll","now":0.5,"result":"retry"},{"op":"connected"},{"op":"poll","now":35,"result":"none"},{"op":"fail","now":35,"code":"snapshot_timeout","pending":true},{"op":"poll","now":35.5,"result":"retry"},{"op":"poll","now":65,"result":"expired"}]},
+    {"name":"background resume expires pending attempt","steps":[{"op":"connected"},{"op":"fail","now":0,"code":"connection_closed","pending":true},{"op":"poll","now":0.5,"result":"retry"},{"op":"poll","now":120,"result":"expired"}]}
+  ]
+}

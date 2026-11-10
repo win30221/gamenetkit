@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "com.realtime.core": "file:../../../packages/unity/core",
+    "com.realtime.prediction": "file:../../../packages/unity/prediction",
+    "com.realtime.correction": "file:../../../packages/unity/correction",
+    "com.realtime.diagnostics": "file:../../../packages/unity/diagnostics",
+    "com.realtime.simulation": "file:../../../packages/unity/simulation",
+    "com.realtime.clock": "file:../../../packages/unity/clock",
+    "com.realtime.replication": "file:../../../packages/unity/replication",
+    "com.realtime.actions": "file:../../../packages/unity/actions",
+    "com.realtime.codec": "file:../../../packages/unity/codec",
+    "com.realtime.playback": "file:../../../packages/unity/playback"
+  }
+}

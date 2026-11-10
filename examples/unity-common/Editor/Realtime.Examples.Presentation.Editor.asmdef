@@ -1,0 +1,5 @@
+{
+  "name": "Realtime.Examples.Presentation.Editor",
+  "references": ["Realtime.Examples.Presentation"],
+  "includePlatforms": ["Editor"]
+}

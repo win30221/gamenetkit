@@ -1,0 +1,20 @@
+{
+  "name": "Rumblebound.Example.Battle",
+  "rootNamespace": "Rumblebound.Example.Battle",
+  "references": [
+    "Rumblebound.Gameplay",
+    "Realtime.Core",
+    "Realtime.Transport",
+    "Realtime.Interpolation",
+    "Realtime.Prediction",
+    "Realtime.Correction",
+    "Realtime.Clock",
+    "Realtime.Replication",
+    "Realtime.Actions",
+    "Realtime.Codec",
+    "Realtime.Diagnostics",
+    "Realtime.Simulation",
+    "Realtime.Playback"
+  ],
+  "noEngineReferences": true
+}

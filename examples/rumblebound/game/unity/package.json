@@ -1,0 +1,8 @@
+{
+  "name": "com.rumblebound.gameplay",
+  "version": "0.1.0",
+  "displayName": "Rumblebound gameplay domain",
+  "description": "Game DTOs, deterministic geometry and injected SDK movement presentation shared by the sample and remake.",
+  "unity": "6000.0",
+  "dependencies": {"com.realtime.core": "0.1.0"}
+}

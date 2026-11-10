@@ -1,0 +1,9 @@
+{
+  "name": "Realtime.Examples.NetworkRecovery.Editor",
+  "references": [
+    "Realtime.Examples.Presentation.Editor"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}

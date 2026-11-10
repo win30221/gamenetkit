@@ -1,0 +1,5 @@
+<linker>
+  <assembly fullname="Realtime.Examples.NetworkRecovery" preserve="all" />
+  <assembly fullname="Realtime.Examples.NetworkRecovery.Unity" preserve="all" />
+  <assembly fullname="Realtime.Examples.Presentation" preserve="all" />
+</linker>

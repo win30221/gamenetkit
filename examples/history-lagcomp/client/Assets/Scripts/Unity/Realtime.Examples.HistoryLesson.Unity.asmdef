@@ -1,0 +1,9 @@
+{
+  "name": "Realtime.Examples.HistoryLesson.Unity",
+  "references": [
+    "Realtime.Examples.HistoryLesson",
+    "Realtime.Examples.Presentation",
+    "Realtime.Transport",
+    "Realtime.Core"
+  ]
+}

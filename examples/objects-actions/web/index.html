@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>物件同步與動作確認 · GameNetKit</title><link rel="stylesheet" href="/style.css"></head>
+<body><main><header><p class="eyebrow">GameNetKit · 組件教學</p><h1>物件同步與動作確認</h1><p>先看物件怎麼出現、消失，再看動作如何獲得伺服器確認。</p></header>
+<div class="connection"><span id="status" role="status">正在連線…</span><span id="identity"></span><button id="reconnect">重新連線</button></div>
+<nav role="tablist" aria-label="教學主題"><button id="tab-objects" role="tab" aria-selected="true" aria-controls="panel-objects">1. 物件出現／消失</button><button id="tab-actions" role="tab" aria-selected="false" aria-controls="panel-actions">2. 動作是否成功</button></nav>
+<section id="panel-objects" role="tabpanel" aria-labelledby="tab-objects"><h2>按一次，觀察兩個分頁</h2><p>新增一個標記，開另一個瀏覽器分頁也會看到。移除會讓它消失；重生會保留 ID，但生命編號加一。</p><div class="buttons"><button id="spawn">新增標記</button><button id="remove">移除最後一個</button><button id="rebirth">同 ID 重生</button></div><p class="hint">每人最多 4 個標記。標記屬於建立它的玩家，離線後會一起移除。</p></section>
+<section id="panel-actions" role="tabpanel" aria-labelledby="tab-actions" hidden><h2>比較等待確認與先顯示效果</h2><label><input id="speculative" type="checkbox"> 先顯示黃色暫時效果，再等待確認</label><div class="buttons"><button id="accept">送出會成功的動作</button><button id="deny">模擬伺服器拒絕</button><button id="timeout">模擬沒有回覆</button></div><p class="hint">成功會建立標記。拒絕會收回暫時效果；逾時代表尚未確認結果。模擬沒有回覆這一項不會改變世界。</p></section>
+<div id="feedback" class="feedback" aria-live="polite">先按「新增標記」，看看伺服器確認後的變化。</div>
+<canvas id="world" width="1000" height="440" tabindex="0" aria-label="多人世界，可按 WASD 或方向鍵移動"></canvas>
+<div class="legend"><span>■ 藍色：你</span><span>■ 橘色：其他玩家</span><span>◆ 綠色：已成立的標記</span><span>○ 黃色：暫時效果</span><strong id="object-count">目前 0 個標記</strong></div>
+<p class="hint">點一下畫面，再按 WASD 或方向鍵移動。自己的預測與校正、其他玩家的自適應平滑都已保留。</p>
+<details id="advanced"><summary>進階：觀察組件與原本的移動設定</summary><h3>物件生命與動作去重</h3><p id="replica-stats"></p><pre id="objects-list"></pre><pre id="changes"></pre><p id="action-stats"></p><button id="resend">重送最後一次動作（相同 ID）</button><p class="hint">重送不會再建立一個標記，也不會重播已確認的效果。這裡只示範同一次連線內的去重。</p>
+<h3>自己的預測與校正</h3><div class="buttons"><button id="mode-authority" aria-pressed="false">等待權威</button><button id="mode-prediction" aria-pressed="true">本機預測</button><button id="correction-snap" aria-pressed="false">直接校正</button><button id="correction-smooth" aria-pressed="true">平滑校正</button><button id="bump">伺服器推開自己</button></div>
+<h3>其他玩家的平滑移動</h3><div class="buttons"><button id="remote-latest" aria-pressed="false">關閉</button><button id="remote-fixed" aria-pressed="false">固定平滑</button><button id="remote-adaptive" aria-pressed="true">自適應平滑</button></div>
+<div class="buttons"><label>回包延遲 <select id="profile"><option value="clean">0 ms</option><option value="delay" selected>150 ms</option><option value="high">300 ms</option></select></label><label><input type="checkbox" id="auto"> 自動移動</label><label><input type="checkbox" id="ghost"> 權威位置外框</label><button id="disconnect">中斷連線</button></div><p class="hint">動作故意等待約 0.7 秒才由伺服器執行，方便觀察等待狀態；這是教學設定。</p></details>
+<footer>瀏覽器只負責按鈕與繪圖；物件清單、動作追蹤、預測與插值由實際 C# SDK 執行。</footer></main><script src="/app.js"></script></body></html>

@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>錄製與播放 Replay · GameNetKit</title><link rel="stylesheet" href="/style.css"></head>
+<body><main><header><p class="eyebrow">GameNetKit · 第 6 課</p><h1>錄製與播放 Replay</h1><p>錄下一段移動與標記操作，再用獨立的播放時鐘看一次。</p></header>
+<div class="connection"><span id="status" role="status">正在連線…</span><span id="identity"></span><button id="reconnect">重新連線</button></div>
+<section><h2>先錄一段，再播放</h2><div class="buttons"><button id="record-start">1. 開始錄製</button><button id="record-stop">2. 結束錄製</button><button id="play">3. 播放紀錄</button><button id="live">返回即時世界</button></div><p id="record-status" role="status">尚未錄製</p><p class="hint">錄製中可移動角色、操作下方標記。最多 30 秒，完成並驗證後才開放播放。</p></section>
+<div id="feedback" class="feedback" aria-live="polite">先按「開始錄製」，再點畫面使用 WASD 或方向鍵移動。</div>
+<div class="world-title"><strong id="view-label">即時世界</strong><span id="object-count">目前 0 個標記</span></div>
+<canvas id="world" width="1000" height="440" tabindex="0" aria-label="多人世界，錄製時可按 WASD 或方向鍵移動"></canvas>
+<div class="legend"><span>■ 藍色：你</span><span>■ 橘色：其他玩家</span><span>◆ 綠色：標記</span><span>回放顯示伺服器記錄的位置</span></div>
+<div id="playback-controls" class="playback-controls" hidden><label for="progress">播放進度 <strong id="position">0.00 / 0.00 秒</strong></label><input id="progress" type="range" min="0" max="0" step="0.01" value="0" aria-label="播放進度，拖曳後暫停"><label>播放速度 <select id="speed"><option value="0.5">0.5 倍</option><option value="1" selected>1 倍</option><option value="2">2 倍</option></select></label><p class="hint">可按上方播放鍵暫停／繼續。拖曳進度會暫停，方便查看物件的生命與清單。</p></div>
+<div class="buttons"><button id="spawn">新增標記</button><button id="remove">移除最後一個</button><button id="rebirth">同 ID 重生</button></div><p class="hint">標記每人最多 4 個，動作約 0.7 秒後由伺服器執行。回放期間會停用即時操作，返回後可繼續操作角色。</p>
+<details id="advanced"><summary>進階：錄製資訊與移動設定</summary><p id="clip-info"></p><a id="download" hidden>下載已驗證的播放檔</a><pre id="objects-list"></pre>
+<h3>自己的預測與校正</h3><div class="buttons"><button id="mode-authority" aria-pressed="false">等待權威</button><button id="mode-prediction" aria-pressed="true">本機預測</button><button id="correction-snap" aria-pressed="false">直接校正</button><button id="correction-smooth" aria-pressed="true">平滑校正</button></div>
+<h3>其他玩家的平滑移動</h3><div class="buttons"><button id="remote-latest" aria-pressed="false">關閉</button><button id="remote-fixed" aria-pressed="false">固定平滑</button><button id="remote-adaptive" aria-pressed="true">自適應平滑</button></div>
+<div class="buttons"><label>即時回包延遲 <select id="profile"><option value="clean">0 ms</option><option value="delay" selected>150 ms</option><option value="high">300 ms</option></select></label><label><input type="checkbox" id="auto"> 自動移動</label><label><input type="checkbox" id="ghost"> 即時權威位置外框</label><button id="disconnect">中斷即時連線</button></div><p class="hint">這些設定作用於即時世界。回放使用錄製好的權威快照，不重新執行玩家的本機預測。</p></details>
+<footer>Go replay SDK 寫入並驗證錄製；C# playback SDK 控制播放、暫停與跳轉。瀏覽器負責按鈕與繪圖。</footer></main><script src="/app.js"></script></body></html>

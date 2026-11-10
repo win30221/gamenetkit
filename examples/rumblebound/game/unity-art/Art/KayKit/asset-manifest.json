@@ -1,0 +1,248 @@
+{
+  "schemaVersion": 1,
+  "selectedOn": "2026-10-29",
+  "status": "melee-bow-correction-native-verified",
+  "selection": "Fantasy option C: sword/shield melee Knight and ranged Ranger; only Ranger emits arrow projectiles",
+  "gameplayContent": "g1-melee-1",
+  "author": "Kay Lousberg",
+  "license": "CC0-1.0",
+  "licenseVerification": "Both official free ZIPs downloaded through itch.io's free download flow. Included License.txt files explicitly allow free personal, educational and commercial use; attribution is optional.",
+  "sources": [
+    {
+      "id": "adventurers",
+      "title": "KayKit Adventurers Character Pack 2.0 FREE",
+      "page": "https://kaylousberg.itch.io/kaykit-adventurers",
+      "officialUploadId": 15363167,
+      "downloadFlow": "Official itch.io Download Now, free tier; no payment or account required",
+      "retrievedOn": "2026-10-29",
+      "archive": ".cache/kaykit-source/KayKit_Adventurers_2.0_FREE.zip",
+      "archiveBytes": 13024345,
+      "archiveSha256": "abe48f4763fba0896bab486ee9e6d08ca6b5b3884b9601f235c8847ae94dc479",
+      "licenseCopy": "Adventurers-LICENSE.txt",
+      "freeTierBoundary": "Five base characters and their accessories. Paid Engineer/turret, Druid, larger Barbarian, alternate textures and Blender source tier were not acquired."
+    },
+    {
+      "id": "animations",
+      "title": "KayKit Character Animations 1.1 FREE",
+      "page": "https://kaylousberg.itch.io/kaykit-character-animations",
+      "officialUploadId": 15799903,
+      "downloadFlow": "Official itch.io Download Now, free animation tier; no payment or account required",
+      "retrievedOn": "2026-10-29",
+      "archive": ".cache/kaykit-source/KayKit_Character_Animations_1.1_FREE.zip",
+      "archiveBytes": 14858957,
+      "archiveSha256": "65882f31f905ad2e953819648a59287cdeab8f623908d5ef701971d3758be20f",
+      "licenseCopy": "Animations-LICENSE.txt",
+      "freeTierBoundary": "FBX/glTF animation exports are free. Paid Blender source files were not acquired."
+    }
+  ],
+  "files": [
+    {
+      "path": "Characters/Knight.fbx",
+      "source": "adventurers",
+      "sourcePath": "Characters/fbx/Knight.fbx",
+      "role": "tank-character"
+    },
+    {
+      "path": "Characters/Ranger.fbx",
+      "source": "adventurers",
+      "sourcePath": "Characters/fbx/Ranger.fbx",
+      "role": "ranged-character"
+    },
+    {
+      "path": "Equipment/bow_withString.fbx",
+      "source": "adventurers",
+      "sourcePath": "Assets/fbx(unity)/bow_withString.fbx",
+      "role": "ranger-bow"
+    },
+    {
+      "path": "Equipment/crossbow_1handed.fbx",
+      "source": "adventurers",
+      "sourcePath": "Assets/fbx(unity)/crossbow_1handed.fbx",
+      "role": "historical-unused-crossbow",
+      "usedInCurrentBuild": false
+    },
+    {
+      "path": "Equipment/sword_1handed.fbx",
+      "source": "adventurers",
+      "sourcePath": "Assets/fbx(unity)/sword_1handed.fbx",
+      "role": "knight-melee-weapon",
+      "usedInCurrentBuild": true
+    },
+    {
+      "path": "Equipment/shield_badge.fbx",
+      "source": "adventurers",
+      "sourcePath": "Assets/fbx(unity)/shield_badge.fbx",
+      "role": "knight-shield"
+    },
+    {
+      "path": "Equipment/arrow_bow.fbx",
+      "source": "adventurers",
+      "sourcePath": "Assets/fbx(unity)/arrow_bow.fbx",
+      "role": "ranger-only-projectile"
+    },
+    {
+      "path": "Textures/knight_texture.png",
+      "source": "adventurers",
+      "sourcePath": "Textures/knight_texture.png",
+      "role": "knight-sword-and-shield-atlas"
+    },
+    {
+      "path": "Textures/ranger_texture.png",
+      "source": "adventurers",
+      "sourcePath": "Textures/ranger_texture.png",
+      "role": "ranger-bow-and-arrow-atlas"
+    },
+    {
+      "path": "Textures/rogue_texture.png",
+      "source": "adventurers",
+      "sourcePath": "Textures/rogue_texture.png",
+      "role": "historical-unused-crossbow-atlas",
+      "usedInCurrentBuild": false
+    },
+    {
+      "path": "Animations/Rig_Medium_General.fbx",
+      "source": "animations",
+      "sourcePath": "Animations/fbx/Rig_Medium/Rig_Medium_General.fbx",
+      "role": "idle-hit-death"
+    },
+    {
+      "path": "Animations/Rig_Medium_MovementBasic.fbx",
+      "source": "animations",
+      "sourcePath": "Animations/fbx/Rig_Medium/Rig_Medium_MovementBasic.fbx",
+      "role": "walk-run"
+    },
+    {
+      "path": "Animations/Rig_Medium_CombatRanged.fbx",
+      "source": "animations",
+      "sourcePath": "Animations/fbx/Rig_Medium/Rig_Medium_CombatRanged.fbx",
+      "role": "ranger-bow-attacks"
+    },
+    {
+      "path": "Animations/Rig_Medium_CombatMelee.fbx",
+      "source": "animations",
+      "sourcePath": "Animations/fbx/Rig_Medium/Rig_Medium_CombatMelee.fbx",
+      "role": "knight-melee-attacks",
+      "usedInCurrentBuild": true
+    }
+  ],
+  "rigAudit": {
+    "sharedRig": "Rig_Medium",
+    "rootBone": "root",
+    "hipsBone": "hips",
+    "weaponSockets": [
+      "handslot.l",
+      "handslot.r"
+    ],
+    "hands": [
+      "hand.l",
+      "hand.r"
+    ],
+    "verification": "Exact names read from downloaded character GLB node lists, confirmed in Knight FBX binary strings and the Unity source-import probe at artifacts/kaykit-source-probe.txt."
+  },
+  "animationAudit": {
+    "verification": "Current Windows/WebGL builds and native preview passed: Knight Idle_A and horizontal sword slice, Ranger aiming/release, actual Draw-derived release direction and reversed-grip negative control.",
+    "idle": [
+      "Idle_A",
+      "Idle_B"
+    ],
+    "movement": [
+      "Walking_A",
+      "Walking_B",
+      "Walking_C",
+      "Running_A",
+      "Running_B"
+    ],
+    "death": [
+      "Death_A",
+      "Death_A_Pose",
+      "Death_B",
+      "Death_B_Pose"
+    ],
+    "hit": [
+      "Hit_A",
+      "Hit_B"
+    ],
+    "bow": [
+      "Ranged_Bow_Aiming_Idle",
+      "Ranged_Bow_Draw",
+      "Ranged_Bow_Idle",
+      "Ranged_Bow_Release"
+    ],
+    "melee": [
+      "Melee_1H_Attack_Slice_Horizontal"
+    ],
+    "crossbowCandidates": [
+      "Ranged_1H_Aiming",
+      "Ranged_1H_Shoot",
+      "Ranged_2H_Aiming",
+      "Ranged_2H_Shoot"
+    ],
+    "crossbowNote": "Historical source audit only: crossbow actions are no longer selected for Knight. Retained source files and earlier derived clips are not used by the current sword/shield controller.",
+    "sourceDurationsSeconds": {
+      "Ranged_1H_Shoot": 1.0666667,
+      "Ranged_2H_Shoot": 1.0666667,
+      "Ranged_Bow_Draw": 1.3333333,
+      "Ranged_Bow_Release": 1.3333333
+    }
+  },
+  "normalizationPlan": {
+    "character": "Preserve shared Generic rig, turn root motion off, normalize visible bounds to approximately 1.4 world units, and anchor feet at y=0.",
+    "weapons": "Sword in handslot.r and shield in handslot.l for Knight. Ranger bow stays in handslot.l with local Z rotated 180 degrees to correct Unity's mirrored bow release direction. Verify grip visually in idle, movement and attack; source FBX files remain unchanged.",
+    "bowDirectionVerification": "The earlier fixed local +X test used the wrong sign. Current verification derives release direction from the negative of the actual imported Draw blendshape displacement, checks forward +Z, and rejects the old reversed grip as a negative control. Source audit is in artifacts/bow-source-audit.py and .json.",
+    "projectile": "Ranger only: simulation radius 0.18 unchanged; visible arrow length 0.68, rendered height 0.68, local tip at +0.18 and tail about -0.50. Knight uses authoritative melee events and never creates arrows.",
+    "material": "Current source atlas assignments: Knight, sword_1handed and shield_badge use knight_texture; Ranger, bow_withString and arrow_bow use ranger_texture. Unused crossbow_1handed/rogue_texture are retained as historical source files."
+  },
+  "meleeRules": {
+    "heroID": "tank",
+    "attackKind": "melee",
+    "range": 1.8,
+    "arcDegrees": 150,
+    "damage": 35,
+    "cooldownTicks": 20,
+    "authority": "server",
+    "feedback": "combatEvents, independent of projectile presentation"
+  },
+  "editHistory": [
+    {
+      "date": "2026-10-29",
+      "change": "Acquired official free archives, preserved license files, selected only Knight/Ranger/equipment and three medium-rig animation exports. Source FBX/PNG files copied without modification; Unity normalization performed by the project build pipeline."
+    },
+    {
+      "date": "2026-10-29",
+      "change": "Generated equipped Generic prefabs at 1.4-unit standing height, palette materials and controllers. Normalized sideways one-hand aiming/shooting using derived .anim copies; original sources unchanged. Arrow length 0.68, tip at local +0.18, rendered height 0.68; runtime pools preserve source scale and palette."
+    },
+    {
+      "date": "2026-10-29",
+      "change": "User reported reversed bow and requested true melee. Source FBX geometry/Draw audit identified Unity X-axis mirroring; corrected bow grip with local Z 180 degrees and replaced the incorrect fixed +X check with deformation-derived direction plus reversed-grip negative control. Knight changed from crossbow to sword/shield and CombatMelee horizontal slice; original source files, crossbow/rogue assets and previous edit history retained. New revision validation pending."
+    },
+    {
+      "date": "2026-10-29",
+      "change": "Current revision passed all Go tests, Windows/WebGL builds, Draw-direction regression, native preview, UI/private/practice smoke, and zero-error Unity asset audit. Local server updated to g1-melee-1."
+    },
+    {
+      "date": "2026-10-29",
+      "change": "Expanded server-authoritative Knight reach from 1.25 to 1.8 and arc from 120 to 150 degrees; runtime feedback and HUD read the same fetched hero config."
+    }
+  ],
+  "runtimeQA": {
+    "complete": false,
+    "nativeVerified": true,
+    "windowsBuildVerified": true,
+    "webGLBuildVerified": true,
+    "status": "Current melee and corrected-bow revision verified in native rendering and network smoke",
+    "previousRevision": "The prior crossbow Knight revision passed Windows/WebGL builds, native preview and network smoke. That result is retained as history only and does not establish correctness of the current melee revision.",
+    "remaining": [
+      "Browser GPU/playtest and mobile visual/performance acceptance"
+    ],
+    "browserAutomation": "Stopped by Computer Use because the current browser URL could not be determined reliably. No browser playtest claimed.",
+    "evidence": [
+      "artifacts/unity-Windows.log",
+      "artifacts/unity-Web.log",
+      "artifacts/unity-art-preview.log",
+      "artifacts/kaykit-attack-preview.png",
+      "artifacts/unity-private-host.log",
+      "artifacts/unity-private-guest.log",
+      "artifacts/unity-practice-smoke-d38338f7bb3048d88d1739b137ca83f7.log"
+    ]
+  }
+}

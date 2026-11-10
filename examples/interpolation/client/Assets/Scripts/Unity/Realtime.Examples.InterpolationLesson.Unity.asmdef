@@ -1,0 +1,6 @@
+{
+  "name": "Realtime.Examples.InterpolationLesson.Unity",
+  "rootNamespace": "Realtime.Examples.InterpolationLesson",
+  "references": ["Realtime.Examples.InterpolationLesson", "Realtime.Core", "Realtime.Transport"],
+  "noEngineReferences": false
+}

@@ -1,0 +1,1 @@
+{"name":"Rumblebound.Example.Battle.Unity","rootNamespace":"Rumblebound.Example.Battle.Unity","references":["Rumblebound.Example.Battle","Rumblebound.Gameplay","Rumblebound.Presentation","Realtime.Core","Realtime.Transport"],"noEngineReferences":false}

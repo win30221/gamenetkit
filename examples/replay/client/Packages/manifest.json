@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "com.realtime.core": "file:../../../../packages/unity/core",
+    "com.realtime.transport": "file:../../../../packages/unity/transport",
+    "com.realtime.prediction": "file:../../../../packages/unity/prediction",
+    "com.realtime.correction": "file:../../../../packages/unity/correction",
+    "com.realtime.interpolation": "file:../../../../packages/unity/interpolation",
+    "com.realtime.simulation": "file:../../../../packages/unity/simulation",
+    "com.realtime.replication": "file:../../../../packages/unity/replication",
+    "com.realtime.actions": "file:../../../../packages/unity/actions",
+    "com.realtime.playback": "file:../../../../packages/unity/playback",
+    "com.realtime.examples": "file:../../../unity-common",
+    "com.unity.modules.jsonserialize": "1.0.0",
+    "com.unity.modules.imgui": "1.0.0",
+    "com.unity.modules.physics": "1.0.0",
+    "com.unity.modules.unitywebrequest": "1.0.0"
+  }
+}

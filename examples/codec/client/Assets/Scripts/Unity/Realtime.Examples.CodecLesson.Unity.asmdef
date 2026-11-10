@@ -1,0 +1,9 @@
+{
+  "name": "Realtime.Examples.CodecLesson.Unity",
+  "references": [
+    "Realtime.Examples.CodecLesson",
+    "Realtime.Examples.Presentation",
+    "Realtime.Transport",
+    "Realtime.Core"
+  ]
+}

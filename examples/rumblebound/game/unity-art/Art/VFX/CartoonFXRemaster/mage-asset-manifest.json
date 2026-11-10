@@ -1,0 +1,108 @@
+{
+  "manifestSchema": 2,
+  "generatedBy": "scripts/Prepare-MageAssets.py",
+  "maintenanceNotes": "asset-notes.json",
+  "title": "Cartoon FX Remaster Free — Mage explosion",
+  "version": "R 1.5.1",
+  "source": "https://assetstore.unity.com/packages/vfx/particles/cartoon-fx-remaster-free-109565",
+  "license": "Standard Unity Asset Store EULA",
+  "files": [
+    {
+      "path": "client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr ember blur hdr ab.mat",
+      "sourcePath": ".cache/vfx-source/cfx-original/Assets/JMO Assets/Cartoon FX Remaster/CFXR Assets/Graphics/cfxr ember blur hdr ab.mat",
+      "sourceSHA256": "816df81ee3c4e6e5cdb5154b96ae23f8138524dd081733f9187ee8894e2e1427",
+      "status": "existing-shared-adaptation-preserved"
+    },
+    {
+      "path": "client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr ember blur.png",
+      "sourcePath": ".cache/vfx-source/cfx-original/Assets/JMO Assets/Cartoon FX Remaster/CFXR Assets/Graphics/cfxr ember blur.png",
+      "sourceSHA256": "9428e154ef5e7abd07bb9c75de3401899925c1539ab5a7b6aa7824873ee697f3",
+      "status": "existing-shared-adaptation-preserved"
+    },
+    {
+      "path": "client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr fire small anim blurred hdr ab.mat",
+      "sourcePath": ".cache/vfx-source/cfx-original/Assets/JMO Assets/Cartoon FX Remaster/CFXR Assets/Graphics/cfxr fire small anim blurred hdr ab.mat",
+      "sourceSHA256": "2bd11751fe05fd13ef90be596ec36070fd5e48c0b322d15319a12c7bb471fd1d",
+      "status": "existing-shared-adaptation-preserved"
+    },
+    {
+      "path": "client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr fire small anim blurred.png",
+      "sourcePath": ".cache/vfx-source/cfx-original/Assets/JMO Assets/Cartoon FX Remaster/CFXR Assets/Graphics/cfxr fire small anim blurred.png",
+      "sourceSHA256": "09f9c8f26488c939ed650207487328789d46a9706c397ad065f4188137f263af",
+      "status": "existing-shared-adaptation-preserved"
+    },
+    {
+      "path": "client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr proc ring hdr ab.mat",
+      "sourcePath": ".cache/vfx-source/cfx-original/Assets/JMO Assets/Cartoon FX Remaster/CFXR Assets/Graphics/cfxr proc ring hdr ab.mat",
+      "sourceSHA256": "871e9a300922db5f8052f3fbaeae3300fa0988c15032fae9e6c1fa9af8c77a8c",
+      "status": "existing-shared-adaptation-preserved"
+    },
+    {
+      "path": "client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr smoke cloud x4 ab.mat",
+      "sourcePath": ".cache/vfx-source/cfx-original/Assets/JMO Assets/Cartoon FX Remaster/CFXR Assets/Graphics/cfxr smoke cloud x4 ab.mat",
+      "sourceSHA256": "14b74229f495a08c75222db3269786c05c4ff514fbf09987f5e8e5f4710b4ab2",
+      "status": "existing-shared-adaptation-preserved"
+    },
+    {
+      "path": "client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr smoke cloud x4 dissolve.png",
+      "sourcePath": ".cache/vfx-source/cfx-original/Assets/JMO Assets/Cartoon FX Remaster/CFXR Assets/Graphics/cfxr smoke cloud x4 dissolve.png",
+      "sourceSHA256": "b3695e72ba064cf0892fa957595b3e68accaadb76dc8b03214fc8de4fdbde7d4",
+      "status": "existing-shared-adaptation-preserved"
+    },
+    {
+      "path": "client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Graphics/cfxr smoke cloud x4.png",
+      "sourcePath": ".cache/vfx-source/cfx-original/Assets/JMO Assets/Cartoon FX Remaster/CFXR Assets/Graphics/cfxr smoke cloud x4.png",
+      "sourceSHA256": "8ff676114122e30573501a98e530b6b9bc46bb657ede70197416345f97db90dd",
+      "status": "existing-shared-adaptation-preserved"
+    },
+    {
+      "path": "client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Meshes/cfxr ring mesh.asset",
+      "sourcePath": ".cache/vfx-source/cfx-original/Assets/JMO Assets/Cartoon FX Remaster/CFXR Assets/Meshes/cfxr ring mesh.asset",
+      "sourceSHA256": "cf0a31568dc2e3e202057bd53fbfa0afe3fe98525f35ee055417ffb40ba040c9",
+      "status": "existing-shared-adaptation-preserved"
+    },
+    {
+      "path": "client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Shaders/CFXR Particle Procedural Ring.shader",
+      "sourcePath": ".cache/vfx-source/cfx-original/Assets/JMO Assets/Cartoon FX Remaster/CFXR Assets/Shaders/CFXR Particle Procedural Ring.cfxrshader",
+      "sourceSHA256": "d46459d714c38230e5b9dc2c3851218738f9a23bf842084d1c7a7188f3935301",
+      "status": "existing-shared-adaptation-preserved"
+    },
+    {
+      "path": "client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Shaders/CFXR Particle Ubershader.shader",
+      "sourcePath": ".cache/vfx-source/cfx-original/Assets/JMO Assets/Cartoon FX Remaster/CFXR Assets/Shaders/CFXR Particle Ubershader.cfxrshader",
+      "sourceSHA256": "818b941ff03b9ebb28470fb21eff65504dd3f693abe724914b4233091f735159",
+      "status": "existing-shared-adaptation-preserved"
+    },
+    {
+      "path": "client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Shaders/CFXR.cginc",
+      "sourcePath": ".cache/vfx-source/cfx-original/Assets/JMO Assets/Cartoon FX Remaster/CFXR Assets/Shaders/CFXR.cginc",
+      "sourceSHA256": "ff630e2b3a3b0bacf03e26667cc10128941a49c53bfe128d75c3b0c729d07bcf",
+      "status": "existing-shared-adaptation-preserved"
+    },
+    {
+      "path": "client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Shaders/CFXR_PASSES.cginc",
+      "sourcePath": ".cache/vfx-source/cfx-original/Assets/JMO Assets/Cartoon FX Remaster/CFXR Assets/Shaders/CFXR_PASSES.cginc",
+      "sourceSHA256": "61c5ae22cac7097053b397eea91ce5e34e1f4b99287bf8d8a93378d110ae8828",
+      "status": "existing-shared-adaptation-preserved"
+    },
+    {
+      "path": "client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Shaders/CFXR_SETTINGS.cginc",
+      "sourcePath": ".cache/vfx-source/cfx-original/Assets/JMO Assets/Cartoon FX Remaster/CFXR Assets/Shaders/CFXR_SETTINGS.cginc",
+      "sourceSHA256": "480d072e9f6f407a52d62749ebda55680c630658daffda596241f231aa810a14",
+      "status": "existing-shared-adaptation-preserved"
+    },
+    {
+      "path": "client/Assets/Art/VFX/CartoonFXRemaster/CFXR Assets/Shaders/CFXR_URP.cginc",
+      "sourcePath": ".cache/vfx-source/cfx-original/Assets/JMO Assets/Cartoon FX Remaster/CFXR Assets/Shaders/CFXR_URP.cginc",
+      "sourceSHA256": "0ad0a5dbf1145ff0916c7af7ee4673860430fbad46473b8e88a2ae2e9b65eb9a",
+      "status": "existing-shared-adaptation-preserved"
+    },
+    {
+      "path": "client/Assets/Art/VFX/CartoonFXRemaster/CFXR Prefabs/Explosions/CFXR3 Fire Explosion B.prefab",
+      "sourcePath": ".cache/vfx-source/cfx-original/Assets/JMO Assets/Cartoon FX Remaster/CFXR Prefabs/Explosions/CFXR3 Fire Explosion B.prefab",
+      "sourceSHA256": "e9f1926b97ac84c59c08cb1e20d7a295656be54760ab1797d3b861a429f67b10",
+      "status": "existing-shared-adaptation-preserved"
+    }
+  ],
+  "modifications": "Publisher behaviors/lights removed; existing shared URP shader/mesh adaptations preserved."
+}
