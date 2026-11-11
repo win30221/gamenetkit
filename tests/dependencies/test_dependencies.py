@@ -66,6 +66,26 @@ class DependencyGuards(unittest.TestCase):
         self.write('examples/modules/server/main.go', 'import "github.com/win30221/gamenetkit/examples/rumblebound/server"')
         self.assertEqual(3, len(dependencies.check(self.root)))
 
+    def test_protobuf_is_allowed_only_at_optional_adapter_boundary(self):
+        self.write('packages/unity/protobuf/Runtime/Adapter.cs', 'using Google.Protobuf;')
+        self.write('packages/unity/protobuf/Runtime/Adapter.asmdef', '{"noEngineReferences":true,"precompiledReferences":["Google.Protobuf.dll"]}')
+        self.assertEqual([], dependencies.check(self.root))
+        for package in ('core', 'transport'):
+            with self.subTest(package=package):
+                self.write(f'packages/unity/{package}/Runtime/Bad.cs', 'using Google . Protobuf;')
+                self.write(f'packages/unity/{package}/Runtime/Bad.asmdef', '{"noEngineReferences":true,"precompiledReferences":["Google.Protobuf.dll"]}')
+                self.write(f'packages/unity/{package}/package.json', '{"dependencies":{"com.realtime.protobuf-runtime":"0.1.0"}}')
+        self.assertEqual(6, len(dependencies.check(self.root)))
+
+    def test_basic_examples_do_not_install_protobuf(self):
+        self.write('examples/minimal-unity/Packages/manifest.json', '{"dependencies":{"com.realtime.protobuf":"file:bad","com.realtime.protobuf-runtime":"file:bad"}}')
+        self.assertEqual(2, len(dependencies.check(self.root)))
+
+    def test_protobuf_example_does_not_depend_on_full_game(self):
+        self.write('examples/protobuf/unity/Runtime/Bad.cs', 'using Rumblebound.Example;')
+        self.write('examples/protobuf/server/bad.go', 'import "github.com/win30221/gamenetkit/examples/rumblebound/game"')
+        self.assertEqual(2, len(dependencies.check(self.root)))
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,6 +1,6 @@
 # Unity 客戶端 SDK
 
-這裡是 12 個本機 UPM 套件，不是可以直接開啟的 Unity 專案。先執行範例請看 [Shared World](../../examples/shared-world/README.md)；最短可讀專案是 [minimal-unity](../../examples/minimal-unity/README.md)。倉庫建置使用的 Editor 版本以 [toolchain.json](../../toolchain.json) 為準。
+這裡是 14 個本機 UPM 套件：原有 12 項加選用 Protobuf adapter／runtime，不是可以直接開啟的 Unity 專案。先執行範例請看 [Shared World](../../examples/shared-world/README.md)；最短可讀專案是 [minimal-unity](../../examples/minimal-unity/README.md)。倉庫建置使用的 Editor 版本以 [toolchain.json](../../toolchain.json) 為準。
 
 ## 安裝到自己的專案
 
@@ -31,8 +31,12 @@
 | diagnostics | Realtime.Diagnostics | 網路時間及流量量測 |
 | simulation | Realtime.Simulation | 應用訊息延遲、抖動與丟棄 |
 | playback | Realtime.Playback | 離線播放時間軸 |
+| protobuf | Realtime.Protobuf | 選用官方 Protobuf typed envelope 與 binary WS adapter |
+| protobuf-runtime | Google.Protobuf | 官方 Google.Protobuf 3.36.2 managed DLL／授權 |
 
-套件 ID 為 `com.realtime.<後綴>`。十個選用套件各只依賴 core；transport manifest 不依賴 core。安裝某套件後，應用 assembly 也要引用其 assembly。第一個擴充練習見 [加入插值](../../docs/COMPONENT_GUIDE.md)，完整 API／停用／移除契約見 [MODULES](../../docs/MODULES.md)。
+套件 ID 為 `com.realtime.<後綴>`。十個同步選用套件各只依賴 core；transport manifest 不依賴 core。protobuf 另外依賴 transport／protobuf-runtime；core／transport 不反向依賴它。安裝某套件後，應用 assembly 也要引用其 assembly。第一個擴充練習見 [加入插值](../../docs/COMPONENT_GUIDE.md)，完整 API／停用／移除契約見 [MODULES](../../docs/MODULES.md)。
+
+選用二進位型別協定見 [Protobuf 範例](../../examples/protobuf/README.md)，使用 .NET Standard 2.1 profile；生成碼與官方 runtime 已提交。原生／WebGL WebSocket 為此版目標，實際 Unity 建置／執行驗收狀態以範例報告為準；binary WebTransport 尚未實作。
 
 WebGL 主機須提供 `/transport.js`（來源為 `transport/Browser/transport.js`）與應用的 WebSocket 路由。桌面 WebTransport 另需 [native helper](../../native/webtransport/README.md)；基本 WebSocket 不需要它。
 

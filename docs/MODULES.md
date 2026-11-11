@@ -6,7 +6,7 @@
 
 第一次加入組件，先讀 [組件接入指南](COMPONENT_GUIDE.md)：從 Shared World 加入插值，並依需求找到其他組件的安裝、呼叫與清理位置。想單獨練 API，從 [組件課程](../examples/modules/README.md) 選一項執行；本頁保留完整契約與限制。core／transport 的基本接線見 [Minimal](GETTING_STARTED.md)，多人生命週期見 [Shared World](../examples/shared-world/README.md)。
 
-Unity 共 12 個套件：core、transport 與十個選用套件。十個選用套件各自只依賴 core，彼此沒有套件相依；transport 的 package manifest 無 core 相依。套件皆以 `packages/unity/<目錄>` 提供本機 UPM 來源。
+Unity 共 14 個套件：core、transport、十個同步選用套件，以及選用 protobuf adapter／官方 runtime。十個同步選用套件各自只依賴 core，彼此沒有套件相依；transport 的 package manifest 無 core 相依。protobuf 依賴 transport 與 protobuf-runtime，core／transport 不反向依賴 Protobuf。套件皆以 `packages/unity/<目錄>` 提供本機 UPM 來源。
 
 | Unity 套件 | 公開入口 | 應用供應 / 停用或替代路徑 |
 | --- | --- | --- |
@@ -22,8 +22,10 @@ Unity 共 12 個套件：core、transport 與十個選用套件。十個選用�
 | `com.realtime.diagnostics` | `ClientDiagnostics` / `IClientDiagnostics` | 同一單調時鐘、應用量測值與流量；停用改 core `NoClientDiagnostics` |
 | `com.realtime.simulation` | `MessageConditioner` / `IMessageConditioner` | 訊息分類、Pump、連線清理；停用走直接傳輸 |
 | `com.realtime.playback` | `PlaybackClock` / `IPlaybackClock` | 有界 tick 清單與獨立播放控制；移除播放入口，不影響即時同步 |
+| `com.realtime.protobuf` | `ProtobufSession<TSend,TReceive>`、`Realtime.Protobuf` assembly | 官方 message／parser 與 binary transport 的薄適配；遊戲供應 envelope 與驗證規則，owner 呼叫 Pump |
+| `com.realtime.protobuf-runtime` | `Google.Protobuf.dll` | 官方 .NET Standard managed runtime；產生碼與 adapter 使用，沒有遊戲 schema；要求 Unity .NET Standard 2.1 profile |
 
-Go module 為 `github.com/win30221/gamenetkit/server`，共有八個 library package：loop、transport、netcore 與五個選用 package。跨語言 codec 測試資料產生器位於 [tests/fixtures/generate-codec](../tests/fixtures/README.md)，由測試目錄維護。
+Go module 為 `github.com/win30221/gamenetkit/server`，共有九個 library package：loop、transport、netcore 與六個選用 package。跨語言 codec 測試資料產生器位於 [tests/fixtures/generate-codec](../tests/fixtures/README.md)，由測試目錄維護。
 
 | Go package | 入口 / SDK 內相依 | 應用供應 / 停用或替代路徑 |
 | --- | --- | --- |
@@ -35,8 +37,11 @@ Go module 為 `github.com/win30221/gamenetkit/server`，共有八個 library pac
 | `server/interest` | `Radius`、`New` → netcore | 半徑、遲滯、容量及 Always 分類；停用投影全部物件 |
 | `server/codec` | `Encoder`、`Decode`、量化 helper → netcore | payload、已確認基準、envelope 與量化投影；停用完整未量化 JSON |
 | `server/replay` | 有界 journal writer/reader → netcore | 初始定義、事件、state hash 與重播規則；停用不錄製 |
+| `server/protobuf` | `NewPeer[In,Out]`、`Peer.Read/Write` → transport、官方 proto runtime | inbound factory、生成 envelope、應用 oneof／語意驗證；選用，不讓 loop／netcore 依賴遊戲 schema |
 
 ## Composition
+
+Protobuf 接入見 [獨立範例](../examples/protobuf/README.md)與[生成工具](../tools/PROTOBUF.md)：一份 `.proto` 產生兩端型別，生成物與 runtime 已提交；只有修改 schema 才需工具鏈。第一版目標是原生／WebGL WebSocket binary，binary WebTransport 尚未實作；Unity IL2CPP／WebGL 的實際驗收狀態以範例報告為準。既有 FrameDecoder／MessageConditioner 是文字介面，不能直接用於這條 binary 路徑。
 
 Unity 用專案 `Packages/manifest.json` 加入 `file:` 套件；路徑相對於 `Packages` 目錄。先安裝 core/transport，依需求加入選用套件，在應用組裝入口註冊具體型別；使用端持有 core 介面。Go 應用以 `require github.com/win30221/gamenetkit/server` 與本機 `replace` 引用 SDK，然後在自己的組裝程式注入 netcore 實作。
 

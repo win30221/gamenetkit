@@ -19,6 +19,8 @@
 
 Minimal 是**程式接線基礎參考**；因執行畫面需要 Unity 建置，選單才把它放在接線參考區。C#／Go 終端課程也可在學到某組件時穿插閱讀，不必等到最後。
 
+需要只定義一次 Go／C# 訊息時，選讀 [Protobuf 型別化收送](protobuf/README.md)。此範例有獨立 `examples/protobuf/Run.ps1` 入口，使用官方產生器與二進位 WebSocket，不要求遷移現有 JSON 遊戲。
+
 ## 讀程式前先認識這些詞
 
 | 詞彙 | 在這些範例中的意思 |

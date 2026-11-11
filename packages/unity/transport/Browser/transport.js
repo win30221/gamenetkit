@@ -1,11 +1,12 @@
 // Shared by the diagnostic page and Unity WebGL. Every async operation belongs
 // to this object; closing it makes late opens, reads and writes inert.
 export const maxMessageBytes=32*1024;
-export function createTransport({kind,url,hello,hash,sent,receive,closed,clock=()=>performance.now()}) {
+export function createTransport({kind,url,hello,hash,sent,receive,closed,binary=false,clock=()=>performance.now()}) {
   let stopped=false, socket, wt, datagrams, sending=false, controlReceived=false;
   let writeFinished,slotWaiting=false;
   const pendingWrites=new Set();
   const encoder=new TextEncoder();
+  const validBytes=data=>data instanceof Uint8Array&&data.byteLength<=maxMessageBytes;
   const validText=data=>typeof data==='string'&&encoder.encode(data).byteLength<=maxMessageBytes;
   let resolveReady,rejectReady;
   const ready=new Promise((resolve,reject)=>{resolveReady=resolve;rejectReady=reject;});
@@ -23,6 +24,10 @@ export function createTransport({kind,url,hello,hash,sent,receive,closed,clock=(
   function opened() {if(!stopped){clearTimeout(timer);resolveReady();}}
   function message(data) {
     if(stopped)return;
+    if(binary){
+      if(!(data instanceof ArrayBuffer)||data.byteLength>maxMessageBytes){fail('invalid_server_message');return;}
+      receive(new Uint8Array(data).slice(),clock());return;
+    }
     if(!validText(data)){fail('invalid_server_message');return;}
     receive(data,clock());
   }
@@ -35,7 +40,14 @@ export function createTransport({kind,url,hello,hash,sent,receive,closed,clock=(
       Promise.resolve(write).then(value=>{pendingWrites.delete(cancel);resolve(value);},error=>{pendingWrites.delete(cancel);reject(error);});
     });
   }
-  const connection={ready,close,async send(data,{waitForSlot=false}={}){
+  const connection={ready,close,trySendBytes(data){
+    if(!binary)throw new TypeError('Transport is in text mode');
+    if(!validBytes(data))throw new RangeError('Message exceeds transport binary limit');
+    if(stopped||!socket||socket.readyState!==1||socket.bufferedAmount>=4096)return false;
+    const owned=data.slice();
+    try{socket.send(owned);sent?.(owned,clock());return true;}catch{fail('send_failed');return false;}
+  },async send(data,{waitForSlot=false}={}){
+    if(binary)return connection.trySendBytes(data);
     if(!validText(data))throw new RangeError('Message exceeds transport text limit');
     if(stopped)return false;
     if(socket){if(socket.readyState!==1||socket.bufferedAmount>=4096)return false;sent?.(data,clock());socket.send(data);return true;}
@@ -55,9 +67,12 @@ export function createTransport({kind,url,hello,hash,sent,receive,closed,clock=(
   }};
   (async()=>{
     try{
-      if(!validText(hello)){fail('invalid_client_message');return;}
+      if(binary&&kind!=='ws'){fail('transport_unsupported');return;}
+      if(!(binary?validBytes(hello):validText(hello))){fail('invalid_client_message');return;}
       if(kind==='ws'){
+        if(binary)hello=hello.slice();
         socket=new WebSocket(url);
+        if(binary)socket.binaryType='arraybuffer';
         socket.onopen=()=>{if(stopped){socket.close();return;}socket.send(hello);opened();};
         socket.onmessage=e=>message(e.data);
         socket.onclose=()=>fail();socket.onerror=()=>fail();

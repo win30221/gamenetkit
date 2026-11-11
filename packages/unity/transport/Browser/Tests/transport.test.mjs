@@ -213,3 +213,31 @@ test('WebTransport accepts exactly 32 KiB split across reliable reads',async t=>
   wt.controlRead.enqueue(new TextEncoder().encode(message.slice(16384)+'\n'));
   await flush();assert.deepEqual(messages,[message]);assert.deepEqual(failures,[]);c.close();
 });
+
+test('binary WS preserves bytes, ownership, empty/exact bounds, backpressure, timestamps and mode',async t=>{
+  const WS=websocket(t),received=[],errors=[];let now=12;
+  const hello=new Uint8Array([1,2]);
+  const c=createTransport({...options(),binary:true,hello,clock:()=>now,receive:(...v)=>received.push(v),closed:e=>errors.push(e)});
+  t.after(()=>c.close());const ws=WS.instances[0];hello[0]=99;
+  assert.equal(ws.binaryType,'arraybuffer');ws.open();await c.ready;assert.deepEqual([...ws.sent[0]],[1,2]);
+  const bytes=new Uint8Array(maxMessageBytes);bytes[1]=255;
+  assert.equal(c.trySendBytes(bytes),true);bytes[1]=0;assert.equal(ws.sent[1][1],255);
+  assert.equal(await c.send(new Uint8Array()),true);assert.equal(ws.sent[2].length,0);
+  await assert.rejects(c.send('text'),RangeError);await assert.rejects(c.send(new Uint8Array(maxMessageBytes+1)),RangeError);
+  ws.bufferedAmount=4096;assert.equal(c.trySendBytes(new Uint8Array([7])),false);assert.equal(ws.sent.length,3);ws.bufferedAmount=0;
+  const inbound=new Uint8Array([3,4]);ws.onmessage({data:inbound.buffer});inbound[0]=99;
+  now=13;ws.onmessage({data:new ArrayBuffer(0)});ws.onmessage({data:new ArrayBuffer(maxMessageBytes)});
+  assert.deepEqual([...received[0][0]],[3,4]);assert.equal(received[0][1],12);assert.equal(received[1][0].length,0);assert.equal(received[2][0].length,maxMessageBytes);
+  ws.onmessage({data:'wrong mode'});assert.deepEqual(errors,['invalid_server_message']);ws.onmessage({data:new ArrayBuffer(1)});assert.equal(received.length,3);
+  const text=createTransport(options());WS.instances.at(-1).open();await text.ready;assert.throws(()=>text.trySendBytes(new Uint8Array()),TypeError);text.close();
+});
+
+test('binary WS rejects oversized receive and binary WT explicitly',async t=>{
+  const WS=websocket(t);webtransport(t);
+  for(const kind of ['ws','wt']){
+    const errors=[],received=[];const c=createTransport({...options(kind),binary:true,hello:new Uint8Array(),receive:v=>received.push(v),closed:e=>errors.push(e)});
+    if(kind==='wt'){await assert.rejects(c.ready);assert.deepEqual(errors,['transport_unsupported']);}
+    else{WS.instances.at(-1).open();await c.ready;WS.instances.at(-1).onmessage({data:new ArrayBuffer(maxMessageBytes+1)});assert.deepEqual(errors,['invalid_server_message']);}
+    assert.deepEqual(received,[]);c.close();
+  }
+});

@@ -1,0 +1,7 @@
+{
+  "name": "ProtobufExample.Editor",
+  "references": ["ProtobufExample.Player", "GameNetKit.ProtobufExample"],
+  "includePlatforms": ["Editor"],
+  "overrideReferences": true,
+  "precompiledReferences": ["Google.Protobuf.dll"]
+}

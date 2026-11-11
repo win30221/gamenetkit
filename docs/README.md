@@ -13,6 +13,8 @@
 | 建置、部署與維護 | [指令](COMMANDS.md)、[部署](DEPLOYMENT.md)、[維護](MAINTENANCE.md) |
 | 修正工具位置、搬移專案 | [工具版本與遷移](MIGRATION.md) |
 | 確認測試及實際驗收範圍 | [驗證](VALIDATION.md)、[檔案用途](FILE_AUDIT.md) |
+| 查看輸入丟包對照與是否加入冗餘的決策 | [輸入丟包評估](INPUT_LOSS_EVALUATION_2026-11-11.md) |
+| 查看單一定義產生 Go／C# 訊息的設計與驗證 | [Protobuf 接入計畫](PROTOBUF_INTEGRATION_PLAN.md) · [驗證紀錄](PROTOBUF_VALIDATION.md) |
 | 查看這次文件修正及檢查限制 | [文件檢查紀錄](DOCUMENTATION_AUDIT.md) |
 | 查過去決策 | [歷史紀錄](archive/README.md)；不作現行操作指令 |
 

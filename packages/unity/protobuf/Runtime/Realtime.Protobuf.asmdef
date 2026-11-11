@@ -1,0 +1,7 @@
+{
+  "name": "Realtime.Protobuf",
+  "references": ["Realtime.Transport"],
+  "overrideReferences": true,
+  "precompiledReferences": ["Google.Protobuf.dll"],
+  "noEngineReferences": true
+}

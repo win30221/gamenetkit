@@ -4,7 +4,8 @@
 
 | 指令 | 用途 |
 | --- | --- |
-| [Test-GoAndBrowser.ps1](scripts/Test-GoAndBrowser.ps1) | 日常 Go／JS 回歸：14 個 Go 模組 test／vet、傳輸、共用網頁與 Shared World Node 測試；需 Go、Node。 |
+| [Test-GoAndBrowser.ps1](scripts/Test-GoAndBrowser.ps1) | 日常 Go／JS 回歸：15 個 Go 模組 test／vet、傳輸、共用網頁與 Shared World Node 測試；需 Go、Node。 |
+| [Test-Protobuf.ps1](scripts/Test-Protobuf.ps1) | 官方 runtime 的 Go／C# 相容性、型別化 binary WS 與兩人共用世界；需 Go、.NET8，不代替 Unity Player 驗證。 |
 | [Test-UnitySdk.ps1](scripts/Test-UnitySdk.ps1) | 真正 Editor 執行純 SDK 測試；需釘選 Editor 與有效授權。 |
 | [Test-SdkNative.ps1](scripts/Test-SdkNative.ps1) | 在無 Editor 授權時執行相同的純 C# SDK 契約測試；需 .NET 8，不涵蓋 Player／WebGL。 |
 | [Test-Transport.ps1](scripts/Test-Transport.ps1) | 真實 WS／HTTP3 及 browser bridge；需 Go、.NET 8 SDK、Node。 |

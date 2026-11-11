@@ -1,0 +1,6 @@
+{
+  "name": "GameNetKit.ProtobufExample",
+  "overrideReferences": true,
+  "precompiledReferences": ["Google.Protobuf.dll"],
+  "autoReferenced": true
+}

@@ -13,10 +13,18 @@
 | 訪客登入限流 | `golang.org/x/time/rate` v0.16.0 | sample 每個實際 peer 的 token bucket；應用維持有上限的 peer 清單與閒置清除 |
 | Google 身份驗證 | `cloud.google.com/go/auth` v0.24.1 | 共用遊戲身份層驗證 Google token；session、房間席位、一次性 ticket 與權限屬於應用政策 |
 | Unity 遊戲 JSON | `com.unity.nuget.newtonsoft-json` 3.2.2 | 完整 example 的 `UnityGameJson` 處理遊戲 DTO；設定禁止型別載入，限制深度。SDK 與純 C# 遊戲層仍注入 parser，沒有 Newtonsoft 相依 |
+| 選用 Protobuf 生成 | 官方 `protoc` 36.2、`protoc-gen-go` v1.36.11 | `tools/Generate-Protocol.ps1` 讀取遊戲 config；不自製 schema parser／plugin，不使用雲端產生服務；版本及雜湊見根目錄 `protobuf-toolchain.json` |
+| 選用 Protobuf runtime | Go `google.golang.org/protobuf` v1.36.11、C# `Google.Protobuf` 3.36.2 | `server/protobuf`／`com.realtime.protobuf` 薄適配；`com.realtime.protobuf-runtime` 封裝官方 managed DLL 與授權，core／transport 不反向引用 |
 | 日誌 | Go `log/slog` | 兩個 example 的結構化啟動／錯誤日誌；既有 sample 的 `log` 仍可運作 |
 | JSON、設定、隨機憑證、測試 | Go `encoding/json`、`flag`／`os`、`crypto/rand`、`testing`／`httptest` | 使用標準庫；既有嚴格 JSON 大小與欄位檢查保留，不因切換路由器放寬 |
 
 Gin 版本依[官方 v1.12.0 release](https://github.com/gin-gonic/gin/releases/tag/v1.12.0)選定；限流行為依 [x/time/rate 文件](https://pkg.go.dev/golang.org/x/time/rate)。Go module graph 可能因應用使用的較新套件而選取較新的間接相依；不應直接改寫 `go.sum` 來消除差異。
+
+## Protobuf 相依邊界
+
+Google.Protobuf 使用官方 NuGet `netstandard2.0` DLL，Unity 目標 API profile 為 .NET Standard 2.1；System.Memory／System.Runtime.CompilerServices.Unsafe 由釘選 Unity 提供，避免安裝重複框架 DLL。維護者以 `tools/Restore-Protobuf.ps1` 從鎖定的 NuGet archive／授權還原，`-Check` 驗證提交檔案；使用者不需 Editor NuGet 外掛。產生工具留在忽略的 workspace cache，範例提交 Go／C# 生成碼。
+
+目前鎖定官方 active support 36.x 的 patch 36.2，Go 使用獨立的 1.36.11 版本號；依據[官方版本支援表](https://protobuf.dev/support/version-support/)與[官方 NuGet 相依](https://www.nuget.org/packages/Google.Protobuf/3.36.2)。釘選與 managed 編譯不代替 Unity IL2CPP／WebGL 建置／執行驗收；狀態見 [Protobuf 範例](../examples/protobuf/README.md)。這是獨立可選接入，不遷移既有 JSON 遊戲。
 
 ## HTTP 接線
 

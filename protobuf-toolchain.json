@@ -1,0 +1,20 @@
+{
+  "protoc": {
+    "version": "36.2",
+    "url": "https://github.com/protocolbuffers/protobuf/releases/download/v36.2/protoc-36.2-win64.zip",
+    "sha256": "F0C128DC0D8492ECEECE83BB459A4C0E316764B929FFBF1AA416357FD644EDD3",
+    "exeSha256": "5A1B5350308309C9729CE4484A798981F281C10909144C4BDEFD6A37688E4B1F"
+  },
+  "go": {
+    "version": "v1.36.11",
+    "moduleSum": "h1:fV6ZwhNocDyBLK0dj+fg8ektcVegBBuEolpbTQyBNVE="
+  },
+  "csharp": {
+    "version": "3.36.2",
+    "url": "https://api.nuget.org/v3-flatcontainer/google.protobuf/3.36.2/google.protobuf.3.36.2.nupkg",
+    "sha256": "1182590DB175F9057707857A1DF48B217226D0732716CD353FA4AA4683D38DCB",
+    "dllSha256": "47F3D4534309A33FEC7241E995151935628E54511142515A647D67D74710D67A",
+    "licenseUrl": "https://raw.githubusercontent.com/protocolbuffers/protobuf/v36.2/LICENSE",
+    "licenseSha256": "6E5E117324AFD944DCF67F36CF329843BC1A92229A8CD9BB573D7A83130FEA7D"
+  }
+}

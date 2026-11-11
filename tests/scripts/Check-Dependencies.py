@@ -40,6 +40,22 @@ def check(root):
         config = json.loads(assembly.read_text(encoding='utf-8'))
         if not config.get('noEngineReferences'):
             errors.append(f'{assembly}: SDK algorithms unexpectedly depend on the engine')
+    # Serialization is an optional adapter boundary, never a core/transport dependency.
+    for package in ('core', 'transport'):
+        folder = root / 'packages/unity' / package
+        for source in folder.rglob('*.cs'):
+            if re.search(r'\b(?:Google|Realtime)\s*\.\s*Protobuf\b', source.read_text(encoding='utf-8-sig')):
+                errors.append(f'{source}: core/transport must not reference Protobuf')
+        for assembly in folder.rglob('*.asmdef'):
+            config = json.loads(assembly.read_text(encoding='utf-8-sig'))
+            references = config.get('references', []) + config.get('precompiledReferences', [])
+            if any('protobuf' in reference.lower() for reference in references):
+                errors.append(f'{assembly}: core/transport must not reference Protobuf assemblies')
+        manifest = folder / 'package.json'
+        if manifest.exists():
+            config = json.loads(manifest.read_text(encoding='utf-8-sig'))
+            if any('protobuf' in name.lower() for name in config.get('dependencies', {})):
+                errors.append(f'{manifest}: core/transport must not depend on Protobuf packages')
     for source in (root / 'packages/unity/transport').rglob('*'):
         if source.suffix not in ('.js', '.jslib') or 'Tests' in source.parts:
             continue
@@ -58,11 +74,13 @@ def check(root):
         if not manifest_path.exists():
             continue
         manifest = json.loads(manifest_path.read_text())
-        for name in ('interpolation', 'prediction', 'correction', 'diagnostics', 'simulation', 'clock', 'replication', 'actions', 'codec', 'playback'):
+        for name in ('interpolation', 'prediction', 'correction', 'diagnostics', 'simulation', 'clock', 'replication', 'actions', 'codec', 'playback', 'protobuf', 'protobuf-runtime'):
             if f'com.realtime.{name}' in manifest['dependencies']:
                 errors.append(f'{project}: basic teaching example must work without optional {name}')
     # Keep learning code independent from the full game's growing application.
     for folder in ('examples/unity-common', 'examples/browser-common',
+                   'examples/protobuf/client/Assets', 'examples/protobuf/server',
+                   'examples/protobuf/unity', 'examples/protobuf/tests',
                    'examples/shared-world/client/Assets', 'examples/shared-world/server',
                    'examples/shared-world/web', 'examples/shared-world/tests', 'examples/modules',
                    'examples/interpolation/client/Assets', 'examples/interpolation/browser-host',

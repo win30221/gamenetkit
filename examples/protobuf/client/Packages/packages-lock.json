@@ -1,0 +1,51 @@
+{
+  "dependencies": {
+    "com.gamenetkit.protobuf-example": {
+      "version": "file:../../unity",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.protobuf-runtime": "0.1.0"
+      }
+    },
+    "com.realtime.protobuf": {
+      "version": "file:../../../../packages/unity/protobuf",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.transport": "0.1.0",
+        "com.realtime.protobuf-runtime": "0.1.0"
+      }
+    },
+    "com.realtime.protobuf-runtime": {
+      "version": "file:../../../../packages/unity/protobuf-runtime",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
+    "com.realtime.transport": {
+      "version": "file:../../../../packages/unity/transport",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
+    "com.unity.modules.imgui": {
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "dependencies": {}
+    },
+    "com.unity.modules.jsonserialize": {
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "dependencies": {}
+    },
+    "com.unity.modules.physics": {
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "dependencies": {}
+    }
+  }
+}

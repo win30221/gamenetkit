@@ -1,0 +1,11 @@
+{
+  "name": "com.realtime.protobuf",
+  "version": "0.1.0",
+  "displayName": "Realtime Protobuf",
+  "description": "Optional typed protobuf envelopes over bounded binary WebSocket transport.",
+  "unity": "6000.0",
+  "dependencies": {
+    "com.realtime.transport": "0.1.0",
+    "com.realtime.protobuf-runtime": "0.1.0"
+  }
+}

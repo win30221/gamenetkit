@@ -1,0 +1,6 @@
+{
+  "name": "ProtobufExample.Player",
+  "references": ["Realtime.Transport", "Realtime.Protobuf", "GameNetKit.ProtobufExample"],
+  "overrideReferences": true,
+  "precompiledReferences": ["Google.Protobuf.dll"]
+}

@@ -1,0 +1,7 @@
+{
+  "name": "com.gamenetkit.protobuf-example",
+  "version": "0.1.0",
+  "displayName": "GameNetKit Protobuf Example Schema",
+  "unity": "6000.0",
+  "dependencies": { "com.realtime.protobuf-runtime": "0.1.0" }
+}

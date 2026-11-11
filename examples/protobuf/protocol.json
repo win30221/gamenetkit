@@ -1,0 +1,6 @@
+{
+  "schemaRoot": "protocol",
+  "inputs": ["game.proto"],
+  "goOutput": "server/gen",
+  "csharpOutput": "unity/Runtime/Generated"
+}

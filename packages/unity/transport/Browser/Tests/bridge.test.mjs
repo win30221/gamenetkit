@@ -185,3 +185,44 @@ test('synchronous error callbacks can reopen the same handle without the old fai
   assert.deepEqual(fresh.sent,['new hello','new input']);assert.equal(fresh.readyState,1);assert.equal(messages.length,1);
   lib.RB_Destroy(handle);
 });
+
+test('binary pointer ABI owns heap bytes and bounds a single polling inbox across epochs',async t=>{
+  const names=['WebSocket','LibraryManager','mergeInto','SendMessage','UTF8ToString','RBLab','HEAPU8','setValue','performance'];
+  const saved=new Map(names.map(name=>[name,Object.getOwnPropertyDescriptor(globalThis,name)]));
+  t.after(()=>{for(const [name,descriptor] of saved)if(descriptor)Object.defineProperty(globalThis,name,descriptor);else delete globalThis[name];});
+  class Socket {
+    static instances=[];
+    constructor(){this.readyState=0;this.bufferedAmount=0;this.sent=[];Socket.instances.push(this);}
+    send(value){this.sent.push(value);}close(){this.readyState=3;}open(){this.readyState=1;this.onopen?.();}
+  }
+  globalThis.WebSocket=Socket;globalThis.LibraryManager={library:{}};
+  globalThis.mergeInto=(a,b)=>Object.assign(a,b);globalThis.UTF8ToString=v=>v;
+  globalThis.SendMessage=()=>assert.fail('binary must never use SendMessage');
+  let now=1234.5;globalThis.performance={now:()=>now};
+  globalThis.HEAPU8=new Uint8Array(65536);const view=new DataView(HEAPU8.buffer);
+  globalThis.setValue=(ptr,value,type)=>type==='double'?view.setFloat64(ptr,value,true):view.setInt32(ptr,value,true);
+  let source=await readFile(new URL('../../Runtime/Plugins/WebGL/RealtimeTransport.jslib',import.meta.url),'utf8');
+  source=source.replace("import('/transport.js')",`import(${JSON.stringify(new URL('../transport.js',import.meta.url).href)})`);
+  await import('data:text/javascript;base64,'+Buffer.from(source+'\n// binary pointer ABI test').toString('base64'));
+  const lib=LibraryManager.library;globalThis.RBLab=lib.$RBLab;
+  const flush=async()=>{for(let i=0;i<12;i++)await new Promise(resolve=>setImmediate(resolve));};
+  const handle=lib.RB_Create();HEAPU8.set([1,2,3],32);
+  lib.RB_OpenBinary(handle,'ws://binary',32,3,'/transport.js');HEAPU8[32]=99;await flush();
+  const ws=Socket.instances[0];ws.open();await flush();assert.deepEqual([...ws.sent[0]],[1,2,3]);
+  assert.equal(lib.RB_TrySendTo(handle,'wrong mode'),0);
+  HEAPU8.set([7,8],32);assert.equal(lib.RB_TrySendBytes(handle,32,2),1);HEAPU8[32]=99;assert.deepEqual([...ws.sent[1]],[7,8]);
+  ws.bufferedAmount=4096;assert.equal(lib.RB_TrySendBytes(handle,32,2),0);ws.bufferedAmount=0;
+  assert.equal(lib.RB_ClockMS(),1234.5);
+  ws.onmessage({data:new Uint8Array([9,10]).buffer});ws.onmessage({data:new ArrayBuffer(0)});now=1300;
+  assert.equal(lib.RB_PollPacket(handle,128,32768,8,16),2);assert.deepEqual([...HEAPU8.slice(128,130)],[9,10]);assert.equal(view.getInt32(16,true),0);assert.equal(view.getFloat64(8,true),1234.5);assert.equal(lib.RB_ClockMS(),1300);
+  assert.equal(lib.RB_PollPacket(handle,128,32768,8,16),0);assert.equal(view.getInt32(16,true),0);assert.equal(lib.RB_PollPacket(handle,128,32768,8,16),-1);
+  for(let i=0;i<65;i++)ws.onmessage({data:new Uint8Array([i]).buffer});
+  assert.equal(RBLab.states[handle].packets.length,1);assert.equal(lib.RB_PollPacket(handle,128,32768,8,16),0);assert.equal(view.getInt32(16,true),4);assert.equal(lib.RB_PollPacket(handle,128,32768,8,16),-1);assert.equal(ws.readyState,3);
+  lib.RB_OpenBinary(handle,'ws://new',32,2,'/transport.js');await flush();const fresh=Socket.instances[1];fresh.open();await flush();
+  ws.onmessage({data:new Uint8Array([99]).buffer});fresh.onmessage({data:new Uint8Array([11]).buffer});lib.RB_InterruptBinary(handle);
+  assert.equal(lib.RB_PollPacket(handle,128,32768,8,16),1);assert.equal(HEAPU8[128],11);assert.equal(view.getInt32(16,true),0);
+  assert.equal(lib.RB_PollPacket(handle,128,32768,8,16),0);assert.equal(view.getInt32(16,true),1);
+  lib.RB_OpenBinary(handle,'ws://wrong',32,2,'/transport.js');await flush();Socket.instances[2].open();await flush();Socket.instances[2].onmessage({data:'text'});
+  assert.equal(lib.RB_PollPacket(handle,128,32768,8,16),0);assert.equal(view.getInt32(16,true),3);
+  lib.RB_Destroy(handle);
+});

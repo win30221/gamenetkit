@@ -8,12 +8,17 @@
 .EXAMPLE
 ./examples/Build-Unity.ps1 -Project Minimal -Target Windows
 #>
-param([ValidateSet('Rumblebound','Minimal','SharedWorld','Interpolation','RumbleboundExample','Prediction','NetworkRecovery','ObjectsActions','Replay','Interest','Codec','History')][string]$Project='RumbleboundExample',[ValidateSet('Windows','Web')][string]$Target='Windows',[ValidateRange(30,3600)][int]$TimeoutSeconds=600,[string]$UnityEditor='')
+param([ValidateSet('Rumblebound','Minimal','SharedWorld','Interpolation','RumbleboundExample','Prediction','NetworkRecovery','ObjectsActions','Replay','Interest','Codec','History','Protobuf')][string]$Project='RumbleboundExample',[ValidateSet('Windows','Web')][string]$Target='Windows',[ValidateRange(30,3600)][int]$TimeoutSeconds=600,[string]$UnityEditor='')
 $ErrorActionPreference='Stop'
 . "$PSScriptRoot/../tools/internal/Toolchain.ps1"
 $root=$script:GameNetKitRoot
 if ($Project -eq 'Rumblebound') { $Project = 'RumbleboundExample' }
-if ($Project -eq 'RumbleboundExample') {
+if ($Project -eq 'Protobuf') {
+    $projectPath=Join-Path $root 'examples/protobuf/client'
+    $buildEntry='ProtobufBuild'
+    $artifactName='protobuf'
+    $successMarker='PROTOBUF_BUILD PASS'
+} elseif ($Project -eq 'RumbleboundExample') {
     $projectPath=Join-Path $root 'examples/rumblebound/client'
     $buildEntry='Rumblebound.Example.Editor.ExampleBuild'
     $artifactName='example'

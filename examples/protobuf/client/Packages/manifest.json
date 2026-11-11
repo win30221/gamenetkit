@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "com.realtime.transport": "file:../../../../packages/unity/transport",
+    "com.realtime.protobuf-runtime": "file:../../../../packages/unity/protobuf-runtime",
+    "com.realtime.protobuf": "file:../../../../packages/unity/protobuf",
+    "com.gamenetkit.protobuf-example": "file:../../unity",
+    "com.unity.modules.imgui": "1.0.0",
+    "com.unity.modules.physics": "1.0.0",
+    "com.unity.modules.jsonserialize": "1.0.0"
+  }
+}

@@ -22,12 +22,14 @@
 2. 依 [Go SDK](server/README.md) 和 [Unity SDK](packages/unity/README.md) 引用本機套件；自己的 DTO、身份、房間與規則留在應用。
 3. 多人遊戲對照 [Shared World](examples/shared-world/README.md) 的單一世界與 session 生命週期，再依 [組件接入指南](docs/COMPONENT_GUIDE.md) 加入插值、預測或其他能力。
 
+需要一份 schema 產生 Go／C# 型別時，見選用 [Protobuf 範例](examples/protobuf/README.md)：官方生成器、runtime 與獨立 binary WebSocket 路徑；Unity 目標驗收狀態見範例報告。
+
 ## 資料夾用途
 
 | 目錄 | 內容與入口 |
 | --- | --- |
 | [server](server/README.md) | Go SDK 函式庫；不是可直接 `go run .` 的遊戲服務 |
-| [packages/unity](packages/unity/README.md) | 12 個本機 UPM 套件；不是 Unity 專案 |
+| [packages/unity](packages/unity/README.md) | 14 個本機 UPM 套件（含選用 Protobuf adapter／runtime）；不是 Unity 專案 |
 | [examples](examples/README.md) | 可執行的服務、Unity 專案、網頁與 API 課程 |
 | [native](native/README.md) | 桌面 WebTransport helper；使用 WebSocket 時不需要 |
 | [tests](tests/README.md) | SDK、傳輸及依賴邊界驗證 |

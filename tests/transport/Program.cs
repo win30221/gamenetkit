@@ -23,7 +23,7 @@ public static class TransportTests
     private static void Require(bool value,string text){if(!value)throw new Exception(text);}
     public static async Task<int> Main(string[] args)
     {
-        try{await Run();if(args.Length==2)await NativeWT(args[0],args[1]);return 0;}catch(Exception error){Console.Error.WriteLine(error);return 1;}
+        try{await Run();await Binary();if(args.Length==2)await NativeWT(args[0],args[1]);return 0;}catch(Exception error){Console.Error.WriteLine(error);return 1;}
     }
     private static async Task Until(Func<bool> predicate)
     {using var deadline=new CancellationTokenSource(5000);while(!predicate())await Task.Delay(5,deadline.Token);}
@@ -56,6 +56,77 @@ public static class TransportTests
             MessageTransport.NativeWebTransportExecutable=saved;
             server.StandardInput.Close();if(!server.WaitForExit(3000))server.Kill();
         }
+    }
+    private static async Task Binary()
+    {
+        var builder=WebApplication.CreateBuilder();builder.Logging.ClearProviders();
+        await using var app=builder.Build();app.Urls.Add("http://127.0.0.1:0");app.UseWebSockets();
+        var helloSeen=new ConcurrentQueue<byte[]>();
+        var terminated=new ConcurrentQueue<string>();
+        var partialStarted=new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releasePartial=new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        app.MapGet("/binary/{mode}",async(HttpContext context,string mode)=>{
+            using var ws=await context.WebSockets.AcceptWebSocketAsync();var buffer=new byte[65536];
+            try{
+                var hello=await ws.ReceiveAsync(new ArraySegment<byte>(buffer),context.RequestAborted);
+                Require(hello.MessageType==WebSocketMessageType.Binary,"binary hello was text");
+                helloSeen.Enqueue(buffer.Take(hello.Count).ToArray());
+                if(mode=="partial"){
+                    await ws.SendAsync(new ArraySegment<byte>(new byte[]{222}),WebSocketMessageType.Binary,false,context.RequestAborted);
+                    partialStarted.TrySetResult(true);await releasePartial.Task.WaitAsync(context.RequestAborted);
+                    await ws.SendAsync(new ArraySegment<byte>(new byte[]{223}),WebSocketMessageType.Binary,true,context.RequestAborted);
+                }else if(mode=="terminal"){
+                    await ws.SendAsync(new ArraySegment<byte>(new byte[]{42}),WebSocketMessageType.Binary,true,context.RequestAborted);
+                    await ws.CloseOutputAsync(WebSocketCloseStatus.NormalClosure,"done",context.RequestAborted);
+                }else if(mode=="wrong")await ws.SendAsync(new ArraySegment<byte>(new byte[]{1}),WebSocketMessageType.Text,true,context.RequestAborted);
+                else if(mode=="large"){
+                    await ws.SendAsync(new ArraySegment<byte>(new byte[32768]),WebSocketMessageType.Binary,false,context.RequestAborted);
+                    await ws.SendAsync(new ArraySegment<byte>(new byte[]{1}),WebSocketMessageType.Binary,true,context.RequestAborted);
+                }else if(mode=="overflow"){
+                    for(int i=0;i<65;i++)await ws.SendAsync(new ArraySegment<byte>(new byte[]{(byte)i}),WebSocketMessageType.Binary,true,context.RequestAborted);
+                }else{
+                    var bytes=Enumerable.Range(0,32768).Select(i=>(byte)i).ToArray();
+                    await ws.SendAsync(new ArraySegment<byte>(bytes,0,16383),WebSocketMessageType.Binary,false,context.RequestAborted);
+                    await ws.SendAsync(new ArraySegment<byte>(bytes,16383,16385),WebSocketMessageType.Binary,false,context.RequestAborted);
+                    await ws.SendAsync(new ArraySegment<byte>(Array.Empty<byte>()),WebSocketMessageType.Binary,true,context.RequestAborted);
+                    await ws.SendAsync(new ArraySegment<byte>(Array.Empty<byte>()),WebSocketMessageType.Binary,true,context.RequestAborted);
+                }
+                while(ws.State==WebSocketState.Open){
+                    var part=await ws.ReceiveAsync(new ArraySegment<byte>(buffer),context.RequestAborted);
+                    if(part.MessageType==WebSocketMessageType.Close)break;
+                    await ws.SendAsync(new ArraySegment<byte>(buffer,0,part.Count),part.MessageType,part.EndOfMessage,context.RequestAborted);
+                }
+            }catch(OperationCanceledException){}catch(WebSocketException){}finally{terminated.Enqueue(mode);}
+        });
+        await app.StartAsync();string root=app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>().Addresses.Single().Replace("http://","ws://");
+        using var transport=new MessageTransport();var helloData=new byte[]{1,2,3};
+        int epoch=transport.BeginAttempt();transport.OpenBinary(epoch,root+"/binary/normal",helloData);helloData[0]=99;
+        try{transport.TryRead(out _);throw new Exception("text read consumed binary attempt");}catch(InvalidOperationException){}
+        try{_ = transport.TrySend("wrong");throw new Exception("text send accepted binary attempt");}catch(InvalidOperationException){}
+        MessageTransport.IncomingPacket packet=default;await Until(()=>transport.TryReadPacket(out packet));
+        Require(packet.Data.Length==32768&&packet.Data.Select((b,i)=>b==(byte)i).All(v=>v)&&packet.ReceivedMS>0&&packet.Attempt==epoch&&packet.ErrorCode==null,"fragmented binary boundary or timestamp changed");
+        await Until(()=>transport.TryReadPacket(out packet));Require(packet.Data.Length==0&&packet.ErrorCode==null,"empty binary message became an error");
+        Require(helloSeen.TryDequeue(out var helloCopy)&&helloCopy.SequenceEqual(new byte[]{1,2,3}),"binary hello ownership changed");
+        var outgoing=new byte[]{7,8,9};var send=transport.TrySendBytes(outgoing);outgoing[0]=99;Require(await send,"binary send rejected");
+        await Until(()=>transport.TryReadPacket(out packet));Require(packet.Data.SequenceEqual(new byte[]{7,8,9}),"binary send did not own bytes");
+        foreach(string mode in new[]{"wrong","large","overflow"}){
+            int old=transport.Epoch;transport.OpenBinary(transport.BeginAttempt(),root+"/binary/"+mode,new byte[]{1});
+            await Until(()=>!string.IsNullOrEmpty(transport.LastFailure.Operation));await Until(()=>transport.TryReadPacket(out packet));
+            Require(packet.Data==null&&packet.ErrorCode==(mode=="overflow"?"receive_overflow":"invalid_server_message"),"binary invalid frame/overflow lacked typed error: "+mode);
+            Require(packet.Attempt!=old&&!transport.TryReadPacket(out _),"old epoch or overflow backlog leaked");
+            Require(!await transport.TrySendBytes(new byte[]{1}),"failed binary connection accepted send");
+            await Until(()=>terminated.Contains(mode));
+        }
+        transport.OpenBinary(transport.BeginAttempt(),root+"/binary/partial",new byte[]{1});
+        await partialStarted.Task;await Task.Delay(50);Require(!transport.TryReadPacket(out _),"partial binary message was delivered before EOM");
+        int partialEpoch=transport.Epoch;transport.OpenBinary(transport.BeginAttempt(),root+"/binary/terminal",new byte[]{1});releasePartial.TrySetResult(true);
+        await Until(()=>transport.TryReadPacket(out packet));Require(packet.Attempt!=partialEpoch&&packet.Data.SequenceEqual(new byte[]{42}),"late fragment crossed replacement epoch");
+        await Until(()=>transport.TryReadPacket(out packet));Require(packet.Data==null&&packet.ErrorCode=="connection_closed","normal binary close did not follow final payload");
+        transport.Close();transport.Open(transport.BeginAttempt(),root+"/binary/wrong","hello","","",false);
+        try{transport.TryReadPacket(out _);throw new Exception("binary read consumed text attempt");}catch(InvalidOperationException){}
+        try{_ = transport.TrySendBytes(new byte[]{1});throw new Exception("binary send accepted text attempt");}catch(InvalidOperationException){}
+        transport.Close();await app.StopAsync();
+        Console.WriteLine("TRANSPORT_BINARY PASS WS binary hello ownership, fragments, 32 KiB/empty messages, typed framing/overflow errors, mode isolation, epoch and copied sends");
     }
     private static async Task Run()
     {
