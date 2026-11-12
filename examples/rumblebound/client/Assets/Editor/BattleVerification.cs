@@ -32,7 +32,7 @@ namespace Rumblebound.Example.Editor
             FontEngine.InitializeFontEngine();
             if(FontEngine.LoadFontFace(Resources.Load<Font>("UI/RumbleboundUI"),24)!=FontEngineError.Success)throw new Exception("Cannot load battle UI font");
             foreach(string path in Directory.GetFiles("Assets/Scripts","*.cs",SearchOption.AllDirectories))foreach(char character in File.ReadAllText(path))
-                if((character>='\u3000'&&character<='\u9fff'||character=='\u2713')&&(!FontEngine.TryGetGlyphIndex(character,out uint glyph)||glyph==0))throw new Exception("Battle UI font missing U+"+((int)character).ToString("X4")+"; regenerate samples/rumblebound/scripts/Prepare-UIFont.py");
+                if((character>='\u3000'&&character<='\u9fff'||character=='\u2713'||character>='\u2190'&&character<='\u2193')&&(!FontEngine.TryGetGlyphIndex(character,out uint glyph)||glyph==0))throw new Exception("Battle UI font missing U+"+((int)character).ToString("X4")+"; regenerate examples/rumblebound/scripts/Prepare-UIFont.py");
             if(UnityEngine.Rendering.GraphicsSettings.defaultRenderPipeline==null)throw new Exception("Shared URP pipeline missing");
             Debug.Log("RF_BATTLE_ASSETS PASS original game rules/map, JSON parser, hero animations, shared art/font, scene and pipeline");
         }

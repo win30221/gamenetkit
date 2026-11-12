@@ -21,6 +21,19 @@ namespace Rumblebound.Example.Battle.Unity
         private readonly Dictionary<string,VisualElement> health=new Dictionary<string,VisualElement>();
         private string signature,context,scoreSignature,replayLocation="",technicalNotice="";
         private Label technicalStatus;
+        private Label actionHint;
+        private readonly Dictionary<string,Label> scoreLabels=new Dictionary<string,Label>();
+        private readonly HashSet<string> healthIDs=new HashSet<string>();
+        private readonly List<string> removedHealth=new List<string>();
+        private string feedbackText;
+        private double feedbackUntil;
+        private int guideStep;
+        private bool guideOriginSet;
+        private string guideMatch;
+        private Vector2 guideOrigin;
+        private const string GuideKey="Rumblebound.Example.PracticeGuide.v1";
+        public static void ActionFeedback(string message){if(instance==null)return;instance.feedbackText=message;instance.feedbackUntil=instance.client.Now+1.3;}
+        public static void GuideAction(int step){if(instance!=null&&instance.Flow.Room?.practice==true&&instance.guideStep==step)instance.guideStep++;}
         private bool technicalReconnectPending;
         private bool dirty=true,screenBlocks=true,takeover,showStats,recordingOpen,replayOpen,replayAdvanced;
         private BattleSettings selection;
@@ -32,7 +45,7 @@ namespace Rumblebound.Example.Battle.Unity
         private Slider replaySeek;
         private Label replayTime;
         private const string PerformanceKey="Rumblebound.Example.ShowPerformance";
-        public static bool EditingText=>instance?.FocusedText()!=null;
+        public static bool EditingText=>instance!=null&&(instance.roomInputPending||instance.FocusedText()!=null);
         public static bool PointerOverPanel=>instance!=null&&instance.PointerIsOnUI(Input.mousePosition);
         public static Rect ArenaPixels{
             get{
@@ -58,7 +71,7 @@ namespace Rumblebound.Example.Battle.Unity
             root.Add(hudLayer);root.Add(screenLayer);root.Add(modalLayer);
             scroll=new ScrollView(ScrollViewMode.Vertical){horizontalScrollerVisibility=ScrollerVisibility.Hidden};scroll.AddToClassList("menu-scroll");
             navigationHeader=Box("session-header-dock");screenLayer.Add(navigationHeader);screenLayer.Add(scroll);dock=Box("menu-dock");screenLayer.Add(dock);
-            BuildHUD();BuildTouchControls();result=Box("result-backdrop");modalLayer.Add(result);showStats=PlayerPrefs.GetInt(PerformanceKey,0)==1;
+            guideStep=PlayerPrefs.GetInt(GuideKey,0)==1?3:0;BuildHUD();BuildTouchControls();result=Box("result-backdrop");modalLayer.Add(result);showStats=PlayerPrefs.GetInt(PerformanceKey,0)==1;
             root.RegisterCallback<KeyDownEvent>(evt=>{
                 if(evt.keyCode!=KeyCode.Escape||Flow?.Battle.HasResult==true)return;
                 BackMenu();evt.StopPropagation();
@@ -102,7 +115,7 @@ namespace Rumblebound.Example.Battle.Unity
             root.EnableInClassList("narrow-replay",Screen.width/panel.scale<680);
             root.EnableInClassList("battle-short",Screen.height/panel.scale<600);
             root.EnableInClassList("battle-narrow",Screen.width/panel.scale<600);
-            float rail=TouchMode?170:210;
+            float rail=TouchMode?140:210;
             root.EnableInClassList("slim-rails",false);
             var healthCard=hudLayer?.Q<VisualElement>(className:"health-card");if(healthCard!=null)healthCard.style.width=Mathf.Min(230,rail);
             var safe=Screen.safeArea;root.style.paddingLeft=safe.xMin/panel.scale;root.style.paddingRight=(Screen.width-safe.xMax)/panel.scale;root.style.paddingBottom=safe.yMin/panel.scale;root.style.paddingTop=(Screen.height-safe.yMax)/panel.scale;
@@ -116,7 +129,7 @@ namespace Rumblebound.Example.Battle.Unity
         }
         private void LateUpdate()
         {
-            if(root==null||Flow==null)return;double now=client.Now;statsFrames++;RefreshTechnicalFeedback();
+            if(root==null||Flow==null)return;if(roomInputPending&&(Flow.Stage!="lobby"||Flow.Identity.Revision!=roomInputIdentity))CancelRoomInput();double now=client.Now;statsFrames++;RefreshTechnicalFeedback();
             if(now-statsAt>=.5){fps=(float)(statsFrames/Math.Max(.001,now-statsAt));statsFrames=0;statsAt=now;}
             if(now>=nextScale){nextScale=now+.25;Scale();}
             if(Input.GetMouseButtonDown(0)&&!PointerOverPanel)root.Focus();
@@ -253,7 +266,7 @@ namespace Rumblebound.Example.Battle.Unity
         {
             var top=Box("hud-top");timer=Text("03:00","timer");scoreRow=Box("scores");objective=Text("爭奪據點","objective");top.Add(timer);top.Add(scoreRow);top.Add(objective);Ignore(top);hudLayer.Add(top);var menu=Button("選單",()=>OpenMenuPage(BattleMenuPage.Session),"secondary small-button hud-menu");menu.focusable=false;menu.tabIndex=-1;hudLayer.Add(menu);
             var bottom=Box("hud-bottom");var card=Box("health-card");heroLabel=Text("生命值","health-title");hpNumber=Text("100 / 100","health-number");var track=Box("hp-track");hpFill=Box("hp-fill");track.Add(hpFill);life=Text("","hint");card.Add(heroLabel);card.Add(hpNumber);card.Add(track);card.Add(life);bottom.Add(card);var abilities=Box("ability-row");abilities.Add(Ability("普攻","右鍵／A",out basicTime));var attack=Ability("技能","Q",out attackTime);attackName=attack.Q<Label>(className:"ability-name");abilities.Add(attack);abilities.Add(Ability("衝刺","E",out dashTime));bottom.Add(abilities);Ignore(bottom);hudLayer.Add(bottom);
-            healthLayer=Box("world-health-layer");healthLayer.pickingMode=PickingMode.Ignore;hudLayer.Add(healthLayer);connection=Text("","objective solo-hint");Ignore(connection);hudLayer.Add(connection);performance=Text("","performance-overlay");Ignore(performance);root.Add(performance);
+            actionHint=Text("","action-hint");Ignore(actionHint);hudLayer.Add(actionHint);healthLayer=Box("world-health-layer");healthLayer.pickingMode=PickingMode.Ignore;hudLayer.Add(healthLayer);connection=Text("","objective solo-hint");Ignore(connection);hudLayer.Add(connection);performance=Text("","performance-overlay");Ignore(performance);root.Add(performance);
         }
         private void RefreshHUD()
         {
@@ -263,10 +276,32 @@ namespace Rumblebound.Example.Battle.Unity
             performance.style.display=showStats&&!settingsOpen?DisplayStyle.Flex:DisplayStyle.None;performance.text="FPS "+fps.ToString("0")+"  ·  "+(1000/Math.Max(1,fps)).ToString("0.0")+" ms\n連線 RTT "+(f.Battle.Connected?(f.Battle.RTTSeconds*1000).ToString("0")+" ms":"—");
             var snapshot=world?.snapshot;if(snapshot==null)return;var content=f.Playback.Active?f.Playback.Content:f.Content;var match=snapshot.match;int rate=content.Rules.tickRate;double remaining=Math.Max(0,(match?.endsAtTick??snapshot.tick)-world.tick)/(double)rate;timer.text=((int)remaining/60).ToString("00")+":"+((int)remaining%60).ToString("00");objective.text=match?.pointStatus=="contested"?"爭奪中 · 暫停計分":match?.pointStatus=="scoring"?MenuTeamName(match.scoringTeamID)+"正在得分":"站入據點即可得分";if(match?.point!=null)objective.text="據點 "+(match.point.index+1)+" · "+objective.text;if(f.Room?.practice==true&&!root.ClassListContains("battle-short"))objective.text="練習對手 · "+PracticeModeName(f.Room.botMode)+"\n"+objective.text;
             connection.text=f.Recovery.Pending?"連線中斷，正在自動重連…":world.frozen?"連線暫停，保留最後畫面":"";connection.style.display=connection.text.Length>0?DisplayStyle.Flex:DisplayStyle.None;var own=world.players.FirstOrDefault(p=>p.own)?.state;
-            string scores=string.Join(";",match?.scores?.Select(s=>s.teamID+s.score+s.forfeited)??Array.Empty<string>());if(scoreSignature!=scores){scoreSignature=scores;scoreRow.Clear();foreach(var score in match?.scores??Array.Empty<TeamScore>()){var card=Box("score-card");var color=TeamColor(score.teamID);card.style.borderTopColor=color;var label=Text(MenuTeamName(score.teamID)+(score.teamID==own?.teamID?" · 你":""),"score-name");label.style.color=color;card.Add(label);card.Add(Text(score.forfeited?"離場":score.score+" / "+content.Rules.scoreGoal,"score-number"));Ignore(card);scoreRow.Add(card);}}
+            string scores=string.Join(";",match?.scores?.Select(s=>s.teamID)??Array.Empty<string>())+"|"+own?.teamID;
+            if(scoreSignature!=scores){scoreSignature=scores;scoreRow.Clear();scoreLabels.Clear();foreach(var score in match?.scores??Array.Empty<TeamScore>()){var card=Box("score-card");var color=TeamColor(score.teamID);card.style.borderTopColor=color;var label=Text(MenuTeamName(score.teamID)+(score.teamID==own?.teamID?" · 你":""),"score-name");label.style.color=color;card.Add(label);var number=Text("","score-number");card.Add(number);scoreLabels[score.teamID]=number;Ignore(card);scoreRow.Add(card);}}
+            foreach(var score in match?.scores??Array.Empty<TeamScore>())scoreLabels[score.teamID].text=score.forfeited?"離場":score.score+" / "+content.Rules.scoreGoal;
+            if(match?.nextPoint!=null)objective.text="據點 "+(match.nextPoint.index+1)+" 將在 "+Math.Max(0,Math.Ceiling((match.rotationTick-world.tick)/(double)rate))+" 秒後啟用";
+            RefreshActionHint(own);
+
             if(own!=null){var rule=content.Hero(own.heroID);heroLabel.text=HeroName(own.heroID)+" · 生命值";hpNumber.text=own.hp+" / "+rule.maxHP;hpFill.style.width=Length.Percent(100*Mathf.Clamp01(own.hp/(float)rule.maxHP));life.text=own.hp<=0?"復活倒數 "+Seconds(own.respawnTick,world.tick,rate)+" 秒":own.protectedUntilTick>world.tick?"出生保護中":"";life.style.display=life.text.Length==0?DisplayStyle.None:DisplayStyle.Flex;attackName.text=own.heroID=="mage"?"落火球":own.heroID=="tank"?"揮砍":"射箭";basicTime.text=own.attackReleaseTick>world.tick?"出手中":own.basicReadyTick<=world.tick?"就緒":Seconds(own.basicReadyTick,world.tick,rate)+"s";attackTime.text=own.fireReadyTick<=world.tick?"就緒":Seconds(own.fireReadyTick,world.tick,rate)+"s";dashTime.text=own.dashReadyTick<=world.tick?"就緒":Seconds(own.dashReadyTick,world.tick,rate)+"s";}
-            var ids=new HashSet<string>();foreach(var player in world.players){var p=player.state;ids.Add(p.playerID);if(!health.TryGetValue(p.playerID,out var element)){element=Box("world-health");element.Add(Text("","world-health-number"));var track=Box("hp-track");track.Add(Box("hp-fill"));element.Add(track);Ignore(element);healthLayer.Add(element);health[p.playerID]=element;}element.Q<Label>().text=p.left?"離場":p.hp.ToString();var fill=element.Q<VisualElement>(className:"hp-fill");fill.style.width=Length.Percent(100*Mathf.Clamp01(p.hp/(float)content.Hero(p.heroID).maxHP));fill.style.backgroundColor=TeamColor(p.teamID);}
-            foreach(string id in health.Keys.Where(id=>!ids.Contains(id)).ToArray()){health[id].RemoveFromHierarchy();health.Remove(id);}
+            healthIDs.Clear();foreach(var player in world.players){var p=player.state;healthIDs.Add(p.playerID);if(!health.TryGetValue(p.playerID,out var element)){element=Box("world-health");element.Add(Text("","world-health-number"));var track=Box("hp-track");track.Add(Box("hp-fill"));element.Add(track);Ignore(element);healthLayer.Add(element);health[p.playerID]=element;}element.Q<Label>().text=p.left?"離場":p.hp.ToString();var fill=element.Q<VisualElement>(className:"hp-fill");fill.style.width=Length.Percent(100*Mathf.Clamp01(p.hp/(float)content.Hero(p.heroID).maxHP));fill.style.backgroundColor=TeamColor(p.teamID);}
+            removedHealth.Clear();foreach(string id in health.Keys)if(!healthIDs.Contains(id))removedHealth.Add(id);foreach(string id in removedHealth){health[id].RemoveFromHierarchy();health.Remove(id);}
+        }
+        private void RefreshActionHint(PlayerState own)
+        {
+            string hint="";
+            bool playing=own!=null&&own.hp>0&&!Flow.Playback.Active;
+            if(playing&&Flow.Room?.practice==true&&guideStep<3){
+                if(guideMatch!=Flow.Battle.State.Latest?.matchID){guideMatch=Flow.Battle.State.Latest?.matchID;guideOriginSet=false;}
+                if(!guideOriginSet){guideOrigin=new Vector2((float)own.x,(float)own.z);guideOriginSet=true;}
+                if(guideStep==0&&Vector2.Distance(guideOrigin,new Vector2((float)own.x,(float)own.z))>1)guideStep=1;
+                hint=guideStep==0?(TouchMode?"1/3 推動左側搖桿移動":"1/3 右鍵點地面移動"):guideStep==1?(TouchMode?"2/3 靠近敵人，點右側普攻":"2/3 右鍵點敵人普攻"):(TouchMode?"3/3 拖曳技能瞄準，放開施放":"3/3 按住 Q 瞄準，放開施放");
+            }
+            if(guideStep==3&&PlayerPrefs.GetInt(GuideKey,0)==0){PlayerPrefs.SetInt(GuideKey,1);PlayerPrefs.Save();ActionFeedback("完成！跟著據點標記搶點得分");}
+            if(playing&&client.AttackMoveArmed)hint="移動攻擊：左鍵指定位置 · S 取消";
+            else if(playing&&client.PreviewKind==BattlePreviewKind.Skill)hint=TouchMode?"放開施放技能":"放開 Q 施放技能";
+            else if(playing&&client.PreviewKind==BattlePreviewKind.Dash)hint=TouchMode?"沿移動方向衝刺":"放開 E 施放衝刺";
+            if(playing&&client.Now<feedbackUntil)hint=feedbackText;
+            actionHint.text=hint;actionHint.style.display=hint.Length>0?DisplayStyle.Flex:DisplayStyle.None;
         }
         private static string Seconds(long until,long tick,int rate)=>(Math.Max(0,until-tick)/(double)rate).ToString("0.0");
         private void PositionHealth()

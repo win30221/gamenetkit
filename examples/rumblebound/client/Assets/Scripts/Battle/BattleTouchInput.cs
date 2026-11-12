@@ -86,7 +86,7 @@ namespace Rumblebound.Example.Battle
                 if(dx*dx+dz*dz>AimDragThreshold*AimDragThreshold)aimDragged=true;
                 if(magnitude>0){AimX=x/length;AimZ=z/length;AimMagnitude=magnitude;}
             }
-            else{MoveX=length>0?x/length*magnitude:0;MoveZ=length>0?z/length*magnitude:0;}
+            else{MoveX=length>.12?x/length:0;MoveZ=length>.12?z/length:0;}
         }
         public void End(bool aiming,int pointer,bool cancelled=false)
         {

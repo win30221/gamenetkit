@@ -24,6 +24,11 @@ public static class OrdersTests
         Require(orders.Drive(content,state,"own",null,1,out double dx,out double dz)==null&&dx>.9,"out-of-range click chases");
         own.x=3;
         Require(orders.Drive(content,state,"own",null,2,out dx,out dz)==enemy&&dx==0&&dz==0,"chase stops in attack range");
+        enemy.x=15;
+        Require(orders.Drive(content,state,"own",null,2.5,out dx,out dz)==null&&dx>.9&&orders.TargetID==enemy.playerID,"locked target leaving range resumes chase");
+        Require(BattleOrders.NearestToPoint(content,state,"own",null,12,0)==enemy,"preview selects enemy beyond current attack range near destination");
+        own.x=10;
+        Require(orders.Drive(content,state,"own",null,2.8,out dx,out dz)==enemy&&dx==0,"chase resumes attacks only on reaching range");
         enemy.life++;
         Require(orders.Drive(content,state,"own",null,3,out _,out _)==null&&orders.TargetID==null,"old target life is never reacquired implicitly");
         own.x=0;enemy.x=3;var other=new PlayerState{playerID="north",heroID="mage",teamID="red",z=2,hp=100,online=true};state.players=new[]{own,enemy,other};

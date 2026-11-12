@@ -7,6 +7,6 @@
   "derivedFont": "Rumblebound UI",
   "weight": 500,
   "fontToolsVersion": "4.61.1",
-  "recipe": "samples/rumblebound/scripts/Prepare-UIFont.py; original glyphs, Latin, sample/example C# scripts and shared Runtime",
-  "glyphCount": 652
+  "recipe": "examples/rumblebound/scripts/Prepare-UIFont.py; retained glyphs, Latin, client C# and shared presentation Runtime",
+  "glyphCount": 694
 }

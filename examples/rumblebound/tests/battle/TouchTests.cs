@@ -17,14 +17,16 @@ public static class TouchTests
         input.Begin(true,14);input.Drag(true,14,0,1);input.End(true,14);input.End(true,14);
         Require(input.TakeFire()&&!input.TakeFire(),"aim release emits exactly one attack");
         input.Begin(false,15);input.Drag(false,15,.05,0);Require(input.MoveX==0,"radial deadzone");
-        input.Drag(false,15,.56,0);Require(Math.Abs(input.MoveX-.5)<1e-9,"analog movement scales after deadzone");
-        input.Drag(false,15,double.NaN,0);Require(Math.Abs(input.MoveX-.5)<1e-9,"invalid samples do not poison movement");
+        input.Drag(false,15,.56,0);Require(Math.Abs(input.MoveX-1)<1e-9,"movement uses full speed outside deadzone");
+        input.Drag(false,15,.13,.13);Require(Math.Abs(input.MoveX*input.MoveX+input.MoveZ*input.MoveZ-1)<1e-9,"small diagonal has full fixed speed");
+        input.Drag(false,15,.56,0);
+        input.Drag(false,15,double.NaN,0);Require(Math.Abs(input.MoveX-1)<1e-9,"invalid samples do not poison movement");
         input.Dash();input.Reset();Require(input.MovePointer<0&&input.AimPointer<0&&input.MoveX==0&&!input.TakeFire()&&!input.TakeDash(),"menu/background reset clears captures and queued actions");
         input.End(true,14);Require(!input.TakeFire(),"late release after reset cannot fire");
         TapAndDrag();
         BasicAttackPad();
         RawMultitouch();
-        Console.WriteLine("REMAKE_TOUCH PASS multitouch ownership, analog deadzone, bounded diagonals, release/cancel, one-shot attack, and background/menu reset");
+        Console.WriteLine("REMAKE_TOUCH PASS multitouch ownership, fixed-speed deadzone, bounded diagonals, release/cancel, one-shot attack, and background/menu reset");
     }
     private static void TapAndDrag()
     {

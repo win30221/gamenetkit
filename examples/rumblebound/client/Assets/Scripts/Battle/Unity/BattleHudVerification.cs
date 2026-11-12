@@ -25,7 +25,7 @@ namespace Rumblebound.Example.Battle.Unity
             var root=GetComponent<UIDocument>().rootVisualElement;float scale=GetComponent<UIDocument>().panelSettings.scale;
             Rect arena=new Rect(Screen.width*.30f,Screen.height*.34f,Screen.width*.40f,Screen.height*.30f);
             if(client.Presentation.Camera.pixelRect.width<Screen.width*.95f)throw new Exception("RF_HUD_REVIEW FAIL battlefield is not full width");
-            foreach(string selector in new[]{"hud-top","health-card","ability-row","hud-menu"}){
+            foreach(string selector in new[]{"hud-top","health-card","ability-row","hud-menu","battle-minimap","action-hint"}){
                 var element=root.Q<VisualElement>(className:selector);if(element.resolvedStyle.display==DisplayStyle.None)continue;var bounds=element.worldBound;
                 var pixels=new Rect(bounds.x*scale,Screen.height-bounds.yMax*scale,bounds.width*scale,bounds.height*scale);
                 if(arena.Overlaps(pixels))throw new Exception("RF_HUD_REVIEW FAIL HUD overlaps protected arena: "+selector+" "+pixels+" arena="+arena);
@@ -36,6 +36,8 @@ namespace Rumblebound.Example.Battle.Unity
                 if(arena.Overlaps(pixels))throw new Exception("RF_HUD_REVIEW FAIL touch control overlaps arena: "+name);
             }
             if(BattleHud.TouchMode){var controls=new[]{"touchMove","touchAttack","touchAim","touchDash"};
+                var hint=root.Q<VisualElement>(className:"action-hint");foreach(var name in controls)if(hint.resolvedStyle.display!=DisplayStyle.None&&hint.worldBound.Overlaps(root.Q<VisualElement>(name).worldBound))throw new Exception("RF_HUD_REVIEW FAIL hint overlaps touch control: "+name);
+                foreach(var name in controls){var b=root.Q<VisualElement>(name).worldBound;if(b.width<44||b.height<44||b.xMin<0||b.yMin<0||b.xMax>root.worldBound.xMax+1||b.yMax>root.worldBound.yMax+1)throw new Exception("RF_HUD_REVIEW FAIL touch target size or screen bounds: "+name);}
                 for(int i=0;i<controls.Length;i++)for(int j=i+1;j<controls.Length;j++)if(root.Q<VisualElement>(controls[i]).worldBound.Overlaps(root.Q<VisualElement>(controls[j]).worldBound))throw new Exception("RF_HUD_REVIEW FAIL touch controls overlap");}
             if(client.Presentation.AttackAimVisible!=(client.PreviewKind!=BattlePreviewKind.None))throw new Exception("RF_HUD_REVIEW FAIL wrong range visibility");
             if(!client.PreviewSelecting&&client.Presentation.TargetAimVisible)throw new Exception("RF_HUD_REVIEW FAIL target shown before drag");
@@ -69,7 +71,7 @@ namespace Rumblebound.Example.Battle.Unity
                 client.ReviewAim=new Vector2((float)own.x,(float)own.z+5);
                 yield return Capture(hero,989,446);
                 if(hero=="ranger"){
-                    yield return Capture(hero,844,390);yield return Capture(hero,1280,720);
+                    yield return Capture(hero,844,390);if(BattleHud.TouchMode){yield return Capture(hero,640,360);yield return Capture(hero,568,320);}yield return Capture(hero,1280,720);
                     yield return Capture(hero,989,446,BattlePreviewKind.None,false,"-idle");
                     yield return Capture(hero,989,446,BattlePreviewKind.Basic,false,"-basic-range");
                     yield return Capture(hero,989,446,BattlePreviewKind.Skill,false,"-skill-range");

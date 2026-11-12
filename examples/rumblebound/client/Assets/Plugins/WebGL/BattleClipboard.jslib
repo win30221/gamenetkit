@@ -1,4 +1,48 @@
 mergeInto(LibraryManager.library, {
+  $RF_BattleRoomInput: { active: null },
+  RF_Battle_EditRoomCode__deps: ['$RF_BattleRoomInput'],
+  RF_Battle_EditRoomCode: function(codePtr, targetPtr, requestId) {
+    var target = UTF8ToString(targetPtr);
+    if (RF_BattleRoomInput.active) RF_BattleRoomInput.active.finish('cancelled');
+    var panel = document.createElement('div'), form = document.createElement('form');
+    var title = document.createElement('label'), input = document.createElement('input');
+    var hint = document.createElement('p'), actions = document.createElement('div');
+    var accept = document.createElement('button'), cancel = document.createElement('button');
+    panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true');
+    panel.setAttribute('aria-label', '輸入朋友的房間代碼');
+    panel.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(8,16,26,.94);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:16px;box-sizing:border-box;color:#f3f5fa;font:16px sans-serif;';
+    form.style.cssText = 'width:100%;max-width:420px;padding:16px;box-sizing:border-box;background:#152438;border-radius:12px;';
+    title.textContent = '朋友的房間代碼';title.htmlFor = 'rb-room-code-input';
+    input.id = 'rb-room-code-input';input.type = 'text';input.maxLength = 12;
+    input.value = UTF8ToString(codePtr);input.autocomplete = 'off';input.spellcheck = false;
+    input.setAttribute('autocapitalize', 'characters');input.setAttribute('enterkeyhint', 'done');
+    input.style.cssText = 'display:block;width:100%;box-sizing:border-box;font:24px monospace;padding:12px;margin-top:12px;border:2px solid #edcd72;border-radius:8px;background:#fff;color:#152438;';
+    hint.textContent = '點一下欄位開啟鍵盤，也可以長按貼上。完成後再按「加入房間」。';
+    hint.style.cssText = 'font-size:14px;line-height:1.5;';
+    actions.style.cssText = 'display:flex;gap:12px;';
+    accept.type = 'submit';accept.textContent = '完成';cancel.type = 'button';cancel.textContent = '取消';
+    accept.style.cssText = cancel.style.cssText = 'min-height:44px;flex:1;font:16px sans-serif;border-radius:8px;';
+    actions.appendChild(cancel);actions.appendChild(accept);
+    form.appendChild(title);form.appendChild(input);form.appendChild(hint);form.appendChild(actions);panel.appendChild(form);
+    var request = { target:target, done:false, finish:function(status) {
+      if(request.done)return;request.done=true;panel.remove();RF_BattleRoomInput.active=null;
+      if(Module.canvas)Module.canvas.focus();
+      SendMessage(target,'OnBattleRoomCodeInput',JSON.stringify({requestId:requestId,status:status,code:input.value.trim().toUpperCase()}));
+    }};
+    RF_BattleRoomInput.active=request;
+    form.addEventListener('submit',function(event){event.preventDefault();if(input.value.trim())request.finish('accepted');else input.focus();});
+    cancel.addEventListener('click',function(){request.finish('cancelled');});
+    panel.addEventListener('keydown',function(event){event.stopPropagation();if(event.key==='Escape'){event.preventDefault();request.finish('cancelled');}});
+    var fullscreen=document.fullscreenElement;
+    if(fullscreen&&fullscreen===Module.canvas&&document.exitFullscreen){var exiting=document.exitFullscreen();if(exiting&&exiting.catch)exiting.catch(function(){});fullscreen=null;}
+    (fullscreen||document.body).appendChild(panel);
+    input.focus();
+  },
+  RF_Battle_CancelRoomInput__deps: ['$RF_BattleRoomInput'],
+  RF_Battle_CancelRoomInput: function(targetPtr) {
+    var request=RF_BattleRoomInput.active;
+    if(request&&request.target===UTF8ToString(targetPtr))request.finish('cancelled');
+  },
   $RF_BattleClipboard: { active: null, sequence: 0 },
   RF_Battle_CopyRoomCode__deps: ['$RF_BattleClipboard'],
   RF_Battle_CopyRoomCode: function(codePtr, targetPtr, requestId) {

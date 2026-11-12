@@ -12,7 +12,7 @@ param([ValidateRange(1024,65535)][int]$Port=18188,[ValidateRange(1024,65535)][in
 $ErrorActionPreference='Stop'
 . "$PSScriptRoot/../../../tools/internal/Toolchain.ps1"
 $DotNet=Resolve-GameNetKitDotNet -Path $DotNet
-node --test "$PSScriptRoot/../tests/battle/replay-picker.mjs" "$PSScriptRoot/../tests/battle/network-settings.mjs"
+node --test "$PSScriptRoot/../tests/battle/replay-picker.mjs" "$PSScriptRoot/../tests/battle/network-settings.mjs" "$PSScriptRoot/../tests/battle/room-input.mjs"
 if($LASTEXITCODE -ne 0){throw 'Replay file picker bridge tests failed'}
 & "$PSScriptRoot/Run.ps1" -BuildOnly -BuildTag browser-tests -DotNet $DotNet
 $lesson=Split-Path -Parent $PSScriptRoot;$root=[IO.Path]::GetFullPath((Join-Path $lesson '../..'));$out=Join-Path $root '.local/rumblebound/battle-browser-tests'

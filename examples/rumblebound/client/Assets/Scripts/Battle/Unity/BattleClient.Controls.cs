@@ -8,6 +8,8 @@ namespace Rumblebound.Example.Battle.Unity
     {
         public BattleOrders Orders{get;}=new BattleOrders();
         public string CurrentTargetID{get;private set;}
+        public Vector2 TouchAttackDestination{get;private set;}
+        public bool TouchAttackPreview=>BattleHud.TouchMode&&TouchInput.AttackHeld&&TouchInput.AttackDragged;
         private Vector2 lastMoveDirection=Vector2.up;
         private int previousMovePointer=-1,previousAttackPointer=-1;
         private string controlMatch;
@@ -42,18 +44,18 @@ namespace Rumblebound.Example.Battle.Unity
         public void AttackMoveOrder(Vector2 destination){MoveOrder(destination);Orders.AttackMove(destination.x,destination.y);}
         public void AttackOrder(PlayerState target){attackMoveArmed=false;Orders.Attack(target,true);CancelAttack();}
         public bool SkillOrder(Vector2 point){
-            var own=Own;if(own==null||own.fireReadyTick>Flow.Battle.State.Tick)return false;
+            var own=Own;if(own==null)return false;if(own.fireReadyTick>Flow.Battle.State.Tick){BattleHud.ActionFeedback("技能冷卻中");return false;}
             var hero=Flow.Content.Hero(own.heroID);
             if(hero?.attackKind=="ground"){
                 BattleOrders.Position(own,true,Flow.Battle.Movement,out double x,out double z);
-                if(!BattleAimAssist.GroundPoint(Flow.Content,hero,x,z,point.x,point.y,out double px,out double pz))return false;
+                if(!BattleAimAssist.GroundPoint(Flow.Content,hero,x,z,point.x,point.y,out double px,out double pz)){BattleHud.ActionFeedback("此處無法施放技能");return false;}
                 point=new Vector2((float)px,(float)pz);
             }
-            bool queued=Flow.AimAction("skill",point.x,point.y,Now);if(queued)FaceCast(point);return queued;
+            bool queued=Flow.AimAction("skill",point.x,point.y,Now);if(queued){FaceCast(point);BattleHud.GuideAction(2);}else BattleHud.ActionFeedback("暫時無法施放，請稍後重試");return queued;
         }
         public bool DashOrder(Vector2 point){
-            var own=Own;if(own==null||own.dashReadyTick>Flow.Battle.State.Tick||own.attackStopUntilTick>Flow.Battle.State.Tick&&own.attackReleaseTick==0)return false;
-            if(!Flow.AimAction("dash",point.x,point.y,Now))return false;
+            var own=Own;if(own==null)return false;if(own.dashReadyTick>Flow.Battle.State.Tick){BattleHud.ActionFeedback("衝刺冷卻中");return false;}if(own.attackStopUntilTick>Flow.Battle.State.Tick&&own.attackReleaseTick==0){BattleHud.ActionFeedback("動作尚未結束");return false;}
+            if(!Flow.AimAction("dash",point.x,point.y,Now)){BattleHud.ActionFeedback("暫時無法衝刺，請稍後重試");return false;}
             Orders.Clear();attackMoveArmed=false;releasedBasicPending=false;CurrentTargetID=null;attackFacingID=null;FaceCast(point);return true;
         }
         private void FaceCast(Vector2 point){var own=Own;if(own==null)return;BattleOrders.Position(own,true,Flow.Battle.Movement,out double x,out double z);var direction=point-new Vector2((float)x,(float)z);if(direction.sqrMagnitude>.001f)facingDirection=direction.normalized;castFacingUntil=Now+.35;}
@@ -77,7 +79,7 @@ namespace Rumblebound.Example.Battle.Unity
             if(own.basicReadyTick>Flow.Battle.State.Tick||own.attackReleaseTick>0||own.attackStopUntilTick>Flow.Battle.State.Tick||Flow.Battle.HasPendingAction)return false;
             BattleOrders.Position(own,true,Flow.Battle.Movement,out double x,out double z);
             BattleOrders.Position(target,false,Flow.Battle.Movement,out double tx,out double tz);
-            return Flow.Battle.QueueAction("attack",tx-x,tz-z,Now,false,0,0,target.playerID,target.life);
+            bool queued=Flow.Battle.QueueAction("attack",tx-x,tz-z,Now,false,0,0,target.playerID,target.life);if(queued)BattleHud.GuideAction(1);return queued;
         }
         private Vector2 ReadControls()
         {
@@ -95,7 +97,7 @@ namespace Rumblebound.Example.Battle.Unity
             previewSelecting=previewKind==BattlePreviewKind.Skill?TouchInput.AimDragged:previewKind==BattlePreviewKind.Basic&&TouchInput.AttackDragged;
             var drive=new Vector2((float)TouchInput.MoveX,(float)TouchInput.MoveZ);
             if(drive.sqrMagnitude>.001f)lastMoveDirection=drive.normalized;
-            if(TouchInput.MovePointer>=0&&previousMovePointer<0)CancelAttack();
+            if(TouchInput.MovePointer>=0&&previousMovePointer<0){CancelAttack();Orders.Clear();CurrentTargetID=null;}
             previousMovePointer=TouchInput.MovePointer;
             TouchInput.FollowMovement();
             BattleOrders.Position(own,true,battle.Movement,out double x,out double z);
@@ -108,27 +110,28 @@ namespace Rumblebound.Example.Battle.Unity
                     double dx=tx-x,dz=tz-z;TouchInput.SetAim(dx,dz,hero.attackKind=="ground"?Math.Sqrt(dx*dx+dz*dz)/hero.castRange:1);Aim=new Vector2((float)tx,(float)tz);
                     cast=true;
                 }
-                if(cast)SkillOrder(Aim);
+                if(cast)SkillOrder(Aim);else BattleHud.ActionFeedback("範圍內沒有可命中的敵人");
             }
-            bool tapped=TouchInput.TakeAttack();
-            if(tapped){releasedBasicPending=true;releasedBasicUntil=Now+.25;}
-            if(Now>releasedBasicUntil)releasedBasicPending=false;
-            if(!TouchInput.AttackHeld&&!tapped&&Orders.TargetID==null)CurrentTargetID=null;
-            if(TouchInput.AttackPointer>=0&&previousAttackPointer<0)Orders.Clear();
+            bool released=TouchInput.TakeAttack();
+            bool began=TouchInput.AttackPointer>=0&&previousAttackPointer<0;
             previousAttackPointer=TouchInput.AttackPointer;
-            if(TouchInput.AttackHeld||releasedBasicPending){
-                PlayerState target;
-                if(TouchInput.AttackDragged){
-                    target=BattleOrders.Nearest(Flow.Content,state,battle.State.PlayerID,battle.Movement,TouchInput.AttackX,TouchInput.AttackZ);
-                    if(target?.playerID!=Orders.TargetID){if(target?.playerID!=CurrentTargetID)CancelAttack();Orders.Attack(target,false);}
-                }else{
-                    target=Orders.Drive(Flow.Content,state,battle.State.PlayerID,battle.Movement,Now,out _,out _);
-                    if(target==null)target=BattleOrders.Nearest(Flow.Content,state,battle.State.PlayerID,battle.Movement);
+            if(began){CancelAttack();Orders.Clear();CurrentTargetID=null;}
+            if(TouchInput.AttackHeld||released){
+                TouchAttackDestination=new Vector2((float)(x+TouchInput.AttackX*hero.basicRange),(float)(z+TouchInput.AttackZ*hero.basicRange));
+                var candidate=BattleOrders.NearestToPoint(Flow.Content,state,battle.State.PlayerID,battle.Movement,TouchAttackDestination.x,TouchAttackDestination.y);
+                CurrentTargetID=candidate?.playerID;
+                if(released){
+                    if(candidate!=null)Orders.Attack(candidate,true);
+                    else if(TouchInput.AttackDragged)Orders.AttackMove(TouchAttackDestination.x,TouchAttackDestination.y);
                 }
-                CurrentTargetID=target?.playerID;
+            }
+            if(!TouchInput.AttackHeld){
+                var target=Orders.Drive(Flow.Content,state,battle.State.PlayerID,battle.Movement,Now,out double dx,out double dz);
+                CurrentTargetID=Orders.TargetID;
+                if(drive.sqrMagnitude<.001f)drive=new Vector2((float)dx,(float)dz);
                 if(target!=null){
                     if(TouchInput.AimPointer<0){BattleOrders.Position(target,false,battle.Movement,out double tx,out double tz);Aim=new Vector2((float)tx,(float)tz);}
-                    if(BasicAttack(target)||own.attackReleaseTick>0&&own.attackTargetID==target.playerID&&!battle.HasPendingAction)releasedBasicPending=false;
+                    BasicAttack(target);
                 }
             }
             if(TouchInput.TakeDash())DashOrder(new Vector2((float)x+lastMoveDirection.x,(float)z+lastMoveDirection.y));

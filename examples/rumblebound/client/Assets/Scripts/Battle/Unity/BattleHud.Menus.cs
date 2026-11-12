@@ -86,13 +86,21 @@ namespace Rumblebound.Example.Battle.Unity
             var join = Box("card lobby-option");
             join.Add(Text("加入朋友的房間", "section-title"));
             var field = Field("房間代碼", code, value => code = value, 12);
+            field.AddToClassList("room-code-input");
             join.Add(field);
+#if UNITY_WEBGL && !UNITY_EDITOR
+            field.isReadOnly=TouchMode;
+            field.RegisterCallback<PointerDownEvent>(evt=>{
+                if(!TouchMode&&evt.pointerType!=UnityEngine.UIElements.PointerType.touch)return;
+                field.isReadOnly=true;EditRoomCode();evt.StopPropagation();
+            },TrickleDown.TrickleDown);
+#endif
             var joinButton = Button("加入房間", () => Flow.Join(code), null, MenuAvailable && !string.IsNullOrWhiteSpace(code));
             field.RegisterValueChangedCallback(evt => joinButton.SetEnabled(MenuAvailable && !string.IsNullOrWhiteSpace(evt.newValue)));
             join.Add(joinButton);
             options.Add(join);
             MenuNotice(parent);
-            parent.Add(Text("右鍵移動／普攻 · Q 技能 · E 衝刺 · 空白回正鏡頭", "hint"));
+            parent.Add(Text(TouchMode?"左側移動 · 右側普攻／技能／衝刺":"右鍵移動／普攻 · Q 技能 · E 衝刺 · 空白回正鏡頭", "hint"));
         }
 
         private void BuildRoom(VisualElement parent, VisualElement dock)

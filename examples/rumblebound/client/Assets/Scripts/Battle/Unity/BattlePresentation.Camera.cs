@@ -14,7 +14,7 @@ namespace Rumblebound.Example.Battle.Unity
         private LineRenderer targetRing;
         private LineRenderer destinationMarker;
         public bool DestinationVisible=>destinationMarker!=null&&destinationMarker.gameObject.activeSelf;
-        public Vector3 DestinationPoint=>client!=null?new Vector3((float)client.Orders.DestinationX,.07f,(float)client.Orders.DestinationZ):Vector3.zero;
+        public Vector3 DestinationPoint=>client!=null&&client.TouchAttackPreview?new Vector3(client.TouchAttackDestination.x,.07f,client.TouchAttackDestination.y):client!=null?new Vector3((float)client.Orders.DestinationX,.07f,(float)client.Orders.DestinationZ):Vector3.zero;
         private float cameraZoom=8;
         public float CameraZoom=>cameraZoom;
         public void SetCameraZoom(float value){cameraZoom=Mathf.Clamp(value,5,10);PlayerPrefs.SetFloat("Rumblebound.CameraZoom.v4",cameraZoom);PlayerPrefs.Save();}
@@ -36,17 +36,18 @@ namespace Rumblebound.Example.Battle.Unity
         }
         private void PresentLock(WorldView world){
             var target=world.players.FirstOrDefault(p=>p.state.playerID==client.CurrentTargetID&&p.state.hp>0&&!p.state.left);
-            if(client.PreviewKind!=BattlePreviewKind.Basic||!client.PreviewSelecting||target==null||world.frozen||client.Flow.Playback.Active||BattleHud.BlocksGameplay){if(targetRing!=null)targetRing.gameObject.SetActive(false);return;}
+            bool showLock=BattleHud.TouchMode?client.TouchAttackPreview||client.Orders.TargetID!=null:client.PreviewKind==BattlePreviewKind.Basic&&client.PreviewSelecting;
+            if(!showLock||target==null||world.frozen||client.Flow.Playback.Active||BattleHud.BlocksGameplay){if(targetRing!=null)targetRing.gameObject.SetActive(false);return;}
             if(targetRing==null){targetRing=GroundCastPresentation.Circle("Selected enemy",new Color(1,.35f,.15f),.05f);targetRing.transform.SetParent(transform,false);}
             targetRing.gameObject.SetActive(true);GroundCastPresentation.PlaceCircle(targetRing,new Vector3((float)target.x,.05f,(float)target.z),(float)content.Rules.playerRadius+.3f);
         }
         private void PresentDestination(WorldView world){
-            bool visible=!BattleHud.TouchMode&&client.Orders.Moving&&!world.frozen&&!client.Flow.Playback.Active&&client.Flow.Battle.CanControl&&!BattleHud.BlocksGameplay;
+            bool visible=(client.TouchAttackPreview||client.Orders.Moving)&&!world.frozen&&!client.Flow.Playback.Active&&client.Flow.Battle.CanControl&&!BattleHud.BlocksGameplay;
             if(!visible){if(destinationMarker!=null)destinationMarker.gameObject.SetActive(false);return;}
             if(destinationMarker==null){destinationMarker=GroundCastPresentation.Circle("Movement destination",Color.green,.07f);destinationMarker.transform.SetParent(transform,false);}
-            destinationMarker.sharedMaterial.color=client.Orders.AttackMoving?new Color(1,.45f,.2f):new Color(.35f,1,.6f);
+            destinationMarker.sharedMaterial.color=client.TouchAttackPreview||client.Orders.AttackMoving?new Color(1,.45f,.2f):new Color(.35f,1,.6f);
             destinationMarker.gameObject.SetActive(true);
-            GroundCastPresentation.PlaceCircle(destinationMarker,new Vector3((float)client.Orders.DestinationX,.07f,(float)client.Orders.DestinationZ),.32f);
+            GroundCastPresentation.PlaceCircle(destinationMarker,DestinationPoint,.32f);
         }
     }
 }

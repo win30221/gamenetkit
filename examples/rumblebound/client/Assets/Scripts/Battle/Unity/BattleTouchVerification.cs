@@ -56,7 +56,12 @@ namespace Rumblebound.Example.Battle.Unity
             Require(client.TouchInput.AimX>.9,"tap did not preserve selected aim direction");
             yield return Until(()=>Own.fireReadyTick<=Flow.Battle.State.Tick,"tap cooldown");
             double start=Own.z;Vector2 center=move.worldBound.center;
-            Pointer(move,EventType.MouseDown,center);Pointer(move,EventType.MouseDrag,center+Vector2.down*45);
+            center+=new Vector2(18,12);
+            Pointer(move,EventType.MouseDown,center);
+            Require(client.TouchInput.MoveX==0&&client.TouchInput.MoveZ==0,"off-centre contact must start neutral");
+            Pointer(move,EventType.MouseDrag,center+Vector2.down*8);
+            Require(Math.Abs(client.TouchInput.MoveZ-1)<1e-6,"short drag must use fixed full speed");
+            Pointer(move,EventType.MouseDrag,center+Vector2.down*45);
             Require(client.TouchInput.MoveZ>.5,"UI pointer did not set movement");
             yield return Until(()=>Own.z>start+.45,"authoritative touch movement");
             Pointer(move,EventType.MouseUp,center+Vector2.down*45);
@@ -80,15 +85,25 @@ namespace Rumblebound.Example.Battle.Unity
             hud.VerificationTouches=new[]{held};
             yield return Until(()=>client.TouchInput.MovePointer==7,"raw movement finger");
             for(int i=0;i<3;i++){
-                yield return Until(()=>Own.fireReadyTick<=Flow.Battle.State.Tick,"held move attack cooldown");
+                // Reverse between attacks so the retained finger does not walk
+                // into the large arena's north ridge during a cooldown.
+                double direction=i%2==0?.5:-.5;
+                held=new BattleTouchInput.Sample(7,BattleTouchInput.Target.None,BattleTouchInput.Phase.Held,0,direction);
+                hud.VerificationTouches=new[]{held};
+                yield return Until(()=>{
+                    if(Math.Abs(Own.z)>5)direction=Own.z>0?-.5:.5;
+                    held=new BattleTouchInput.Sample(7,BattleTouchInput.Target.None,BattleTouchInput.Phase.Held,0,direction);
+                    hud.VerificationTouches=new[]{held};
+                    return Own.fireReadyTick<=Flow.Battle.State.Tick;
+                },"held move attack cooldown");
                 hud.VerificationTouches=new[]{new BattleTouchInput.Sample(19,BattleTouchInput.Target.Aim,BattleTouchInput.Phase.Began,0,1),held};yield return null;
                 hud.VerificationTouches=new[]{held,new BattleTouchInput.Sample(19,BattleTouchInput.Target.None,BattleTouchInput.Phase.Ended,0,1)};yield return null;
                 hud.VerificationTouches=new[]{held};
                 yield return Until(()=>Own.attackStopUntilTick>Flow.Battle.State.Tick,"held move attack accepted");
                 yield return Until(()=>Own.attackStopUntilTick<=Flow.Battle.State.Tick,"held move attack recovery");
                 double before=Own.z;
-                yield return Until(()=>Own.z>before+.15,"walking resumes without lifting finger");
-                Require(client.TouchInput.MovePointer==7&&client.TouchInput.MoveZ>.4,"attack lost stationary left finger");
+                yield return Until(()=>direction>0?Own.z>before+.15:Own.z<before-.15,"walking resumes without lifting finger");
+                Require(client.TouchInput.MovePointer==7&&Math.Abs(client.TouchInput.MoveZ)>.4,"attack lost stationary left finger");
             }
             // Unrelated pointer capture loss is irrelevant to a physical touch.
             move.CapturePointer(7);yield return null;

@@ -97,6 +97,46 @@ namespace Rumblebound.Example.Battle.Unity
             clipboardStatus = "";
         }
 
-        private void OnDisable() { CancelClipboard(); if(client!=null)ResetTouchControls(); }
+        [Serializable] private sealed class RoomInputReply { public string code, status; public int requestId; }
+        private bool roomInputPending;
+        private int roomInputRequest, roomInputIdentity;
+#if UNITY_WEBGL && !UNITY_EDITOR
+        private bool roomInputKeyboardCapture;
+        [System.Runtime.InteropServices.DllImport("__Internal")] private static extern void RF_Battle_EditRoomCode(string code, string target, int requestId);
+        [System.Runtime.InteropServices.DllImport("__Internal")] private static extern void RF_Battle_CancelRoomInput(string target);
+#endif
+        private void EditRoomCode()
+        {
+            if(roomInputPending||Flow.Stage!="lobby"||!MenuAvailable)return;
+            roomInputPending=true;roomInputIdentity=Flow.Identity.Revision;++roomInputRequest;
+#if UNITY_WEBGL && !UNITY_EDITOR
+            roomInputKeyboardCapture=WebGLInput.captureAllKeyboardInput;
+            WebGLInput.captureAllKeyboardInput=false;
+            RF_Battle_EditRoomCode(code,gameObject.name,roomInputRequest);
+#else
+            roomInputPending=false;root.Q<TextField>("房間代碼")?.Focus();
+#endif
+        }
+        [Preserve] public void OnBattleRoomCodeInput(string json)
+        {
+            RoomInputReply reply;try{reply=JsonUtility.FromJson<RoomInputReply>(json);}catch(Exception){return;}
+            if(reply==null||!roomInputPending||reply.requestId!=roomInputRequest)return;
+            roomInputPending=false;
+#if UNITY_WEBGL && !UNITY_EDITOR
+            WebGLInput.captureAllKeyboardInput=roomInputKeyboardCapture;
+#endif
+            if(Flow==null||Flow.Identity.Revision!=roomInputIdentity||Flow.Stage!="lobby")return;
+            if(reply.status=="accepted"&&reply.code!=null&&reply.code.Length<=12){code=reply.code.Trim().ToUpperInvariant();MarkDirty();}
+        }
+        private void CancelRoomInput()
+        {
+            if(!roomInputPending)return;
+#if UNITY_WEBGL && !UNITY_EDITOR
+            RF_Battle_CancelRoomInput(gameObject.name);
+            WebGLInput.captureAllKeyboardInput=roomInputKeyboardCapture;
+#endif
+            roomInputPending=false;++roomInputRequest;
+        }
+        private void OnDisable() { CancelRoomInput();CancelClipboard(); if(client!=null)ResetTouchControls(); }
     }
 }

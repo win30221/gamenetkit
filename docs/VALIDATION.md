@@ -90,3 +90,12 @@ python -B -m unittest discover -s ./tests/dependencies -v
 ## SDK 優化（2026-11-10）
 
 七項優化、基準比較及測試範圍見 [SDK 優化紀錄](SDK_OPTIMIZATION_2026-11-10.md)。`./tests/scripts/Test-SdkNative.ps1` 可在無 Editor 授權時執行相同的純 C# SDK 契約測例；它不代替 Unity Player 或 WebGL 驗收。
+
+## 2026-11-11 Rumblebound 手機輸入與 HUD
+
+- Windows 與 WebGL 已重新建置成功；WebGL 成品包含 `OnBattleRoomCodeInput` 原生輸入橋接。新增文字與方向箭頭通過字型覆蓋檢查，字型來源 SHA-256 維持原授權 manifest。
+- `node --test examples/rumblebound/tests/battle/room-input.mjs examples/rumblebound/tests/battle/replay-picker.mjs examples/rumblebound/tests/battle/network-settings.mjs`：26 項通過。其中房間輸入覆蓋貼上後正規化、空白、取消、重複提交、替換請求、Escape 與 Canvas 全螢幕退出；使用模擬 DOM，並非手機鍵盤實測。
+- 真正 Windows Player 的戰鬥驗證通過；桌面 HUD 12 張、觸控 HUD 13 張實際 GPU/UI 畫面通過中央交戰區、控制區尺寸、控制區互斥與提示不遮擋按鈕檢查。觸控尺寸為 568×320、640×360、844×390、989×446、1280×720；三角色瞄準、普攻與技能也有畫面。證據在本機 `artifacts/hud-review/`、`artifacts/hud-review-desktop.log`、`artifacts/hud-review-touch.log`。
+- 多指 Player 測試通過點按自動瞄準、拖曳技能、移動／放開／衝刺、施法後不抬左手續走、pointer capture 遺失與開選單重設。測試在不同技能之間轉向，避免固定北向路線撞上大型地圖北側牆；同一次施法前後仍保留同一手指與方向。證據：`artifacts/touch-player.log`、`artifacts/combat-player.log`。
+- 本輪瀏覽器實際點擊驗收受 Work settings 的 Local browser use 停用阻擋；iPhone／Android 軟鍵盤、貼上、瀏海安全區與旋轉仍需裝置端確認。上述原生 Player 渲染及模擬 DOM 測試不能取代這些項目。
+- HUD 變更減少比分卡片重建及暫存集合配置；本輪沒有執行效能 Profiler，不宣稱 FPS 提升幅度。

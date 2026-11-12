@@ -35,6 +35,13 @@ namespace Rumblebound.Example.Battle
                 if(score<best||score==best&&String.CompareOrdinal(p.playerID,result?.playerID)<0){best=score;result=p;}
             }return result;
         }
+        public static PlayerState NearestToPoint(GameContent content,Snapshot state,string id,GameMovement movement,double px,double pz){
+            var own=Array.Find(state.players,p=>p.playerID==id);if(own==null)return null;
+            double radius=content.Hero(own.heroID).basicRange*2,best=radius*radius;PlayerState result=null;
+            foreach(var p in state.players){if(!Enemy(own,p,state.tick))continue;Position(p,false,movement,out double x,out double z);double d=(x-px)*(x-px)+(z-pz)*(z-pz);
+                if(d<best||d==best&&String.CompareOrdinal(p.playerID,result?.playerID)<0){best=d;result=p;}}
+            return result;
+        }
         public PlayerState Drive(GameContent content,Snapshot state,string id,GameMovement movement,double now,out double dx,out double dz){
             dx=dz=0;var own=Array.Find(state.players,p=>p.playerID==id);if(own==null||own.hp<=0||own.left){Clear();return null;}
             PlayerState target=null;
