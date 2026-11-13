@@ -1,0 +1,38 @@
+{
+  "units": "metres",
+  "unity_ground": "XZ",
+  "field_width": 20,
+  "field_length": 30,
+  "river_half_width": 1.5,
+  "bridge_centres_x": [
+    -5,
+    5
+  ],
+  "bridge_width": 2.5,
+  "blue_keep": [
+    0,
+    -11
+  ],
+  "red_keep": [
+    0,
+    11
+  ],
+  "tower_positions": [
+    [
+      -5,
+      -7.7
+    ],
+    [
+      5,
+      -7.7
+    ],
+    [
+      -5,
+      7.7
+    ],
+    [
+      5,
+      7.7
+    ]
+  ]
+}

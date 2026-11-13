@@ -2,6 +2,9 @@
     admin off
 }
 
+# Additional games share this proxy through independent site snippets.
+import /srv/tower-duel/*.caddy
+
 __DOMAIN__ {
     encode zstd gzip
     header {

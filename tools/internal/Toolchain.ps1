@@ -22,7 +22,7 @@ function Resolve-GameNetKitUnityEditor {
     $candidate = if ($Path) { $Path } elseif ($env:GAMENETKIT_UNITY_EDITOR) { $env:GAMENETKIT_UNITY_EDITOR } else {
         $installed = Join-Path ${env:ProgramFiles} "Unity/Hub/Editor/$version/Editor/Unity.exe"
         $portable = Join-Path $script:GameNetKitRoot ".local/toolchains/unity/$version/Editor/Unity.exe"
-        if (Test-Path -LiteralPath $portable -PathType Leaf) { $portable } else { $installed }
+        if (Test-Path -LiteralPath $installed -PathType Leaf) { $installed } else { $portable }
     }
     if (-not (Test-Path -LiteralPath $candidate -PathType Leaf)) { throw "Unity $version was not found: $candidate. Install that Editor or set GAMENETKIT_UNITY_EDITOR." }
     $actual = [Diagnostics.FileVersionInfo]::GetVersionInfo($candidate).ProductVersion

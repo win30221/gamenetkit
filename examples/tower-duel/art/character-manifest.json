@@ -1,0 +1,121 @@
+{
+  "creator": "Kay Lousberg",
+  "license": "CC0 1.0",
+  "archives": [
+    {
+      "source": "https://kaylousberg.itch.io/kaykit-adventurers",
+      "downloadName": "Free 2.0",
+      "uploadId": "15363167",
+      "downloadedUtc": "2026-11-12T08:39:38.6191699Z",
+      "sha256": "ABE48F4763FBA0896BAB486EE9E6D08CA6B5B3884B9601F235C8847AE94DC479",
+      "bytes": 13024345
+    },
+    {
+      "source": "https://kaylousberg.itch.io/kaykit-character-animations",
+      "downloadName": "Free 1.1",
+      "uploadId": "15799903",
+      "downloadedUtc": "2026-11-12T08:39:41.1078202Z",
+      "sha256": "65882F31F905AD2E953819648A59287CDEAB8F623908D5EF701971D3758BE20F",
+      "bytes": 14858957
+    }
+  ],
+  "files": [
+    {
+      "path": "Characters/Knight.fbx",
+      "sha256": "E293BB352E62DDAA9EF79734026A9A86DDEE71C2BCA93F99B2C449AFCCDF62AB"
+    },
+    {
+      "path": "Characters/Ranger.fbx",
+      "sha256": "0058F761D01D6465717BADB13565F1AD1CFBC3AFA7841B993CC6902E3A9BEA08"
+    },
+    {
+      "path": "Characters/Rogue.fbx",
+      "sha256": "CAC991031020E199290C1352739886947F618821CF9F0FDEB6DC6A9F46EE7D80"
+    },
+    {
+      "path": "Characters/Rogue_Hooded.fbx",
+      "sha256": "5D9BFBD7BFE0A21DE1CBAB8ED226C31757576E36043A80F8E9106311893A371D"
+    },
+    {
+      "path": "Characters/Mage.fbx",
+      "sha256": "F766CCBCDC332209ABF5A7BE56AF4FFC65DDA8ABDB29DB5496CC619FED44AC87"
+    },
+    {
+      "path": "Characters/Barbarian.fbx",
+      "sha256": "2EEF4E7B6EC5B5F70638BD7A8355023F6E764C95E218EE0749385C7BFF17D8E8"
+    },
+    {
+      "path": "Textures/knight_texture.png",
+      "sha256": "028DB4D1CD8B3471E6BA21686515ABD4E36AE582F8B314B71AD2AB1FB5453B12"
+    },
+    {
+      "path": "Textures/ranger_texture.png",
+      "sha256": "639CD0BA5106FBDF65370B52B9290091D3BD92FE267693ABC8DC474471BB800F"
+    },
+    {
+      "path": "Textures/rogue_texture.png",
+      "sha256": "2E2FC741E20E7E2C85B176C8143B49B769BCA0D2ED1A1CFC1807A758A0E4D3E1"
+    },
+    {
+      "path": "Textures/mage_texture.png",
+      "sha256": "9EF9672E93B231FC4E0E19238EDFAE3BE22513AAF634DF1898F45842CE6E4B5F"
+    },
+    {
+      "path": "Textures/barbarian_texture.png",
+      "sha256": "F11434D3E5E4DF929DACD2C69D15734EFFB82BABF8176A80BB040D2007F5F882"
+    },
+    {
+      "path": "Equipment/sword_1handed.fbx",
+      "sha256": "59FF4F962170FCC51BCF7DAC6B15E6A9A0A89184F8A7096DE1D23BEF7B0B9828"
+    },
+    {
+      "path": "Equipment/shield_square.fbx",
+      "sha256": "C452D75EA45E1020057EDCD5B5E30FDA36A9D7F350A8BDC5C1E3935ECE88C5D5"
+    },
+    {
+      "path": "Equipment/bow_withString.fbx",
+      "sha256": "7EA543E11042564631AEC7DA1AD33B4A03EF1B518F1AACEA91E5041CD47079A2"
+    },
+    {
+      "path": "Equipment/arrow_bow.fbx",
+      "sha256": "72B356C77AB745B81CAE8598935185DA282B5E00FBEC2148700EAB818B471082"
+    },
+    {
+      "path": "Equipment/smokebomb.fbx",
+      "sha256": "871A758F7B42EF4957EFC1F80589303A2D0C5CC79BA19FD7E565DA248442E68E"
+    },
+    {
+      "path": "Equipment/sword_2handed.fbx",
+      "sha256": "DFEF92E4557006DFF93BEEC9CFE53AA6BA8ABAE80979CC370118D49B9DE1B736"
+    },
+    {
+      "path": "Equipment/axe_2handed.fbx",
+      "sha256": "0F54B400D679D72EB3D3C153EC4BE02ED2C7EE5D69C7790062CEE8E4D5D3C72D"
+    },
+    {
+      "path": "Animations/Rig_Medium_General.fbx",
+      "sha256": "0A3420D6CBBF00694E625D84E55C2AFBF0A7284C4280C46642F62F066DBD3950"
+    },
+    {
+      "path": "Animations/Rig_Medium_MovementBasic.fbx",
+      "sha256": "6B0339D304A07D87AC0A02028D1822078E581924EDDF9C7C7F2049132AD89EC4"
+    },
+    {
+      "path": "Animations/Rig_Medium_CombatMelee.fbx",
+      "sha256": "018BA1C4F2AD30E9D4B051F12C46EB3FA3DA01C1D4CBA3603F673DCA3BF899CA"
+    },
+    {
+      "path": "Animations/Rig_Medium_CombatRanged.fbx",
+      "sha256": "B70E1D5EF64FAFAAD5C50CA2225C238F33EC9622876014F38478DEEB10EE2BA4"
+    },
+    {
+      "path": "Licenses/Adventurers.txt",
+      "sha256": "D4ADC31660D1DB22EB60EBA648E01DB41577548F6FA1A3576CB4A6283DAE0A58"
+    },
+    {
+      "path": "Licenses/Animations.txt",
+      "sha256": "373B159044D1A886ED15F57CA5A7673BA14E2623C460283452705F2056912ED9"
+    }
+  ],
+  "processing": "Selected original FBX and textures; Unity imports Generic rig, copies required clips, creates URP materials and equipped prefabs. No source mesh edits."
+}

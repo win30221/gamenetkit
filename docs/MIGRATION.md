@@ -6,7 +6,7 @@
 
 [toolchain.json](../toolchain.json) 集中指定 Go 1.27.3 與 Unity Editor 6000.6.8f1。版本依 [Go 官方下載](https://go.dev/dl/) 與 [Unity 正式版發布](https://unity.com/releases/editor/whats-new/6000.6.8f1) 核對；不使用 alpha／beta Editor。
 
-PowerShell 工具透過 [Toolchain.ps1](../tools/internal/Toolchain.ps1) 解析工具，並確認 Go 版本。Go 可安裝於專案的 `.local/toolchains/go1.27.3`、系統 PATH 或 Program Files；Unity 優先使用專案 `.local/toolchains/unity/6000.6.8f1`，否則解析 Hub 的對應版本。12 個 Unity 專案的 ProjectVersion 與集中版本需一致。
+PowerShell 工具透過 [Toolchain.ps1](../tools/internal/Toolchain.ps1) 解析工具，並確認 Go 版本。Go 可安裝於專案的 `.local/toolchains/go1.27.3`、系統 PATH 或 Program Files；Unity 依序使用明確傳入的路徑、`GAMENETKIT_UNITY_EDITOR`、標準 Hub 位置 `C:\Program Files\Unity\Hub\Editor\6000.6.8f1\Editor\Unity.exe`，最後才回退到專案 `.local/toolchains/unity/6000.6.8f1`。12 個 Unity 專案的 ProjectVersion 與集中版本需一致。
 
 | 環境變數 | 用途 |
 | --- | --- |
@@ -30,7 +30,9 @@ PowerShell 工具透過 [Toolchain.ps1](../tools/internal/Toolchain.ps1) 解析�
 
 本機 Go 1.27.3 安裝於專案 `.local/toolchains/go1.27.3`，所有啟動／建置／測試腳本優先選用它；系統原本的 Go 1.27.1 保留。因此在一般終端直接輸入 `go version` 可能仍顯示系統版本；使用 `. ./tools/internal/Go-Env.ps1` 後以 `& $Go version` 核對專案工具鏈。
 
-Unity 6000.6.8f1 安裝於 `.local/toolchains/unity/6000.6.8f1`，已在 Unity Hub 註冊為預設版本，Web 與 Windows IL2CPP 模組辨識正常；本次 Windows Player 使用 Mono。
+遷移初期 Unity 6000.6.8f1 安裝於 `.local/toolchains/unity/6000.6.8f1`，並在 Unity Hub 註冊為預設版本，Web 與 Windows IL2CPP 模組辨識正常；當時 Windows Player 使用 Mono。
+
+2026-11-12：完整安裝改至標準位置 `C:\Program Files\Unity\Hub\Editor\6000.6.8f1`，Hub 登錄與預設版本已更新，專案腳本優先使用標準 Hub 路徑。搬移核對全部 86,519 個檔案的數量與大小、14 個關鍵檔案的 SHA256，以及 Unity 官方數位簽章；官方 CLI 安裝檢查、四組 SDK 測試、Minimal Windows（Mono）與 WebGL 建置均通過，再清除舊安裝。驗證時補齊 SDK 測試專案原先缺少的 `com.realtime.interpolation` 本機依賴。Hub 設定備份、複製核對報告與本次測試日誌保存在 ignored 目錄 `.local/unity-migration-2026-11-12`。
 
 本次官方安裝器在較深路徑遺漏 URP 檔案；短路徑重新安裝恢復了缺檔，再還原到正式位置，共補回 787 個官方檔案、替換 3 個大小不一致檔案。Unity 官方也曾指出此類錯誤可能與 Windows 路徑長度有關：[官方說明](https://discussions.unity.com/t/errors-when-creating-a-new-unity-6-3-urp-project-the-type-or-namespace-name-materialreferencechanger-could-not-be-found/1701487/28)。日後重新安裝建議先選較短位置，或用 `GAMENETKIT_UNITY_EDITOR` 指定短路徑安裝。修復後 SDK、Windows／WebGL 建置與實際雙 Player 均通過；臨時安裝副本已清除。
 

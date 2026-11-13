@@ -1,0 +1,18 @@
+{
+  "id": "twinbridge-1",
+  "width": 20,
+  "length": 30,
+  "riverHalfWidth": 1.5,
+  "bridgeHalfWidth": 1.25,
+  "deploymentCellSize": 1,
+  "pocketDepth": 4,
+  "bridges": [-5, 5],
+  "towers": [
+    {"id": 1, "seat": 0, "kind": "keep", "x": 0, "z": -11, "radius": 1.5},
+    {"id": 2, "seat": 0, "kind": "tower", "x": -5, "z": -7.7, "radius": 1.05},
+    {"id": 3, "seat": 0, "kind": "tower", "x": 5, "z": -7.7, "radius": 1.05},
+    {"id": 4, "seat": 1, "kind": "keep", "x": 0, "z": 11, "radius": 1.5},
+    {"id": 5, "seat": 1, "kind": "tower", "x": -5, "z": 7.7, "radius": 1.05},
+    {"id": 6, "seat": 1, "kind": "tower", "x": 5, "z": 7.7, "radius": 1.05}
+  ]
+}

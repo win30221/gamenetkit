@@ -22,7 +22,7 @@ Set-Location 'C:\path\to\gamenetkit' # 換成實際下載位置
 | --- | --- |
 | Go 1.27.3 | [minimal-server/go.mod](../examples/minimal-server/go.mod) 指定此版本；`Go-Env.ps1` 會選擇專案 `.local/toolchains/go1.27.3/bin/go.exe` 或對應版本的系統安裝 |
 | Unity 6000.6.8f1 | 由 [ProjectVersion.txt](../examples/minimal-unity/ProjectSettings/ProjectVersion.txt) 指定；需完成授權啟用 |
-| Unity 安裝位置 | 工具依專案版本解析 Unity，支援 `.local/toolchains/unity/6000.6.8f1` 與標準 Hub 安裝位置 |
+| Unity 安裝位置 | 工具依專案版本解析 Unity，優先使用標準 Hub 位置 `C:\Program Files\Unity\Hub\Editor\6000.6.8f1`；也支援自訂路徑與專案 `.local/toolchains/unity/6000.6.8f1` 回退位置 |
 | 建置支援 | Unity Hub 安裝目標所需的 Windows／WebGL Build Support |
 | 首次套件還原 | Go module 與 Unity 套件尚未快取時，需要網路存取 |
 | 本機連接埠 | Minimal 使用 `127.0.0.1:18091`；啟動前須未被其他程序占用 |

@@ -1,0 +1,11 @@
+{
+  "pack": "KayKit Medieval Hexagon Pack 1.0 FREE",
+  "author": "Kay Lousberg",
+  "source_url": "https://kaylousberg.itch.io/kaykit-medieval-hexagon",
+  "license": "CC0 1.0 Universal",
+  "license_file": "License.txt",
+  "downloaded_at": "2026-11-12",
+  "archive": "KayKit_Medieval_Hexagon_Pack_1.0_FREE.zip",
+  "archive_sha256": "4FBB374C45732C88522BD3439E9415BF568C683236EDE336B4E61D161155BA12",
+  "contents": "Selected original FBX files and the shared texture atlas needed by build_arena.py. Other content in the source archive is not required."
+}

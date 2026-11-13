@@ -46,6 +46,14 @@
         "com.realtime.core": "0.1.0"
       }
     },
+    "com.realtime.interpolation": {
+      "version": "file:../../../packages/unity/interpolation",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.realtime.core": "0.1.0"
+      }
+    },
     "com.realtime.playback": {
       "version": "file:../../../packages/unity/playback",
       "depth": 0,

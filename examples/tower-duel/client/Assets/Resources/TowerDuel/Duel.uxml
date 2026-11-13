@@ -1,0 +1,70 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <ui:VisualElement name="duelRoot" class="game-ui">
+    <ui:VisualElement name="worldInput" class="world-input" focusable="true" />
+    <ui:VisualElement name="healthLayer" class="full-layer" picking-mode="Ignore" />
+    <ui:VisualElement name="topHud" class="top-hud" picking-mode="Ignore">
+      <ui:VisualElement class="header-copy" picking-mode="Ignore">
+        <ui:Label text="雙橋對決" class="brand" picking-mode="Ignore" />
+        <ui:Label name="roomLabel" class="small" picking-mode="Ignore" />
+      </ui:VisualElement>
+      <ui:Label name="timerLabel" text="3:00" class="timer" picking-mode="Ignore" />
+      <ui:Button name="audioButton" text="音效開" class="small-button" />
+      <ui:Button name="leaveButton" text="離開" class="small-button" />
+    </ui:VisualElement>
+    <ui:VisualElement name="dockFrame" class="dock-frame">
+     <ui:VisualElement name="dock" class="dock">
+      <ui:VisualElement name="energyRow" class="energy-row">
+        <ui:Label name="energyLabel" text="能量 5 / 10" class="energy-label" />
+        <ui:VisualElement name="energyPips" class="energy-pips" />
+        <ui:Label name="energyMode" class="energy-mode" />
+      </ui:VisualElement>
+      <ui:VisualElement class="hand-layout">
+        <ui:VisualElement name="cardRow" class="card-row" />
+        <ui:VisualElement class="next-card">
+          <ui:VisualElement name="nextCardArt" class="next-card-art" />
+          <ui:Label name="nextCardLabel" class="next-card-label" />
+        </ui:VisualElement>
+      </ui:VisualElement>
+      <ui:Label name="noticeLabel" text="拖曳卡牌到己方半場，放開出兵。" class="notice" />
+     </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement name="dragPreview" class="drag-card" picking-mode="Ignore">
+      <ui:VisualElement name="dragArt" class="card-art" picking-mode="Ignore" />
+      <ui:Label name="dragName" class="card-name" picking-mode="Ignore" />
+      <ui:Label name="dragCost" class="card-cost" picking-mode="Ignore" />
+    </ui:VisualElement>
+    <ui:VisualElement name="lobbyLayer" class="overlay">
+      <ui:VisualElement class="lobby-panel">
+        <ui:Label text="雙橋對決" class="title" />
+        <ui:Label text="TOWER DUEL" class="eyebrow" />
+        <ui:Label text="部隊放己方半場，法術可跨河。&#10;出牌後補下一張，保留能量反制。" class="subtitle" />
+        <ui:TextField name="nameField" label="你的名稱" max-length="20" />
+        <ui:TextField name="serverField" label="伺服器" />
+        <ui:Button name="createButton" text="建立雙人房間" class="primary-button" />
+        <ui:VisualElement class="divider" />
+        <ui:TextField name="roomField" label="房間碼" max-length="6" />
+        <ui:Button name="joinButton" text="加入朋友的房間" class="secondary-button" />
+        <ui:Label name="lobbyStatus" class="hint lobby-status" />
+      </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement name="waitingLayer" class="overlay waiting-overlay">
+      <ui:VisualElement class="lobby-panel waiting-panel">
+        <ui:Label text="邀請朋友來一場" class="section-title" />
+        <ui:Label name="inviteCode" class="invite-code" />
+        <ui:Button name="copyButton" text="複製房間碼" class="secondary-button" />
+        <ui:Label name="playersLabel" class="players" />
+        <ui:Button name="readyButton" text="準備對戰" class="primary-button" />
+        <ui:Label name="waitingHint" class="hint" />
+      </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement name="resultLayer" class="overlay waiting-overlay">
+      <ui:VisualElement class="lobby-panel result-panel">
+        <ui:Label name="resultTitle" class="title" />
+        <ui:Label name="resultReason" class="subtitle" />
+        <ui:Label name="scoreLabel" class="section-title" />
+        <ui:Button name="rematchButton" text="同房再戰" class="primary-button" />
+        <ui:Button name="backButton" text="回到大廳" class="primary-button" />
+      </ui:VisualElement>
+    </ui:VisualElement>
+  </ui:VisualElement>
+</ui:UXML>

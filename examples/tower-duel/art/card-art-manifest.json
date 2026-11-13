@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "date": "2026-11-12",
+  "tool": "Built-in image_gen, not CLI",
+  "direction": "Original polished 3D cartoon fantasy, warm key/cyan rim, bold close-up silhouettes; first guard is style target, other seven are edited variants using guard as reference.",
+  "storage": "Original generated PNG copied unchanged into each asset path; embedded metadata retained. Unity importer limits runtime textures to 512px.",
+  "cards": [
+    {
+      "id": "guard",
+      "asset": "client/Assets/Resources/TowerDuel/Cards/guard.png",
+      "prompt": "Use case: stylized-concept. Asset: a single original fantasy mobile strategy game card portrait for Tower Duel, square 1024x1024 edge-to-edge illustration, no card frame or UI. Subject: an appealing heroic shield knight with an expressive friendly determined face, short dark beard, oversized polished silver helmet with an open face and small blue plume, bright cobalt scarf, massive rounded steel shield in the foreground, sword hilt visible. Premium polished 3D cartoon illustration, chunky sculpted forms, gorgeous soft materials, crisp rim lighting, warm golden key light and cool cyan rim, saturated cinematic color, highly readable at tiny card size, extremely professional mobile game key art. Close chest-up portrait, face large in upper centre, dynamic three-quarter pose, dramatic dark teal gradient background with subtle magical motes, uncluttered silhouette. Original character design, no recognizable franchise characters. No text, no letters, no numbers, no icons, no watermark. This is the visual target for a cohesive set of eight card illustrations.",
+      "reference": null,
+      "sha256": "e99a8110fe93b82f1eada75b825d91ceaf677b53fbbaf78fa6e694c6e24df495",
+      "originalSize": "1254x1254"
+    },
+    {
+      "id": "archer",
+      "asset": "client/Assets/Resources/TowerDuel/Cards/archer.png",
+      "prompt": "Use case: stylized-concept. Edit the reference into another card illustration in the SAME cohesive Tower Duel set. Replace the knight with an original brave female woodland archer with bright copper-red hair in a thick braid, expressive green eyes, forest-green hood and leather bracers, beautifully curved wooden bow drawn diagonally in front, arrow glowing faintly gold, confident focused smile. Chest-up heroic portrait, face prominent. Background forest teal and warm amber. Preserve the reference's premium polished 3D cartoon rendering, chunky sculpted appealing forms, gorgeous soft material shading, warm golden key and cool cyan rim light, saturated cinematic colors, bold readable silhouette at tiny mobile card size. Square edge-to-edge close-up illustration, original fantasy character designs. Remove all knight equipment that is not part of the requested subject. No UI, no card border, no text, letters, numerals, logos, watermark. This is standalone card art.",
+      "reference": "guard",
+      "sha256": "770437801daf7f8f29ab94855f5d65bb62c32056279aabf6947dd18cb90e1e70",
+      "originalSize": "1254x1254"
+    },
+    {
+      "id": "swords",
+      "asset": "client/Assets/Resources/TowerDuel/Cards/swords.png",
+      "prompt": "Use case: stylized-concept. Edit the reference into another card illustration in the SAME cohesive Tower Duel set. Replace the knight with exactly THREE original cheerful young sword rogues in emerald-green tunics and soft brown leather armor, tousled brown hair, short silver swords raised. Leader large in centre foreground, two teammates behind to either side. Expressive mischievous faces, clear three-person formation. Chest-up composition, no shields. Background deep emerald. Preserve the reference's premium polished 3D cartoon rendering, chunky sculpted appealing forms, gorgeous soft material shading, warm golden key and cool cyan rim light, saturated cinematic colors, bold readable silhouette at tiny mobile card size. Square edge-to-edge close-up illustration, original fantasy character designs. Remove all knight equipment that is not part of the requested subject. No UI, no card border, no text, letters, numerals, logos, watermark. This is standalone card art.",
+      "reference": "guard",
+      "sha256": "0e8752c96ea1a78976eee6163cbd89c1ebd851764f3689a4e149f939d9f14dbf",
+      "originalSize": "1254x1254"
+    },
+    {
+      "id": "bomber",
+      "asset": "client/Assets/Resources/TowerDuel/Cards/bomber.png",
+      "prompt": "Use case: stylized-concept. Edit the reference into another card illustration in the SAME cohesive Tower Duel set. Replace the knight with an original charming mischievous bomb mage, expressive youthful face, oversize floppy purple wizard hat with brass goggles resting on the brim, violet robe with leather straps, holding ONE round black iron bomb close to the camera, orange burning fuse and sparkling ember. Clearly a bomber, not fire spell. Chest-up portrait. Background deep violet with warm firelight. Preserve the reference's premium polished 3D cartoon rendering, chunky sculpted appealing forms, gorgeous soft material shading, warm golden key and cool cyan rim light, saturated cinematic colors, bold readable silhouette at tiny mobile card size. Square edge-to-edge close-up illustration, original fantasy character designs. Remove all knight equipment that is not part of the requested subject. No UI, no card border, no text, letters, numerals, logos, watermark. This is standalone card art.",
+      "reference": "guard",
+      "sha256": "c8a0133ba75beea3ea3bf829613cfd615031e1413bd238d83adcc48bafb3cfda",
+      "originalSize": "1254x1254"
+    },
+    {
+      "id": "charger",
+      "asset": "client/Assets/Resources/TowerDuel/Cards/charger.png",
+      "prompt": "Use case: stylized-concept. Edit the reference into another card illustration in the SAME cohesive Tower Duel set. Replace the knight with an original agile masked green-hooded sword champion mid-charge, sharp determined eyes visible above a teal cloth face covering, wind-swept emerald hood, leather armor, large polished silver two-handed blade diagonally across foreground, dynamic forward movement with subtle green speed streaks. Chest-up portrait, face large. Background deep jade. Preserve the reference's premium polished 3D cartoon rendering, chunky sculpted appealing forms, gorgeous soft material shading, warm golden key and cool cyan rim light, saturated cinematic colors, bold readable silhouette at tiny mobile card size. Square edge-to-edge close-up illustration, original fantasy character designs. Remove all knight equipment that is not part of the requested subject. No UI, no card border, no text, letters, numerals, logos, watermark. This is standalone card art.",
+      "reference": "guard",
+      "sha256": "6af6a786645655c5f638080eed2d29b960c1d1102ae8ab1321352959fc24b9f4",
+      "originalSize": "1254x1254"
+    },
+    {
+      "id": "siege",
+      "asset": "client/Assets/Resources/TowerDuel/Cards/siege.png",
+      "prompt": "Use case: stylized-concept. Edit the reference into another card illustration in the SAME cohesive Tower Duel set. Replace the knight with an original enormous muscular barbarian siege warrior, bald crown and swept orange side hair, huge ginger beard and heavy eyebrows, friendly fierce grin, chunky leather armor with bronze accents, carrying a massive double-headed steel axe. Intimidating sturdy silhouette distinct from the knight. Chest-up heroic portrait. Background warm burnt orange and dark teal. Preserve the reference's premium polished 3D cartoon rendering, chunky sculpted appealing forms, gorgeous soft material shading, warm golden key and cool cyan rim light, saturated cinematic colors, bold readable silhouette at tiny mobile card size. Square edge-to-edge close-up illustration, original fantasy character designs. Remove all knight equipment that is not part of the requested subject. No UI, no card border, no text, letters, numerals, logos, watermark. This is standalone card art.",
+      "reference": "guard",
+      "sha256": "99ad947bc861dc39e1b9cac17aef80e2a0c8777e3371d348f1d4ef669e23d534",
+      "originalSize": "1254x1254"
+    },
+    {
+      "id": "fireball",
+      "asset": "client/Assets/Resources/TowerDuel/Cards/fireball.png",
+      "prompt": "Use case: stylized-concept. Edit the reference into another card illustration in the SAME cohesive Tower Duel set. Replace the knight entirely with a powerful original magical FIREBALL spell: one huge sculpted incandescent orange fire sphere with a brilliant molten gold core, swirling curling tongues of flame and a dynamic comet tail, flying diagonally toward the viewer, tiny glowing embers, beautiful controlled bloom, clear round impact mass. No characters, faces, hands, buildings or items. Deep crimson and dark navy backdrop. The single fireball fills 80 percent of the square. Preserve the reference's premium polished 3D cartoon rendering, chunky sculpted appealing forms, gorgeous soft material shading, warm golden key and cool cyan rim light, saturated cinematic colors, bold readable silhouette at tiny mobile card size. Square edge-to-edge close-up illustration, original fantasy character designs. Remove all knight equipment that is not part of the requested subject. No UI, no card border, no text, letters, numerals, logos, watermark. This is standalone card art.",
+      "reference": "guard",
+      "sha256": "a46e59d9aa6a8b5946806091d24cca16eacf773ca9f8da02015af73b1de88e29",
+      "originalSize": "1254x1254"
+    },
+    {
+      "id": "frost",
+      "asset": "client/Assets/Resources/TowerDuel/Cards/frost.png",
+      "prompt": "Use case: stylized-concept. Edit the reference into another card illustration in the SAME cohesive Tower Duel set. Replace the knight entirely with an original magical FROST spell: a large gorgeous six-point crystalline ice burst with a radiant cyan core, chunky translucent blue crystals, frosty spiral vortex curling around the crystal, sparkling snow and cool mist, strong circular silhouette. No characters, faces, hands, buildings or items. Deep midnight-blue and indigo backdrop. The single spell fills 80 percent of the square. Preserve the reference's premium polished 3D cartoon rendering, chunky sculpted appealing forms, gorgeous soft material shading, warm golden key and cool cyan rim light, saturated cinematic colors, bold readable silhouette at tiny mobile card size. Square edge-to-edge close-up illustration, original fantasy character designs. Remove all knight equipment that is not part of the requested subject. No UI, no card border, no text, letters, numerals, logos, watermark. This is standalone card art.",
+      "reference": "guard",
+      "sha256": "ebfd5f4fdaf72748b5c82f7ceb2af5fb6b64ab3115398639ba3a0ce38db131ce",
+      "originalSize": "1254x1254"
+    }
+  ]
+}
