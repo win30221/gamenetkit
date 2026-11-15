@@ -1,0 +1,19 @@
+.balance-window { flex-grow: 1; }
+.balance-scroll { flex-grow: 1; }
+.balance-content { min-width: 970px; padding: 16px; }
+.balance-title { font-size: 22px; -unity-font-style: bold; margin-bottom: 8px; }
+.balance-note { white-space: normal; margin-bottom: 6px; }
+.balance-section { font-size: 15px; -unity-font-style: bold; margin-top: 18px; margin-bottom: 8px; }
+.balance-fields { flex-direction: row; flex-wrap: wrap; }
+.balance-fields > .unity-base-field { width: 285px; margin-right: 16px; margin-bottom: 7px; }
+.balance-fields .unity-base-field__label { min-width: 175px; }
+.balance-row { flex-direction: row; align-items: center; min-height: 34px; border-bottom-width: 1px; border-bottom-color: #555555; }
+.balance-heading { -unity-font-style: bold; background-color: rgba(120,120,120,0.18); }
+.balance-cell { width: 87px; flex-shrink: 0; margin-right: 5px; }
+.balance-name { width: 145px; flex-shrink: 0; }
+.balance-dps { -unity-text-align: middle-center; }
+.balance-detail { margin-top: 7px; }
+.balance-detail .balance-fields { margin-top: 8px; margin-left: 12px; }
+.balance-message { white-space: normal; color: #529d59; min-height: 20px; margin-top: 6px; }
+.balance-message.invalid { color: #d77b60; }
+.balance-footer { margin-top: 22px; padding-top: 10px; border-top-width: 1px; border-top-color: #666666; }

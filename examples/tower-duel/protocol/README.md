@@ -8,7 +8,7 @@ GameNetKit transport and interpolation. Animation and projectiles do not calcula
 - Simulation 30 Hz; complete recipient-specific snapshots 15 Hz.
 - At most 32 two-seat rooms, 64 connections, 80 living soldiers and 16 effects per room.
 - `map.json` and `rules.json` are canonical; SHA-256 of their raw bytes becomes
-  `mapHash` and `rulesHash`. Rules schema 3, revision `eight-cards-1`.
+  `mapHash` and `rulesHash`. Rules schema 3, revision `eight-cards-3`.
 - Each recipient receives only their own energy, four-card hand, next card,
   hand version and action watermark. Opponent hands and queues are never projected.
 
@@ -69,12 +69,33 @@ Soldier overlap is allowed at deployment; authoritative circle collision separat
 and pushes bodies afterwards. River, buildings and boundaries remain obstacles.
 An accepted squad pays once; invalid placement rejects the whole squad.
 
+Every troop has its own `deployTicks` (currently 30 ticks / one second for all six
+cards, configurable from 0 to 300). An accepted deployment immediately creates
+the full squad, charges energy and cycles the hand. Each member carries the same
+absolute `readyTick = deployment tick + deployTicks`; zero means immediately
+ready. Before that tick the troop cannot select a target, move, build charge or
+start an attack/windup. At `readyTick` it can act normally; its first hit still
+requires the normal attack windup. Deploying troops remain targetable, damageable
+and subject to collision push. Frost does not extend deployment time.
+
+`readyTick` is replicated to both seats and retained across retries and recovery.
+The client displays the remaining deployment time against the shared render
+timeline and keeps the troop idle until that timeline reaches readiness. A
+stalled stream cannot complete deployment using local wall time. Spells retain
+their own `delayTicks` and do not use troop deployment time.
+
 Spells can target a centre inside the full battlefield, including the enemy bank.
 They affect enemies only. Effect snapshots include `id`, `kind`, `seat`, `x`, `z`,
 `radius`, `start`, `impact` and `end`. Fireball hits once at its scheduled impact
-tick, after a 24-tick delay from the next simulation step; the visual remains for
+tick, after a 34-tick delay from the next simulation step; the visual remains for
 18 ticks. Frost repeatedly applies the slow within its active area to troops and
 towers; overlapping slows use the strongest value rather than multiplying.
+Soldiers are affected only while their foot center is inside or on the frost
+circle; their body radius does not expand it. Slow status is recomputed after
+movement and collision pushes, so a departing soldier's outgoing snapshot is
+already clear. The client uses the same rendered foot position and effect
+timeline for its slow label and animation speed. Towers retain body-overlap
+targeting for frost.
 Active effects stop on match end and are cleared for rematches.
 
 Deployment, energy deduction, effect/unit creation, cycling and the cached action
@@ -88,7 +109,8 @@ integer range. A client must not overwrite a newer hand version with a delayed A
 ## Combat and match flow
 
 Both players ready triggers a two-second countdown. Energy starts at five, caps
-at ten and restores one per three seconds, doubled in the last minute and overtime.
+at ten and restores one per three seconds throughout normal time. Only overtime
+doubles recovery; the transition tick still uses the normal rate.
 Destroying the enemy keep ends the match. At three minutes, destroyed front towers
 determine the winner; ties enter sixty seconds of sudden death. Simultaneous keep
 destruction, or simultaneous tower destruction during overtime, draws.
@@ -117,18 +139,27 @@ These event ticks may refer to an earlier target that has since died; current
 intent must not redirect a completed shot's projectile. Tower `attackTick` still
 records its shot directly.
 
-Every troop has a positive `windupTicks` in `rules.json`: guard 8, archer 12,
-swords 6, bomber 15, charger 9 and siege 12 (30 ticks per second). Starting a
+Every troop has a positive `windupTicks` in `rules.json`: guard 11, archer 17,
+swords 8, bomber 21, charger 13 and siege 17 (30 ticks per second). Starting a
 windup deals no damage. Only a living soldier that finishes its windup against
 the same living target in range adds damage, splash or a charged hit. Death
 cancels the unfinished attack; target death or leaving range discards its
 progress. A replacement target needs a fresh windup. Frost slows both windup
 and cooldown progress. Cooldown runs from attack start and includes windup,
-preserving the original interval between attacks. Ranged projectiles launch
+preserving the configured interval between attacks. Ranged projectiles launch
 only after an authoritative `hitTick`, rather than at animation start.
 
+Revision `eight-cards-2` reduces all troop movement speeds to 80% of revision 1
+and lengthens attack cooldowns and windups by approximately 40%, rounded to whole
+ticks. Tower shots use `towerCooldownTicks` (38 ticks, about 1.27 seconds), keeping
+their cadence in step with the slower troops. Costs, hit damage, health, range,
+charge distance and multipliers are unchanged. Fireball has a longer warning
+window (34 ticks); frost keeps its four-second duration and 55% speed factor.
+
 Front towers start `active`; keeps activate permanently after taking damage or
-losing either friendly front tower. `slowed` and `charging` drive presentation.
+losing either friendly front tower. `slowed` reports status at the published foot
+position; frost presentation samples the render-time position. `charging` drives
+charge presentation.
 Attacks whose windups finish on the same tick resolve together, including mutual
 lethal hits. A soldier killed on an earlier tick cannot complete its windup.
 Same-tick damage is accumulated before results are decided.

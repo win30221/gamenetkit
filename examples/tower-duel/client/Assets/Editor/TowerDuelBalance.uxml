@@ -1,0 +1,30 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements">
+  <ui:Style src="TowerDuelBalance.uss" />
+  <ui:VisualElement class="balance-window">
+    <editor:Toolbar>
+      <editor:ToolbarButton name="reloadButton" text="重新載入" />
+      <editor:ToolbarButton name="saveButton" text="儲存共用規則" />
+      <editor:ToolbarButton name="restartButton" text="儲存並重啟本機後端" />
+      <editor:ToolbarButton name="stopButton" text="停止本機後端" />
+      <editor:ToolbarButton name="sceneButton" text="開啟遊戲場景" />
+    </editor:Toolbar>
+    <ui:ScrollView class="balance-scroll" mode="VerticalAndHorizontal">
+      <ui:VisualElement class="balance-content">
+        <ui:Label text="雙橋對決 · 數值調整" class="balance-title" />
+        <ui:Label name="revisionLabel" class="balance-note" />
+        <ui:Label text="時間以毫秒（ms）輸入；30 Hz 模擬的每 tick 約 33.33 ms，工具會換算並對齊最近的 tick。儲存會同步 Go 共用規則與 Unity 設定；本機後端重啟後套用到新對局。" class="balance-note" />
+        <ui:Label name="serverLabel" class="balance-note" />
+        <ui:Label name="messageLabel" class="balance-message" />
+        <ui:Label text="塔" class="balance-section" />
+        <ui:VisualElement name="towerFields" class="balance-fields" />
+        <ui:Label text="兵種比較" class="balance-section" />
+        <ui:VisualElement name="troopTable" />
+        <ui:Label text="兵種進階設定" class="balance-section" />
+        <ui:VisualElement name="troopDetails" />
+        <ui:Label text="法術" class="balance-section" />
+        <ui:VisualElement name="spellFields" />
+        <ui:Label text="本機：停止 Play → 調整並儲存／重啟後端 → 開啟遊戲場景按 Play。已建置的 Windows／WebGL 與公開網站需重新建置、部署才會更新。" class="balance-note balance-footer" />
+      </ui:VisualElement>
+    </ui:ScrollView>
+  </ui:VisualElement>
+</ui:UXML>

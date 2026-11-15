@@ -56,7 +56,7 @@ async function run(origin='http://127.0.0.1:18115',output=path.join(root,'artifa
   ws.onClose(()=>{if(route===ws)clearInterval(heartbeat)});
  });
  try{
-  await page.goto(origin,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>!!window.towerDuel,null,{timeout:60000});await pause(2500);
+  await page.goto(origin.replace(/\/$/,'')+'/?mode=multiplayer',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>!!window.towerDuel,null,{timeout:60000});await pause(2500);
   await page.mouse.click(360,524);await until(()=>welcomes===1);await pause(400);
   const baseline=await shot('baseline');
   const spell=fireball(80,103,125);

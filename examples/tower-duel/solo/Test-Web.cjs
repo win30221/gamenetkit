@@ -34,7 +34,7 @@ async function run(origin='http://127.0.0.1:18113',output=path.join(root,'artifa
   const viewport=touch?{width:390,height:844}:{width:720,height:1000};
   const context=await browser.newContext({viewport,hasTouch:touch,isMobile:touch,deviceScaleFactor:1});
   await context.addInitScript(()=>{const Native=window.WebSocket;window.__soloSockets=[];window.WebSocket=new Proxy(Native,{construct(Target,args){const ws=Reflect.construct(Target,args);window.__soloSockets.push(ws);return ws}})});
-  const page=await context.newPage(),r={page,context,viewport,touch,welcomes:0,sent:[],actions:new Map(),errors:[],enemySeen:false,apiCalls:[]};records.push(r);
+  const page=await context.newPage(),r={page,context,viewport,touch,welcomes:0,sent:[],actions:new Map(),unitHistory:new Map(),errors:[],enemySeen:false,apiCalls:[]};records.push(r);
   page.on('pageerror',error=>r.errors.push(String(error)));
   page.on('console',message=>{if(/NullReferenceException|InvalidOperationException|RuntimeError|Tower Duel rejected message|Solo API request failed/.test(message.text()))r.errors.push(message.text())});
   page.on('response',async response=>{if(response.url().endsWith('/solo/rooms')&&response.request().method()==='POST'){r.apiCalls.push({status:response.status(),body:await response.json().catch(()=>null)})}});
@@ -45,6 +45,10 @@ async function run(origin='http://127.0.0.1:18113',output=path.join(root,'artifa
     if(s.type==='welcome'||s.type==='snapshot'){
      const prior=r.state;if(prior?.match===s.match&&prior.handVersion>s.handVersion){s.hand=prior.hand;s.handVersion=prior.handVersion;s.energy=prior.energy}
      r.state=s;if(s.type==='welcome')r.welcomes++;
+     for(const unit of s.units)if(unit.seat===s.seat){
+      if(!r.unitHistory.has(unit.id))r.unitHistory.set(unit.id,[]);
+      r.unitHistory.get(unit.id).push({tick:s.tick,readyTick:unit.readyTick,x:unit.x,z:unit.z,target:unit.target,attackTick:unit.attackTick});
+     }
      if(s.units.some(unit=>unit.seat!==s.seat))r.enemySeen=true;
     }else if(s.type==='action'){
      r.actions.set(s.match+'#'+s.action,s);
@@ -98,10 +102,20 @@ async function run(origin='http://127.0.0.1:18113',output=path.join(root,'artifa
   assert(primaryButtons(await r.page.screenshot()).length===1,'Leaving did not restore the solo mode menu');
   await until(()=>r.context.request.get(origin+'/solo/rooms/'+room).then(response=>response.status()===404));
  }
+ async function verifyDeployment(r,ack){
+  await until(()=>r.unitHistory.has(ack.unitID));
+  const history=r.unitHistory.get(ack.unitID),spawn=history[0];
+  assert(spawn.readyTick>spawn.tick,'First troop snapshot did not expose a deployment wait');
+  await shot(r,r.touch?'deployment-wait-phone':'deployment-wait-desktop');
+  await until(()=>history.some(unit=>unit.tick>=spawn.readyTick&&(unit.x!==spawn.x||unit.z!==spawn.z||unit.attackTick>0)),5000);
+  const waiting=history.filter(unit=>unit.tick<spawn.readyTick);
+  assert(waiting.length>0&&waiting.every(unit=>unit.readyTick===spawn.readyTick&&unit.x===spawn.x&&unit.z===spawn.z&&unit.target===0&&unit.attackTick===0),'A troop moved or attacked before its deployment completed');
+  await shot(r,r.touch?'deployment-ready-phone':'deployment-ready-desktop');
+ }
  try{
   assert(config.protocol===3&&config.cards.length===8,'Wrong authoritative game config');
   const desktop=await make(false);await start(desktop,'practice');
-  const first=await deploy(desktop);await until(()=>desktop.enemySeen);await shot(desktop,'practice-battle');
+  const first=await deploy(desktop);await verifyDeployment(desktop,first);checks.deploymentWaitDesktop=true;await until(()=>desktop.enemySeen);await shot(desktop,'practice-battle');
   checks.realBackendPractice=true;
   const same={match:desktop.state.match,version:desktop.state.handVersion,welcomes:desktop.welcomes};
   await desktop.page.evaluate(()=>{for(const socket of window.__soloSockets)if(socket.readyState===WebSocket.OPEN)socket.close(1000,'Solo reconnect check')});
@@ -113,7 +127,7 @@ async function run(origin='http://127.0.0.1:18113',output=path.join(root,'artifa
   const foreign=await browser.newContext();const forbidden=await foreign.request.delete(origin+'/solo/rooms/'+room,{headers:{Origin:origin}});assert(forbidden.status()===404,'Another browser could stop this test room');await foreign.close();checks.roomOwnership=true;
   results.push({mode:'practice',room,match:desktop.state.match,accepted:first.action,welcomes:desktop.welcomes,enemySeen:desktop.enemySeen});
   await leave(desktop,'practice');checks.leaveAndCleanup=true;
-  const mobile=await make(true);await start(mobile,'sandbox');await deploy(mobile);await pause(2500);await shot(mobile,'sandbox-phone');
+  const mobile=await make(true);await start(mobile,'sandbox');const mobileAck=await deploy(mobile);await verifyDeployment(mobile,mobileAck);checks.deploymentWaitTouch=true;await pause(2500);await shot(mobile,'sandbox-phone');
   assert(!mobile.enemySeen,'Sandbox opponent deployed a troop');checks.realBackendSandbox=true;checks.touchDeployment=true;
   results.push({mode:'sandbox',room:mobile.state.room,match:mobile.state.match,accepted:accepted(mobile).length,enemySeen:mobile.enemySeen});
   await leave(mobile,'sandbox');
@@ -125,5 +139,5 @@ async function run(origin='http://127.0.0.1:18113',output=path.join(root,'artifa
   fs.writeFileSync(path.join(output,'failure.json'),JSON.stringify({error:String(error),checks,records:records.map(r=>({state:r.state,errors:r.errors,api:r.apiCalls,sent:r.sent.slice(-5)}))},null,2));throw error;
  }finally{await browser.close()}
 }
-module.exports={run};
+module.exports={run,primaryButtons};
 if(require.main===module)run(process.argv[2],process.argv[3]).catch(error=>{console.error(error);process.exitCode=1});

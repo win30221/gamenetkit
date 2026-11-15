@@ -185,7 +185,8 @@ func TestWindupRulesAreRequiredAndSharedWithClient(t *testing.T) {
 	if err != nil || !bytes.Equal(canonical, client) {
 		t.Fatal("client and server must agree on windup rules and handshake hash", err)
 	}
-	for _, ticks := range []int{-1, 0, 24, 25} {
+	cooldown := defaultRules().ByID["guard"].Cooldown
+	for _, ticks := range []int{-1, 0, cooldown, cooldown + 1} {
 		var config rules
 		if err := json.Unmarshal(canonical, &config); err != nil {
 			t.Fatal(err)

@@ -14,9 +14,14 @@ namespace TowerDuel
             public Quaternion Leg,Arm,Hip;
             public long Attack,Hit;
             public double Until;
+            public int Health;
+            public double DamageTick=double.NegativeInfinity;
+            public Renderer[] Renderers;
+            public Transform Pivot;
+            public Vector3 PivotPosition;
         }
         private sealed class Bolt { public LineRenderer Line; public double Until; }
-        private sealed class Arrow { public Transform Root; public Vector3 From,To; public double Started; public float Duration; public bool Bomb; }
+        private sealed class Arrow { public Transform Root; public Vector3 From,To; public double Started; public long Impact; public float Duration; public bool Bomb; }
         private static readonly int SpeedHash=Animator.StringToHash("Speed"),StrikeHash=Animator.StringToHash("Strike"),DeadHash=Animator.StringToHash("Dead");
         private static readonly int MoveState=Animator.StringToHash("Move"),AttackState=Animator.StringToHash("Attack"),DeathState=Animator.StringToHash("Death");
         private readonly Transform root;
@@ -25,6 +30,7 @@ namespace TowerDuel
         private readonly Dictionary<long,UnitVisual> units=new Dictionary<long,UnitVisual>();
         private readonly Dictionary<long,GameObject> towers=new Dictionary<long,GameObject>();
         private readonly Dictionary<long,long> towerAttacks=new Dictionary<long,long>();
+        private readonly Dictionary<long,int> towerHealth=new Dictionary<long,int>();
         private readonly List<UnitVisual> corpses=new List<UnitVisual>();
         private readonly List<Bolt> bolts=new List<Bolt>();
         private readonly List<Arrow> arrows=new List<Arrow>();
@@ -32,6 +38,9 @@ namespace TowerDuel
         private readonly GameObject arrowPrefab;
         private readonly GameObject bombPrefab;
         private readonly DuelEffects effects;
+        private readonly MaterialPropertyBlock flash=new MaterialPropertyBlock();
+        private readonly Material trailMaterial;
+        public DuelEffects Effects=>effects;
         public int SpellsSeen=>effects.SeenSpells;
         public DuelDeploymentPreview DeploymentPreview {get;}
         public DuelDeploymentGrid DeploymentGrid {get;}
@@ -60,6 +69,7 @@ namespace TowerDuel
             if(!arrowPrefab)throw new InvalidOperationException("Missing arrow prefab");
             bombPrefab=Resources.Load<GameObject>("TowerDuel/Units/bomb");
             effects=new DuelEffects(root,cue=>parent.GetComponent<TowerDuelClient>()?.Audio.Play(cue));
+            trailMaterial=Resources.Load<Material>("TowerDuel/BattleFX/Trail");
             var all=UnityEngine.Object.FindObjectsByType<Transform>();
             foreach(var e in map.towers)
             {
@@ -83,7 +93,8 @@ namespace TowerDuel
             var art=go.GetComponent<DuelUnitArt>();
             art.TeamMarker.sharedMaterial=e.seat==0?blue:red;
             RenderedKinds|=CardBit(e.kind);
-            return new UnitVisual{Art=art,Previous=e.Position,Hit=e.hitTick,Leg=art.WalkProbe.localRotation,Arm=art.AttackProbe.localRotation,Hip=art.DeathProbe.localRotation};
+            var pivot=art.transform.Find("Facing");
+            return new UnitVisual{Art=art,Previous=e.Position,Hit=e.hitTick,Health=e.hp,Renderers=art.GetComponentsInChildren<Renderer>(),Pivot=pivot,PivotPosition=pivot?pivot.localPosition:Vector3.zero,Leg=art.WalkProbe.localRotation,Arm=art.AttackProbe.localRotation,Hip=art.DeathProbe.localRotation};
         }
         public void Update(DuelSession session)
         {
@@ -95,28 +106,50 @@ namespace TowerDuel
                 live.Add(e.id);
                 if(!units.TryGetValue(e.id,out var v)){v=Create(e);units.Add(e.id,v);}
                 var definition=rules.Find(e.kind);
+                bool deploying=e.IsDeploying(session.RenderTick);
                 Vector3 position=session.Sample(e);
                 float travel=Vector3.Distance(position,v.Previous);
                 v.Art.transform.position=position;v.Previous=position;
                 var direction=new Vector3(e.dx,0,e.dz);
                 if(direction.sqrMagnitude>.001f)v.Art.transform.rotation=Quaternion.Slerp(v.Art.transform.rotation,Quaternion.LookRotation(direction),15*Time.unscaledDeltaTime);
                 float speed=travel/Mathf.Max(.001f,Time.unscaledDeltaTime)/definition.speed;
-                v.Art.Animator.speed=e.slowed?rules.Find("frost").slow:1;
-                v.Art.Animator.SetFloat(SpeedHash,Mathf.Clamp01(speed),.08f,Time.unscaledDeltaTime);
-                if(e.attackTick>v.Attack)
+                v.Art.Animator.speed=session.SampleSlowed(e)?rules.Find("frost").slow:1;
+                v.Art.Animator.SetFloat(SpeedHash,deploying?0:Mathf.Clamp01(speed),.08f,Time.unscaledDeltaTime);
+                if(e.hp<v.Health)v.DamageTick=session.RenderTick;
+                v.Health=e.hp;
+                float reaction=Mathf.Clamp01(1-(float)(session.RenderTick-v.DamageTick)/4f);
+                flash.SetColor("_BaseColor",Color.Lerp(Color.white,new Color(2f,1.65f,.8f),reaction));
+                foreach(var renderer in v.Renderers)if(renderer!=v.Art.TeamMarker)renderer.SetPropertyBlock(flash);
+                if(v.Pivot)v.Pivot.localPosition=v.PivotPosition+new Vector3(0,.045f*reaction,-.065f*reaction);
+                if(!deploying&&e.attackTick>v.Attack)
                 {
                     v.Attack=e.attackTick;v.Art.Animator.SetTrigger(StrikeHash);
                 }
-                if(e.hitTick>v.Hit)
+                if(!deploying&&e.hitTick>v.Hit)
                 {
                     v.Hit=e.hitTick;
-                    if((e.kind=="archer"||e.kind=="bomber")&&TryTarget(state,e.hitTarget,out var target))
+                    if(TryTarget(state,e.hitTarget,out var target))
                     {
-                        Vector3 from=position+Vector3.up*v.Art.Height*.72f;
-                        var arrow=UnityEngine.Object.Instantiate(e.kind=="bomber"?bombPrefab:arrowPrefab,root,false).transform;
-                        if(e.kind=="archer")arrow.localScale=Vector3.one*.65f;
-                        arrows.Add(new Arrow{Root=arrow,From=from,To=target+Vector3.up*.8f,Started=DuelSession.Now,Duration=Mathf.Max(.12f,Vector3.Distance(from,target)/24),Bomb=e.kind=="bomber"});
-                        ArrowsFired++;
+                        if(e.kind=="archer"||e.kind=="bomber")
+                        {
+                            Vector3 from=position+Vector3.up*v.Art.Height*.72f;
+                            var arrow=UnityEngine.Object.Instantiate(e.kind=="bomber"?bombPrefab:arrowPrefab,root,false).transform;
+                            if(e.kind=="archer")arrow.localScale=Vector3.one*.65f;
+                            var trail=arrow.gameObject.AddComponent<TrailRenderer>();
+                            trail.sharedMaterial=trailMaterial;trail.time=.12f;trail.minVertexDistance=.04f;
+                            trail.startWidth=e.kind=="bomber"?.08f:.035f;trail.endWidth=0;
+                            trail.startColor=new Color(1,.80f,.3f,.8f);trail.endColor=new Color(1,.4f,.1f,0);
+                            trail.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
+                            float duration=Mathf.Clamp(Vector3.Distance(from,target)/24,.08f,.24f);
+                            arrows.Add(new Arrow{Root=arrow,From=from,To=target+Vector3.up*.8f,Started=e.hitTick-duration*30,Impact=e.hitTick,Duration=duration,Bomb=e.kind=="bomber"});
+                            arrow.gameObject.SetActive(false);ArrowsFired++;
+                        }
+                        else
+                        {
+                            bool heavy=e.kind=="charger"||e.kind=="siege";
+                            effects.Slash(position,target-position,heavy,e.hitTick);
+                            effects.Impact(target+Vector3.up*.8f,heavy,e.hitTick);
+                        }
                     }
                 }
                 int kindBit=CardBit(e.kind);
@@ -129,6 +162,7 @@ namespace TowerDuel
             foreach(long id in removed)
             {
                 var v=units[id];units.Remove(id);v.Art.Animator.ResetTrigger(StrikeHash);v.Art.Animator.SetBool(DeadHash,true);v.Art.Animator.SetFloat(SpeedHash,0);v.Art.Animator.speed=1;
+                effects.Death(v.Art.transform.position);
                 v.Art.TeamMarker.enabled=false;v.Until=DuelSession.Now+1.15;corpses.Add(v);DeathCount++;
             }
             for(int i=corpses.Count-1;i>=0;i--)
@@ -140,6 +174,12 @@ namespace TowerDuel
             }
             foreach(var e in state.towers)
             {
+                if(towerHealth.TryGetValue(e.id,out int priorHP)&&priorHP>e.hp)
+                {
+                    if(e.hp==0)effects.Collapse(e.Position,e.kind=="keep");
+                    else effects.Impact(e.Position+Vector3.up*1.1f,false,(long)session.RenderTick);
+                }
+                towerHealth[e.id]=e.hp;
                 towers[e.id].SetActive(e.hp>0);
                 if(e.attackTick>0&&(!towerAttacks.TryGetValue(e.id,out long prior)||prior<e.attackTick))
                 {
@@ -155,10 +195,13 @@ namespace TowerDuel
             for(int i=bolts.Count-1;i>=0;i--)if(DuelSession.Now>bolts[i].Until){UnityEngine.Object.Destroy(bolts[i].Line.gameObject);bolts.RemoveAt(i);}
             for(int i=arrows.Count-1;i>=0;i--)
             {
-                var a=arrows[i];float t=(float)(DuelSession.Now-a.Started)/a.Duration;
-                if(t>=1){if(a.Bomb)effects.Burst(a.To,rules.Find("bomber").splash);UnityEngine.Object.Destroy(a.Root.gameObject);arrows.RemoveAt(i);continue;}
-                a.Root.position=Vector3.Lerp(a.From,a.To,t)+Vector3.up*Mathf.Sin(t*Mathf.PI)*.18f;
-                a.Root.rotation=Quaternion.LookRotation(a.To-a.From);
+                var a=arrows[i];float t=(float)(session.RenderTick-a.Started)/(a.Duration*30);
+                if(t<0)continue;
+                if(t>=1){if(a.Bomb)effects.Burst(a.To,rules.Find("bomber").splash,a.Impact);else effects.Impact(a.To,false,a.Impact);UnityEngine.Object.Destroy(a.Root.gameObject);arrows.RemoveAt(i);continue;}
+                a.Root.gameObject.SetActive(true);
+                float arc=a.Bomb?1.6f:.18f;
+                a.Root.position=Vector3.Lerp(a.From,a.To,t)+Vector3.up*Mathf.Sin(t*Mathf.PI)*arc;
+                a.Root.rotation=Quaternion.LookRotation(a.To-a.From+Vector3.up*(Mathf.Cos(t*Mathf.PI)*arc*Mathf.PI));
             }
         }
         private bool TryTarget(DuelMessage state,long id,out Vector3 point)
@@ -186,7 +229,7 @@ namespace TowerDuel
             foreach(var v in units.Values)UnityEngine.Object.Destroy(v.Art.gameObject);units.Clear();
             foreach(var v in corpses)UnityEngine.Object.Destroy(v.Art.gameObject);corpses.Clear();
             foreach(var a in arrows)UnityEngine.Object.Destroy(a.Root.gameObject);arrows.Clear();
-            foreach(var b in bolts)UnityEngine.Object.Destroy(b.Line.gameObject);bolts.Clear();towerAttacks.Clear();
+            foreach(var b in bolts)UnityEngine.Object.Destroy(b.Line.gameObject);bolts.Clear();towerAttacks.Clear();towerHealth.Clear();
             foreach(var tower in towers.Values)tower.SetActive(true);
             DeploymentPreview.Hide();
             RenderedKinds=WalkPoseSamples=AttackPoseSamples=DeathPoseSamples=DeathCount=ArrowsFired=WalkKinds=AttackKinds=0;

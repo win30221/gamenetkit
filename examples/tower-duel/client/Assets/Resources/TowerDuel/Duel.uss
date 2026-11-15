@@ -67,4 +67,4 @@ TextField { margin: 8px 0; font-size: 19px; flex-direction: column; }
 .health-amount { position: absolute; left: -4px; right: -4px; top: -12px; height: 18px; font-size: 13px; -unity-font-style: bold; -unity-text-align: middle-center; color: white; -unity-text-outline-color: #0d1e2d; -unity-text-outline-width: 1px; white-space: nowrap; }
 .health-bar.unit-health { width: 32px; height: 4px; border-width: 0; }
 .unit-health .health-amount { top: -17px; height: 16px; font-size: 13px; }
-.unit-status { position: absolute; top: -30px; left: -10px; width: 52px; font-size: 10px; color: #b4edff; -unity-text-align: middle-center; }
+.unit-status { position: absolute; top: -30px; left: -29px; width: 90px; font-size: 10px; color: #b4edff; -unity-text-align: middle-center; }

@@ -33,6 +33,7 @@ namespace TowerDuel.Editor
             Material("Illegal", new Color(1, .25f, .18f), true);
             TowerDuelCharacters.Prepare();
             TowerDuelContent.Prepare();
+            TowerDuelVfxContent.Prepare();
             PrepareText();
             var scene = EditorSceneManager.OpenScene("Assets/TwinbridgeArena/TwinbridgeArena.unity");
             TowerDuelSurroundings.Build();
@@ -161,7 +162,8 @@ namespace TowerDuel.Editor
             string result = JsonUtility.ToJson(new BuildResult { result = report.summary.result.ToString(), errors = report.summary.totalErrors, seconds = report.summary.totalTime.TotalSeconds }, true);
             File.WriteAllText("Builds/web-build-result.json", result);
             if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded) throw new InvalidOperationException(result);
-            File.WriteAllText("Builds/WebGL/tower-duel-build.txt", "TowerDuel protocol 3 / eight-cards-1\n");
+            var rules = DuelRules.Load();
+            File.WriteAllText("Builds/WebGL/tower-duel-build.txt", $"TowerDuel protocol {rules.schema} / {rules.id}\n");
             Debug.Log("Tower Duel Web build succeeded: " + report.summary.totalSize + " bytes");
         }
     }

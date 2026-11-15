@@ -50,7 +50,7 @@ async function run(origin='http://127.0.0.1:18137',output=path.join(root,'artifa
     else if(message.type==='error')record.errors.push(message.code);
    });ws.on('close',()=>record.closed++);
   });
-  await page.goto(origin,{waitUntil:'domcontentloaded'});await loaded(record);return record;
+  await page.goto(origin.replace(/\/$/,'')+'/?mode=multiplayer',{waitUntil:'domcontentloaded'});await loaded(record);return record;
  }
  async function loaded(record){await record.page.waitForFunction(()=>!!window.towerDuel,null,{timeout:60000});await pause(1500)}
  const tap=(record,point)=>record.touch?record.page.touchscreen.tap(point.x,point.y):record.page.mouse.click(point.x,point.y);
@@ -97,5 +97,5 @@ async function run(origin='http://127.0.0.1:18137',output=path.join(root,'artifa
   fs.writeFileSync(path.join(output,'failure.json'),JSON.stringify({error:String(error),checks,rooms,states:records.map(record=>({phase:record.state?.phase,room:record.state?.room,errors:record.errors}))},null,2));throw error;
  }finally{await browser.close()}
 }
-module.exports={run};
+module.exports={run,waitingButtons};
 if(require.main===module)run(process.argv[2],process.argv[3]).catch(error=>{console.error(error);process.exitCode=1});

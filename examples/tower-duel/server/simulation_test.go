@@ -168,13 +168,29 @@ func TestClockEnergyAndOvertime(t *testing.T) {
 	for i := 0; i < 3*tickRate; i++ {
 		w.step()
 	}
-	if math.Abs(w.Energy[0]-2) > 1e-8 {
-		t.Fatal("last-minute energy recovery", w.Energy)
+	if math.Abs(w.Energy[0]-1) > 1e-8 || math.Abs(w.Energy[1]-1) > 1e-8 {
+		t.Fatal("normal time accelerated energy recovery in the last minute", w.Energy)
 	}
 	w.Elapsed = w.Rules.Duration - 1
+	w.Energy = [2]float64{0, 0}
 	w.step()
 	if w.Phase != "overtime" || w.snapshot(0, "snapshot").Remaining != 60 {
 		t.Fatal("tied normal time did not start sixty seconds of overtime")
+	}
+	if math.Abs(w.Energy[0]-1.0/(3*tickRate)) > 1e-8 {
+		t.Fatal("the final normal-time tick used overtime recovery", w.Energy)
+	}
+	w.Energy = [2]float64{0, 0}
+	for range 3 * tickRate {
+		w.step()
+	}
+	if math.Abs(w.Energy[0]-2) > 1e-8 || math.Abs(w.Energy[1]-2) > 1e-8 {
+		t.Fatal("overtime did not double energy recovery for both players", w.Energy)
+	}
+	w.Energy = [2]float64{9.999, 9.999}
+	w.step()
+	if w.Energy != [2]float64{10, 10} {
+		t.Fatal("overtime energy exceeded the cap", w.Energy)
 	}
 	w.Elapsed = w.Rules.Duration + 60*tickRate - 1
 	w.step()

@@ -112,7 +112,7 @@ namespace TowerDuel.Editor
             if(!blend){blend=new BlendTree{name="Locomotion"};AssetDatabase.AddObjectToAsset(blend,controller);}
             blend.blendType=BlendTreeType.Simple1D;blend.blendParameter="Speed";blend.useAutomaticThresholds=false;
             blend.children=new[]{new ChildMotion{motion=idle,threshold=0,timeScale=1},new ChildMotion{motion=walk,threshold=1,timeScale=1}};
-            move.motion=blend;strike.motion=attack;dead.motion=death;strike.speed=Mathf.Max(.8f,attack.length/(card.cooldown/30f));dead.speed=death.length/1.0f;
+            move.motion=blend;strike.motion=attack;dead.motion=death;strike.speed=attack.length/(card.cooldown/30f);dead.speed=death.length/1.0f;
             foreach(var state in new[]{move,strike,dead})foreach(var transition in state.transitions)state.RemoveTransition(transition);
             foreach(var transition in machine.anyStateTransitions)machine.RemoveAnyStateTransition(transition);
             var toDeath=machine.AddAnyStateTransition(dead);toDeath.AddCondition(AnimatorConditionMode.If,0,"Dead");toDeath.hasExitTime=false;toDeath.duration=.06f;toDeath.canTransitionToSelf=false;

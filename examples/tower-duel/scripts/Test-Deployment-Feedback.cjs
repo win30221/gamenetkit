@@ -95,7 +95,7 @@ async function run(origin='http://127.0.0.1:18116',output=path.join(root,'artifa
     return {width:Math.max(...found.map(p=>p[0]))-Math.min(...found.map(p=>p[0]))+1,height:Math.max(...found.map(p=>p[1]))-Math.min(...found.map(p=>p[1]))+1};
    }
    try{
-    await page.goto(origin,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>!!window.towerDuel,null,{timeout:45000});await pause(3500);
+    await page.goto(origin.replace(/\/$/,'')+'/?mode=multiplayer',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>!!window.towerDuel,null,{timeout:45000});await pause(3500);
     await (seat===0?page.mouse.click(360,524):page.touchscreen.tap(195,427));await until(()=>!!heartbeat);await pause(600);
     await checkPickup();
     const forward=seat===0?1:-1,enemy=state.towers.find(t=>t.seat!==seat&&t.kind==='tower'&&t.x<0),own=state.towers.find(t=>t.seat===seat&&t.kind==='tower'&&t.x<0);
@@ -118,7 +118,32 @@ async function run(origin='http://127.0.0.1:18116',output=path.join(root,'artifa
     state.hand=['guard','archer','swords','bomber'];send('snapshot');await pause(150);
     state.units=[{id:101,seat,kind:'guard',x:-4.5,z:-3.5*forward,hp:182,maxHP:220,radius:.32,dx:0,dz:forward,active:true}];
     state.energy=5.35;send('snapshot');await pause(200);await shot('numeric-health-fractional-energy');
+    const deploymentTicks=rules.cards.find(card=>card.id==='guard').deployTicks;
+    state.units[0].readyTick=deploymentTicks>0?state.tick+deploymentTicks:0;send('snapshot');await pause(80);await shot('deployment-wait-milliseconds');
+    await until(()=>state.tick>=state.units[0].readyTick+4);await pause(150);await shot('deployment-ready');
     state.energy=10;send('snapshot');await pause(70);await shot('full-energy-reminder');
+    function fullPipBounds(buffer){
+     const png=PNG.sync.read(buffer),card=portraitFrames(buffer)[0];
+     assert(card,'Cannot locate cards below the energy row');
+     let left=png.width,right=-1,top=png.height,bottom=-1;
+     for(let y=Math.max(0,Math.floor(card.y-35));y<card.y-2;y++)for(let x=0;x<png.width;x++){
+      const at=(y*png.width+x)*4;
+      if(Math.abs(png.data[at]-228)<3&&Math.abs(png.data[at+1]-179)<3&&Math.abs(png.data[at+2]-255)<3){
+       left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);
+      }
+     }
+     assert(right-left>viewport.width*.2,'Cannot locate the full energy pips');
+     return JSON.stringify({left,right,top,bottom});
+    }
+    const fullBounds=fullPipBounds(await page.screenshot());
+    for(let sample=0;sample<8;sample++){
+     await pause(450);
+     assert(fullPipBounds(await page.screenshot())===fullBounds,'Full energy reminder still shakes the energy row');
+    }
+    checks.calmFullEnergy=true;
+    state.remaining=45;send('snapshot');await pause(200);await shot('normal-last-minute-energy');
+    state.phase='overtime';send('snapshot');await pause(200);await shot('overtime-full-energy');
+    state.phase='playing';state.remaining=150;send('snapshot');await pause(200);
     if(seat===0){
      const widths=[];
      for(const width of [1920,1366]){

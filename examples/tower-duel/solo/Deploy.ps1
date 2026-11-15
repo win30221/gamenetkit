@@ -15,7 +15,8 @@ foreach($file in @('index.html','solo-build.txt','Build/WebGL.loader.js','Build/
     if(-not(Test-Path -LiteralPath (Join-Path $web $file) -PathType Leaf)){throw "Missing solo WebGL asset: $file"}
 }
 $marker=(Get-Content -LiteralPath (Join-Path $web 'solo-build.txt') -Raw).Trim()
-if($marker -ne 'TowerDuel Solo protocol 3 / eight-cards-1'){throw 'Wrong solo WebGL build marker'}
+$rules=Get-Content -LiteralPath (Join-Path $example 'protocol/rules.json') -Raw | ConvertFrom-Json
+if($marker -ne "TowerDuel Solo protocol $($rules.schema) / $($rules.id)"){throw 'Solo WebGL build does not match the canonical protocol/rules revision'}
 if((Get-Content -LiteralPath (Join-Path $web 'index.html') -Raw) -notmatch 'content="solo-plugin"'){throw 'This is not the standalone solo page'}
 $env:GAMENETKIT_CACHE=Join-Path $repo '.cache'
 . (Join-Path $repo 'tools/internal/Go-Env.ps1')

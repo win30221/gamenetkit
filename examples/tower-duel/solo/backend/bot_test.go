@@ -54,6 +54,26 @@ func TestBotDecisionsUseOnlyAffordableCardsAndOwnHalf(t *testing.T) {
 	}
 }
 
+func TestPracticeBuildsPushesInBacklineButDefendsAtRiver(t *testing.T) {
+	for _, seat := range []int{0, 1} {
+		direction := 1.0
+		if seat == 1 {
+			direction = -1
+		}
+		b := &bot{cards: map[string]card{"guard": {ID: "guard", Type: "troop", Cost: 3}}}
+		s := message{Seat: seat, Energy: 5, Hand: [4]string{"guard"}}
+		move, ok := b.choose(s)
+		if !ok || move.Z*direction > -9 {
+			t.Fatal("practice attacked from the river instead of assembling behind its tower", move)
+		}
+		s.Units = []entity{{ID: 101, Seat: 1 - seat, X: 5, Z: -3 * direction, HP: 100}}
+		move, ok = b.choose(s)
+		if !ok || move.X < 0 || move.Z*direction < -5 {
+			t.Fatal("practice did not defend the threatened lane near the river", move)
+		}
+	}
+}
+
 func startBackend(t *testing.T, fast bool) string {
 	t.Helper()
 	binary := os.Getenv("TOWER_DUEL_SOLO_SERVER")

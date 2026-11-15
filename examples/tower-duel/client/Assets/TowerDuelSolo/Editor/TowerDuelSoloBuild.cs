@@ -44,12 +44,11 @@ namespace TowerDuel.Solo.Editor
                 result=result.summary.result.ToString(),errors=result.summary.totalErrors,seconds=result.summary.totalTime.TotalSeconds},true));
             if(result.summary.result!=BuildResult.Succeeded)throw new InvalidOperationException("Solo WebGL build failed.");
             string index=Path.Combine(output,"index.html");
-            string html=File.ReadAllText(index).Replace("<title>雙橋對決 · Tower Duel</title>","<title>雙橋對決 · 單人測試</title>")
-                .Replace("<h1>雙橋對決</h1>","<h1>單人測試場</h1>")
-                .Replace("與朋友開啟同一網址，以房間碼加入對戰。","一人即可開始，選擇電腦對戰或自由測試。")
+            string html=File.ReadAllText(index).Replace("與朋友開啟同一網址，以房間碼加入對戰。","單人練習、自由測試，或邀請朋友雙人對戰。")
                 .Replace("</head>","<meta name=\"tower-duel-mode\" content=\"solo-plugin\"></head>");
             File.WriteAllText(index,html);
-            File.WriteAllText(Path.Combine(output,"solo-build.txt"),"TowerDuel Solo protocol 3 / eight-cards-1\n");
+            var rules=DuelRules.Load();
+            File.WriteAllText(Path.Combine(output,"solo-build.txt"),$"TowerDuel Solo protocol {rules.schema} / {rules.id}\n");
             Debug.Log("Optional solo WebGL built separately from the multiplayer Player: "+output);
         }
 

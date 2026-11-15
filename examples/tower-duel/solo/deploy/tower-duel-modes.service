@@ -1,0 +1,22 @@
+[Unit]
+Description=Tower Duel removable single-player modes
+Requires=tower-duel.service
+After=network.target tower-duel.service
+
+[Service]
+Type=simple
+User=towerduel
+Group=towerduel
+WorkingDirectory=/opt/rumblebound/tower-duel/current
+ExecStart=/opt/rumblebound/tower-duel/current/tower-duel-modes -http 127.0.0.1:18112 -server http://127.0.0.1:18110 -web modes-public -origin https://__DOMAIN__
+Restart=on-failure
+RestartSec=2
+KillSignal=SIGINT
+TimeoutStopSec=10
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -49,7 +49,7 @@ func TestDeploymentLaneAfterFrontTowerDestroyed(t *testing.T) {
 								}
 								crossed[id] = true
 							}
-							if u.State.Target != keep {
+							if w.Tick >= u.State.ReadyTick && u.State.Target != keep {
 								t.Fatalf("unit changed to the other lane's tower: %+v", u.State)
 							}
 						}

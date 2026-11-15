@@ -1,5 +1,7 @@
 # 獨立單人網頁測試站
 
+此頁保留歷史獨立部署紀錄。單人／自由測試與雙人已改為同一網站；目前架構、部署與快速停用請見 [合併站部署](MERGED_DEPLOYMENT.md)。
+
 2026-11-15（台灣時間）已部署：[單人測試場](https://tower-duel-solo.172.233.67.181.sslip.io/)。目前版本 `20261115T084327Z-fb6f87f0`，協定 3、八張卡、規則 `eight-cards-1`。本次更新共用後端，已鎖定敵軍離開偵測範圍就放棄追擊並重新索敵；WebGL 與外掛介面沿用原產物，驗證見 [TARGET_LEASH_VALIDATION.md](../TARGET_LEASH_VALIDATION.md)。前一版塔／敵軍最近距離排序記錄見 [TARGETING_FIX_VALIDATION.md](../TARGETING_FIX_VALIDATION.md)。
 
 提供「單人練習」和「自由測試」。WebGL 使用原場景與呈現，新增的控制介面和 JavaScript bridge 都在可移除外掛資料夾內。電腦以正常玩家身份建房、準備與出牌；真人視窗正常加入第二席，沒有前端戰鬥模擬或測試用傷害捷徑。

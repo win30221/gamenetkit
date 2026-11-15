@@ -19,11 +19,11 @@
 
 ## 法術、投射物與卡面
 
-- 火球：本專案原創的低面數火焰核心、拖尾、命中擴散與範圍圈。飛行／命中階段對應伺服器的 start／impact／end tick。
-- 冰霜：本專案原創的冰晶、旋轉區域與範圍圈；單位血條附近顯示「減速」，效果結束依權威狀態移除。
-- 炸彈：沿用同系列 smokebomb 道具作飛行投射物，補上原創短暫爆炸表現。炸彈兵傷害目前在伺服器攻擊 tick 結算。
+- 火球：2026-11-15 改用 Rumblebound 既有 Hun0FX 火焰與 Cartoon FX 爆炸，補上漸細拖尾與範圍圈。飛行／命中／到期對應伺服器的 start／impact／end tick。
+- 冰霜：改用既有 Cartoon FX 法陣並轉為冰藍色，保留真實範圍圈；單位血條附近顯示「減速」，效果結束依權威狀態移除。
+- 炸彈：沿用同系列 smokebomb 道具作飛行投射物，補上拋物線、拖尾與重用的粒子爆炸。傷害仍由伺服器結算，投射物與命中特效跟隨呈現時間軸。
 - 卡面：依使用者追加要求，已以精緻立體卡通插畫替換早期模型截圖。八張原圖為 1254×1254，正式匯入上限 512；提示詞、來源與檔案見 [CARD_ART.md](CARD_ART.md)。[TowerDuelContent.cs](../client/Assets/Editor/TowerDuelContent.cs) 僅匯入既有插畫，不會在建置時覆寫。
-- 特效由 [DuelEffects.cs](../client/Assets/Scripts/DuelEffects.cs) 及 URP Unlit 材質產生，不依賴額外外部特效包。
+- 特效由 [DuelEffects.cs](../client/Assets/Scripts/DuelEffects.cs) 與 [DuelParticleEffect.cs](../client/Assets/Scripts/DuelParticleEffect.cs) 驅動；原低面數符號保留作法術部署預覽。第三方來源、原授權與免下載重建流程見 [戰鬥特效](COMBAT_FX.md)。
 
 素材製作方案已涵蓋原定五張新卡；採用同一組可重建的角色、道具與原創特效。六種兵與兩種法術已進入雙 Windows Player 對局；後續生成的插畫卡面另行記錄，場內模型維持現況。
 

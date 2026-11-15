@@ -70,9 +70,12 @@ namespace TowerDuel.Editor
                 CancellationAndFatalErrors();
                 NearestDeployment();
                 SharedEffectTimeline();
+                FrostBoundaryAtRenderTick();
                 StalledTimelineAndMatchReset();
                 RangedWindupAndRelease();
-                return "TOWER_DUEL_NETWORK_TESTS PASS: SDK backoff/expiry, saved-seat restore, pending-action recovery, cancellation, nearest legal deployment, shared effect timing, snapshot stalls, match resets and ranged windup/release";
+                CosmeticImpactDeduplication();
+                DeploymentWaitAndRecovery();
+                return "TOWER_DUEL_NETWORK_TESTS PASS: SDK backoff/expiry, saved-seat restore, pending-action recovery, cancellation, nearest legal deployment, shared effect timing, rendered frost boundary, snapshot stalls, match resets, ranged windup/release, cosmetic impact deduplication and deployment readiness/recovery";
             }
             finally
             {
@@ -191,6 +194,44 @@ namespace TowerDuel.Editor
             }
         }
 
+        private static void DeploymentWaitAndRecovery()
+        {
+            using(var f=new Fixture())
+            {
+                var root=new GameObject("Deployment time regression");
+                DuelPresentation presentation=null;
+                try
+                {
+                    foreach(var tower in f.Map.towers)
+                    {
+                        string color=tower.seat==0?"blue":"red";
+                        new GameObject("SM_"+color+(tower.kind=="keep"?"_MainCastle":"_Tower_"+(tower.x<0?"-5":"5"))).transform.SetParent(root.transform,false);
+                    }
+                    presentation=new DuelPresentation(root.transform,f.Map,f.Rules);
+                    DuelMessage Deploy(long tick,string type="snapshot",float x=0,long attack=0)
+                    {
+                        var state=f.State(tick,type,x:x);
+                        state.units[0].readyTick=130;
+                        state.units[0].attackTick=attack;
+                        return state;
+                    }
+                    f.Deliver(Deploy(100,"welcome"));presentation.Update(f.Session);
+                    var visuals=Field<IDictionary>(presentation,"units");
+                    var art=(DuelUnitArt)visuals[100L].GetType().GetField("Art").GetValue(visuals[100L]);
+                    f.Deliver(Deploy(128,x:.2f));presentation.Update(f.Session);
+                    art.Animator.Update(.1f);
+                    Require(art.Animator.GetFloat("Speed")==0&&(long)visuals[100L].GetType().GetField("Attack").GetValue(visuals[100L])==0,"A pushed deploying troop walked or attacked.");
+                    Advance(f.Session,f.Now+5);presentation.Update(f.Session);
+                    Require(f.Session.State.units[0].IsDeploying(f.Session.RenderTick),"A stalled timeline completed deployment using local wall time.");
+                    f.Deliver(Deploy(129,"welcome",x:.2f));presentation.Update(f.Session);
+                    Require(f.Session.State.units[0].readyTick==130&&f.Session.State.units[0].IsDeploying(f.Session.RenderTick),"Recovery reset or skipped the remaining deployment time.");
+                    f.Deliver(Deploy(134,x:.3f,attack:130));Advance(f.Session,f.Now+.2);presentation.Update(f.Session);
+                    Require(!f.Session.State.units[0].IsDeploying(f.Session.RenderTick)&&(long)visuals[100L].GetType().GetField("Attack").GetValue(visuals[100L])==130,"A ready troop did not start its authoritative attack.");
+                }
+                finally{presentation?.Dispose();UnityEngine.Object.DestroyImmediate(root);}
+            }
+        }
+
         private static void RangedWindupAndRelease()
         {
             foreach(string kind in new[]{"archer","bomber"})
@@ -217,13 +258,16 @@ namespace TowerDuel.Editor
                                 new EntityState{id=201,seat=1,kind="guard",x=3,z=-5,radius=.32f,hp=220,maxHP=220}};
                             return state;
                         }
-                        f.Deliver(Attack(100,"welcome"));presentation.Update(f.Session);
+                        var frost=new EffectState{id=900,kind="frost",seat=1,x=0,z=-5,radius=2.8f,start=90,impact=90,end=200};
+                        var initial=Attack(100,"welcome");initial.effects=new[]{frost};
+                        f.Deliver(initial);presentation.Update(f.Session);
                         Require(presentation.ArrowsFired==0,"Windup launched a projectile for "+kind);
                         var visuals=Field<IDictionary>(presentation,"units");
                         var art=(DuelUnitArt)visuals[100L].GetType().GetField("Art").GetValue(visuals[100L]);
                         art.Animator.Update(.05f);
                         Require(art.Animator.GetCurrentAnimatorStateInfo(0).shortNameHash==Animator.StringToHash("Attack")||art.Animator.IsInTransition(0),"Windup did not start the attack animation for "+kind);
                         var slowed=Attack(102);slowed.units[0].slowed=true;
+                        slowed.effects=new[]{frost};
                         f.Deliver(slowed);presentation.Update(f.Session);
                         Require(Mathf.Abs(art.Animator.speed-f.Rules.Find("frost").slow)<.0001f,"Frost did not slow the windup animation.");
                         long hitTick=100+f.Rules.Find(kind).windupTicks;
@@ -251,6 +295,44 @@ namespace TowerDuel.Editor
                     }
                     finally{presentation?.Dispose();UnityEngine.Object.DestroyImmediate(root);}
                 }
+            }
+        }
+
+        private static void CosmeticImpactDeduplication()
+        {
+            using(var f=new Fixture())
+            {
+                var root=new GameObject("Cosmetic impact regression");
+                DuelPresentation presentation=null;
+                try
+                {
+                    foreach(var tower in f.Map.towers)
+                    {
+                        string color=tower.seat==0?"blue":"red";
+                        new GameObject("SM_"+color+(tower.kind=="keep"?"_MainCastle":"_Tower_"+(tower.x<0?"-5":"5"))).transform.SetParent(root.transform,false);
+                    }
+                    presentation=new DuelPresentation(root.transform,f.Map,f.Rules);
+                    DuelMessage Message(long tick,string type="snapshot",long hit=0)
+                    {
+                        var state=f.State(tick,type);
+                        state.units=new[]{
+                            new EntityState{id=100,seat=0,kind="guard",x=0,z=-3,radius=.32f,hp=100,maxHP=100,hitTick=hit,hitTarget=hit>0?200:0},
+                            new EntityState{id=200,seat=1,kind="guard",x=0,z=-2,radius=.32f,hp=100,maxHP=100}};
+                        return state;
+                    }
+                    f.Deliver(Message(100,"welcome"));presentation.Update(f.Session);
+                    Require(presentation.Effects.FeedbackPlayed==0,"Restoring a roster played old hit feedback.");
+                    f.Deliver(Message(106,hit:102));presentation.Update(f.Session);
+                    Require(presentation.Effects.FeedbackPlayed==2,"Melee contact did not emit one slash and one impact.");
+                    presentation.Update(f.Session);f.Deliver(Message(108,hit:102));presentation.Update(f.Session);
+                    Require(presentation.Effects.FeedbackPlayed==2,"Repeated snapshots duplicated melee feedback.");
+                    var broken=Message(110,hit:102);broken.towers[0].hp=0;
+                    f.Deliver(broken);presentation.Update(f.Session);
+                    Require(presentation.Effects.FeedbackPlayed==3,"Destroying a tower did not emit collapse feedback.");
+                    presentation.Update(f.Session);Require(presentation.Effects.FeedbackPlayed==3,"Repeated tower state replayed destruction.");
+                    presentation.Reset();Require(presentation.Effects.ActiveFeedback==0,"Reset retained combat feedback.");
+                }
+                finally{presentation?.Dispose();UnityEngine.Object.DestroyImmediate(root);}
             }
         }
 
@@ -285,6 +367,41 @@ namespace TowerDuel.Editor
                 Advance(f.Session,f.Now+.2);effects.Update(f.Session);
                 Require(Visuals(effects).Count==0&&impacts()==1,"An expired effect or its impact survived past the shared timeline.");
             });
+        }
+
+        private static void FrostBoundaryAtRenderTick()
+        {
+            using(var f=new Fixture())
+            {
+                var frost=new EffectState{id=900,kind="frost",seat=1,x=0,z=-3,radius=2.8f,start=80,impact=90,end=146};
+                void Deliver(long tick,float x,bool slowed,string type="snapshot")
+                {
+                    var state=f.State(tick,type,effects:new[]{frost},x:x);
+                    state.units[0].slowed=slowed;f.Deliver(state);
+                }
+                bool Slowed()=>f.Session.SampleSlowed(f.Session.State.units[0]);
+                Deliver(100,3,true,"welcome");
+                Require(!Slowed(),"A soldier outside frost inherited a newer slowed flag or body padding.");
+                Deliver(104,2.6f,true);
+                Require(!Slowed(),"Frost started before the rendered foot center entered its circle.");
+                Deliver(106,2.4f,true);
+                Require(Mathf.Abs(f.Session.Sample(f.Session.State.units[0]).x-2.8f)<.001f&&Slowed(),"The frost circle boundary did not include the rendered foot center.");
+                Deliver(110,3.4f,false);
+                Require(Slowed(),"A newer snapshot cleared frost before the rendered foot center left.");
+                Deliver(114,4,false);
+                Require(!Slowed(),"Frost remained after the rendered foot center left its circle.");
+                Deliver(118,0,true);
+                Deliver(122,0,true);
+                Require(Slowed(),"A soldier could not reenter an active frost circle.");
+                frost.seat=0;Deliver(126,0,true);Deliver(130,0,true);
+                Require(!Slowed(),"Rendered frost affected the caster's soldier.");
+                frost.seat=1;frost.impact=140;
+                Deliver(134,0,true);Deliver(138,0,true);
+                Require(!Slowed(),"Rendered frost began before its authoritative impact tick.");
+                Deliver(144,0,true);Require(Slowed(),"Rendered frost did not begin at impact.");
+                Deliver(150,0,true);
+                Require(!Slowed(),"Rendered frost survived its authoritative end tick.");
+            }
         }
 
         private static void StalledTimelineAndMatchReset()

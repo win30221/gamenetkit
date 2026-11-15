@@ -238,7 +238,13 @@ func (b *bot) choose(s message) (deployment, bool) {
 		if !known || s.Energy+1e-8 < card.Cost {
 			continue
 		}
-		move := deployment{Card: id, X: lane + .5, Z: -3.5 * direction}
+		// Build attacks from behind the front tower so practice exposes the push
+		// before it reaches the river. Keep immediate deployment for defence.
+		deployZ := -10.5 * direction
+		if threat.ID != 0 && -threat.Z*direction > -2 {
+			deployZ = -3.5 * direction
+		}
+		move := deployment{Card: id, X: lane + .5, Z: deployZ}
 		if card.Type == "spell" {
 			if threat.ID != 0 {
 				move.X, move.Z = threat.X, threat.Z

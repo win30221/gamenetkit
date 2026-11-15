@@ -31,6 +31,7 @@ type entity struct {
 	DX           float64 `json:"dx"`
 	DZ           float64 `json:"dz"`
 	AttackTick   uint64  `json:"attackTick"`
+	ReadyTick    uint64  `json:"readyTick,omitempty"`
 	HitTick      uint64  `json:"hitTick,omitempty"`
 	HitTarget    uint64  `json:"hitTarget,omitempty"`
 	Target       uint64  `json:"target"`
@@ -266,9 +267,13 @@ func (w *match) deploy(seat int, matchID string, action uint64, card string, x, 
 			w.Effects = append(w.Effects, effectState{ID: w.NextID, Kind: card, Seat: seat, X: x, Z: z, Radius: definition.Radius, Start: w.Tick, Impact: w.Tick + uint64(definition.DelayTicks) + 1, End: w.Tick + uint64(definition.DelayTicks+definition.DurationTicks) + 1, Damage: definition.Damage, TowerScale: definition.TowerScale, Slow: definition.Slow})
 			r.UnitID = w.NextID
 		} else {
+			readyTick := uint64(0)
+			if definition.DeployTicks > 0 {
+				readyTick = w.Tick + uint64(definition.DeployTicks)
+			}
 			for _, p := range spots {
 				w.NextID++
-				w.Units[w.NextID] = &unit{State: entity{ID: w.NextID, Seat: seat, Kind: card, X: p.X, Z: p.Z, Radius: guardRadius, HP: definition.HP, MaxHP: definition.HP, DZ: direction}, LaneX: w.nearestBridge(seat, x)}
+				w.Units[w.NextID] = &unit{State: entity{ID: w.NextID, Seat: seat, Kind: card, X: p.X, Z: p.Z, Radius: guardRadius, HP: definition.HP, MaxHP: definition.HP, DZ: direction, ReadyTick: readyTick}, LaneX: w.nearestBridge(seat, x)}
 				if r.UnitID == 0 {
 					r.UnitID = w.NextID
 				}

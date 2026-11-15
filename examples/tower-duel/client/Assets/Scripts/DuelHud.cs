@@ -25,7 +25,6 @@ namespace TowerDuel
         private readonly Dictionary<long,Label> healthLabels=new Dictionary<long,Label>();
         private float displayedEnergy,targetEnergy;
         private string energyMatch;
-        private double fullSince=-1;
         private int pointer=-1;
         private double nextLabels;
         private double copyFeedbackUntil;
@@ -281,7 +280,7 @@ namespace TowerDuel
                 UpdateHealth(state);
                 UpdateEnergy(state);
             }
-            else {energyMatch=null;fullSince=-1;energyRow.style.translate=new Translate(0,0);}
+            else energyMatch=null;
         }
         private void ObserveActionEnergy(DuelMessage message){if(client.Session.State!=null)ObserveEnergy(client.Session.State);}
         private void ObserveEnergy(DuelMessage state)
@@ -298,12 +297,7 @@ namespace TowerDuel
             bool full=targetEnergy>=9.999f&&CanPlay();
             energyRow.EnableInClassList("energy-full",full);
             Text("energyLabel","能量 "+displayedEnergy.ToString("0.0")+" / 10");
-            Text("energyMode",full?"已滿・請出牌":state.phase=="overtime"||(state.phase=="playing"&&state.remaining<=60)?"雙倍回能":"");
-            if(full&&fullSince<0)fullSince=DuelSession.Now;
-            if(!full)fullSince=-1;
-            float burst=full?(float)((DuelSession.Now-fullSince)%2.8):1;
-            float shake=burst<.45f?Mathf.Sin(burst*70)*3*(1-burst/.45f):0;
-            energyRow.style.translate=new Translate(shake,0);
+            Text("energyMode",state.phase=="overtime"?(full?"能量已滿・雙倍回能":"雙倍回能"):full?"能量已滿":"");
         }
         private void UpdateHealth(DuelMessage state)
         {
@@ -326,7 +320,11 @@ namespace TowerDuel
                 bool unit=client.Rules.Find(e.kind)!=null;
                 healthLabels[e.id].text=unit?e.hp.ToString():e.hp+" / "+e.maxHP;
                 if(e.kind=="keep")bar.Q<Label>(className:"keep-status").text=e.active?"主堡啟動":"主堡待命";
-                else if(client.Rules.Find(e.kind)!=null)bar.Q<Label>(className:"unit-status").text=e.slowed?"減速":e.charging?"衝鋒":"";
+                else if(unit)
+                {
+                    float deployMilliseconds=Mathf.Clamp((float)(e.readyTick-client.Session.RenderTick)*1000/state.tickRate,0,client.Rules.Find(e.kind).deployTicks*1000f/state.tickRate);
+                    bar.Q<Label>(className:"unit-status").text=e.IsDeploying(client.Session.RenderTick)?"部署 "+Mathf.CeilToInt(deployMilliseconds)+"ms":client.Session.SampleSlowed(e)?"減速":e.charging?"衝鋒":"";
+                }
                 var worldPos=unit?client.Session.Sample(e):e.Position;worldPos.y=e.kind=="keep"?TowerDuelClient.KeepHealthHeight:e.kind=="tower"?3.9f:client.Presentation.UnitHeight(e.kind)+.22f;
                 var screen=client.Camera.WorldToScreenPoint(worldPos);bool visible=screen.z>0&&client.Camera.pixelRect.Contains(new Vector2(screen.x,screen.y));Display(bar,visible);
                 if(visible)

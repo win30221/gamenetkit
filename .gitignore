@@ -9,3 +9,6 @@
 **/artifacts/
 **/out/
 **/client/Data/
+# Rebuilt from the already acquired, canonical Rumblebound VFX sources.
+examples/tower-duel/client/Assets/ReusedVFX/
+examples/tower-duel/client/Assets/ReusedVFX.meta

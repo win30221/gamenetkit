@@ -29,6 +29,9 @@ try {
     if($state.playing -or $state.dirty -or $state.count -ne 1){throw 'Client tests require an idle Editor with one clean scene; the current scene has been preserved.'}
     $null=Invoke-Unity -Arguments @('recompile','--project-path',$project,'--timeout','120','--format','json')
     $null=Invoke-Unity -Arguments @('status','--until-ready','--project-path',$project,'--format','json')
+    $null=Eval 'TowerDuel.Editor.TowerDuelVfxContent.Prepare();'
+    $balanceResult=Eval 'return TowerDuel.Editor.TowerDuelBalanceTests.Run();' | ConvertFrom-Json
+    if($balanceResult -notlike 'TOWER_DUEL_BALANCE_TESTS PASS:*'){throw "Balance editor tests did not pass: $balanceResult"}
     $null=Eval 'UnityEditor.SceneManagement.EditorSceneManager.NewScene(UnityEditor.SceneManagement.NewSceneSetup.EmptyScene,UnityEditor.SceneManagement.NewSceneMode.Single);'
     $prepared=$true
     $null=Invoke-Unity -Arguments @('command','editor','set_auto_tick','--caller','plugin','--skill','unity-cli','--project-path',$project,'--format','json')
@@ -40,7 +43,9 @@ try {
     if(-not $frameWait.met){throw 'The Unity Player loop did not advance before the client tests.'}
     $result=Eval 'return TowerDuel.Editor.TowerDuelNetworkTests.Run();' | ConvertFrom-Json
     if($result -notlike 'TOWER_DUEL_NETWORK_TESTS PASS:*'){throw "Client regression tests did not pass: $result"}
-    [ordered]@{passed=$true;result=$result;unity=$script:GameNetKitVersions.unity} | ConvertTo-Json | Tee-Object -FilePath (Join-Path $Output 'result.json')
+    $vfxResult=Eval 'return TowerDuel.Editor.TowerDuelVfxTests.Run();' | ConvertFrom-Json
+    if($vfxResult -notlike 'TOWER_DUEL_VFX_TESTS PASS:*'){throw "VFX regression tests did not pass: $vfxResult"}
+    [ordered]@{passed=$true;result=$result;vfx=$vfxResult;unity=$script:GameNetKitVersions.unity} | ConvertTo-Json | Tee-Object -FilePath (Join-Path $Output 'result.json')
 } finally {
     if($playing){
         $null=Invoke-Unity -Arguments @('command','editor.playmode','stop','--caller','plugin','--skill','unity-cli','--project-path',$project,'--format','json')

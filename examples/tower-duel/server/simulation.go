@@ -24,7 +24,7 @@ func (w *match) step() {
 	}
 	w.Elapsed++
 	regen := 1.0 / (3 * tickRate)
-	if w.Elapsed >= w.Rules.Duration-60*tickRate {
+	if w.Phase == "overtime" {
 		regen *= 2
 	}
 	for i := 0; i < 2; i++ {
@@ -43,6 +43,11 @@ func (w *match) step() {
 		definition := w.Rules.ByID[u.State.Kind]
 		factor := w.speedFactor(u)
 		u.State.Slowed = factor < 1
+		// Deployment uses the authoritative match clock, independent of slows.
+		// Bodies can still be pushed and damaged, but cannot act or build charge.
+		if w.Tick < u.State.ReadyTick {
+			continue
+		}
 		u.State.Charging = definition.ChargeDistance > 0 && u.Travelled >= definition.ChargeDistance
 		if u.Cooldown > 0 {
 			u.CooldownProgress += factor
@@ -107,6 +112,9 @@ func (w *match) step() {
 		w.move(move.unit, move.target, units)
 	}
 	w.resolvePush(units)
+	// Publish status for the final foot positions, including boundary crossings
+	// caused by walking or collision pushes during this simulation step.
+	w.refreshUnitSlows(units)
 	// Keep activation is permanent, including the tick that damages it or
 	// destroys either front tower. A sleeping keep is still a valid target.
 	for i := range w.Towers {
@@ -165,7 +173,7 @@ func (w *match) step() {
 		}
 		if target != nil && distance(position(*t), position(target.State)) <= 5+t.Radius+guardRadius {
 			damage[target.State.ID] += w.Rules.TowerDamage
-			w.TowerCooldown[t.ID] = 27
+			w.TowerCooldown[t.ID] = w.Rules.TowerCooldownTicks
 			w.TowerProgress[t.ID] = 0
 			t.AttackTick = w.Tick
 			t.Target = target.State.ID
@@ -242,6 +250,27 @@ func (w *match) speedFactor(u *unit) float64 {
 	}
 	return 1
 }
+func (w *match) refreshUnitSlows(units []*unit) {
+	for _, u := range units {
+		u.SlowUntil = 0
+		u.SlowFactor = 0
+		u.State.Slowed = false
+		for _, e := range w.Effects {
+			if e.Slow <= 0 || w.Tick < e.Impact || w.Tick >= e.End || u.State.Seat == e.Seat {
+				continue
+			}
+			// The drawn circle is the boundary for a soldier's foot center.
+			if distance(point{e.X, e.Z}, position(u.State)) > e.Radius {
+				continue
+			}
+			if u.SlowFactor == 0 || e.Slow < u.SlowFactor {
+				u.SlowFactor = e.Slow
+			}
+			u.SlowUntil = w.Tick + 1
+			u.State.Slowed = true
+		}
+	}
+}
 func (w *match) areaDamage(seat int, center point, radius float64, amount int, towerScale float64, units []*unit, damage map[uint64]int) {
 	for _, u := range units {
 		if u.State.Seat != seat && distance(center, position(u.State)) <= radius+u.State.Radius {
@@ -269,14 +298,6 @@ func (w *match) stepEffects(units []*unit, damage map[uint64]int) {
 				e.Applied = true
 			}
 			if e.Slow > 0 {
-				for _, u := range units {
-					if u.State.Seat != e.Seat && distance(point{e.X, e.Z}, position(u.State)) <= e.Radius+u.State.Radius {
-						if u.SlowUntil <= w.Tick || e.Slow < u.SlowFactor {
-							u.SlowFactor = e.Slow
-						}
-						u.SlowUntil = w.Tick + 1
-					}
-				}
 				for i := range w.Towers {
 					t := &w.Towers[i]
 					if t.Seat != e.Seat && t.HP > 0 && distance(point{e.X, e.Z}, position(*t)) <= e.Radius+t.Radius {
@@ -288,4 +309,5 @@ func (w *match) stepEffects(units []*unit, damage map[uint64]int) {
 		live = append(live, e)
 	}
 	w.Effects = live
+	w.refreshUnitSlows(units)
 }

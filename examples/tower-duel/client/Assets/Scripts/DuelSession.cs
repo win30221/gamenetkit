@@ -185,6 +185,21 @@ namespace TowerDuel
             return entity.Position;
         }
         private static bool SelectUnit(DuelFrame frame,long id,out EntityState entity)=>frame.Units.TryGetValue(id,out entity);
+        public bool SampleSlowed(EntityState entity)
+        {
+            // Match the ring and interpolated foot position, rather than a newer
+            // snapshot's status that can arrive before the soldier crosses it.
+            var position=Sample(entity);
+            var effects=SampleEffects();
+            for(int i=0;i<effects.Count;i++)
+            {
+                var effect=effects[i];
+                if(effect.kind!="frost"||effect.seat==entity.seat||RenderTick<effect.impact)continue;
+                var offset=new Vector2(position.x-effect.x,position.z-effect.z);
+                if(offset.sqrMagnitude<=effect.radius*effect.radius)return true;
+            }
+            return false;
+        }
         public IReadOnlyList<EffectState> SampleEffects()
         {
             sampledEffects.Clear();

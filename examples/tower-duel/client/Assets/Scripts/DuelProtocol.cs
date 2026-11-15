@@ -7,11 +7,12 @@ namespace TowerDuel
 {
     [Serializable] public sealed class EntityState
     {
-        public long id, attackTick, hitTick, hitTarget, target;
+        public long id, attackTick, hitTick, hitTarget, target, readyTick;
         public int seat, hp, maxHP;
         public string kind;
         public float x,z,radius,dx,dz;
         public bool active,slowed,charging;
+        public bool IsDeploying(double tick)=>readyTick>0&&tick<readyTick;
         public Vector3 Position => new Vector3(x,Mathf.Abs(z)<1.7f?.16f:.06f,z);
     }
     [Serializable] public sealed class PlayerState { public int seat; public string name; public bool ready,connected,rematch; public float reconnectRemaining; }
@@ -111,13 +112,13 @@ namespace TowerDuel
     [Serializable] public sealed class CardDefinition
     {
         public string id,name,description,type,target;
-        public int count,hp,damage,cooldown,windupTicks,delayTicks,durationTicks;
+        public int count,hp,damage,cooldown,windupTicks,deployTicks,delayTicks,durationTicks;
         public float cost,speed,range,aggro,splash,chargeDistance,chargeMultiplier,radius,slow,towerScale;
         public bool IsSpell=>type=="spell";
     }
     [Serializable] public sealed class DuelRules
     {
-        public string id;public int schema,towerHP,keepHP,towerDamage,duration;
+        public string id;public int schema,towerHP,keepHP,towerDamage,towerCooldownTicks,duration;
         public CardDefinition[] cards;
         public string Hash {get;private set;}
         public static DuelRules Load()
@@ -126,8 +127,9 @@ namespace TowerDuel
             if(!asset)throw new InvalidOperationException("Missing canonical card rules");
             var rules=JsonUtility.FromJson<DuelRules>(asset.text);
             using(var hash=SHA256.Create())rules.Hash=BitConverter.ToString(hash.ComputeHash(asset.bytes)).Replace("-","").ToLowerInvariant();
-            if(rules.schema!=3||rules.cards==null||rules.cards.Length!=8)throw new InvalidOperationException("Invalid card rules");
+            if(rules.schema!=3||rules.towerCooldownTicks<1||rules.cards==null||rules.cards.Length!=8)throw new InvalidOperationException("Invalid card rules");
             var ids=new HashSet<string>();foreach(var card in rules.cards)if(card==null||string.IsNullOrEmpty(card.id)||!ids.Add(card.id)||(card.type!="troop"&&card.type!="spell")||!DuelMap.Finite(card.cost)||card.cost<=0||card.cost>10)throw new InvalidOperationException("Invalid card catalog");
+            foreach(var card in rules.cards)if(!card.IsSpell&&(card.deployTicks<0||card.deployTicks>300))throw new InvalidOperationException("Invalid troop deployment time");
             return rules;
         }
         public CardDefinition Find(string id){foreach(var card in cards)if(card.id==id)return card;return null;}

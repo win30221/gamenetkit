@@ -38,7 +38,7 @@ async function run(origin='http://127.0.0.1:18115',output=path.join(root,'artifa
     }else if(m.type==='error')record.errors.push(m.code);
    });
   });
-  await page.goto(origin,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>!!window.towerDuel,null,{timeout:45000});await pause(4000);return record;
+  await page.goto(origin.replace(/\/$/,'')+'/?mode=multiplayer',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>!!window.towerDuel,null,{timeout:45000});await pause(4000);return record;
  }
  function screen(record,x,z){
   const {width:w,height:h}=record.viewport;

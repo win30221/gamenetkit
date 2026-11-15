@@ -70,7 +70,7 @@ func (c *companion) owns(r *http.Request, room string) bool {
 }
 
 // This proxy and the bot process are optional. The original game binary and
-// wire protocol remain unchanged, and the public multiplayer site is separate.
+// wire protocol remain unchanged. A shared site may route only /solo/ here.
 func (c *companion) webHandler(root, origin string) (http.Handler, error) {
 	endpoint, err := url.Parse(origin)
 	if err != nil || endpoint.Host == "" || endpoint.User != nil || endpoint.RawQuery != "" || endpoint.Fragment != "" || (endpoint.Path != "" && endpoint.Path != "/") ||

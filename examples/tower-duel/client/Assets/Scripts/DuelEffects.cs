@@ -4,16 +4,33 @@ using UnityEngine;
 
 namespace TowerDuel
 {
-    // Original low-poly spell visuals. Damage, radii and lifetime come from server ticks.
+    // Reuses the acquired Rumblebound VFX. Spell boundaries and playback follow SDK render ticks.
     public sealed class DuelEffects : IDisposable
     {
-        private sealed class Visual { public Transform Root,Symbol; public LineRenderer Ring,Trail; public bool Impacted; }
+        private sealed class Visual
+        {
+            public Transform Root;
+            public DuelParticleEffect Particles;
+            public LineRenderer Ring,Trail;
+            public bool Impacted;
+        }
         private readonly Transform root;
         private readonly Dictionary<long,Visual> visuals=new Dictionary<long,Visual>();
         private readonly Action<string> sound;
-        private readonly List<(Transform root,double until)> bursts=new List<(Transform,double)>();
+        private readonly DuelFeedbackPool feedback;
+        private double clock;
+        private double endedAt=-1,endedTick;
+        private DuelMessage welcome;
         public int SeenSpells {get;private set;}
-        public DuelEffects(Transform parent,Action<string> sound=null){root=new GameObject("Spell effects").transform;root.SetParent(parent,false);this.sound=sound;}
+        public int ActiveFeedback=>feedback.ActiveCount;
+        public int AllocatedFeedback=>feedback.AllocatedCount;
+        public int FeedbackPlayed=>feedback.PlayedCount;
+        public int ParticleCount=>feedback.ParticleCount;
+        public DuelEffects(Transform parent,Action<string> sound=null)
+        {
+            root=new GameObject("Spell effects").transform;root.SetParent(parent,false);
+            this.sound=sound;feedback=new DuelFeedbackPool(root);
+        }
         private static Mesh mesh;
         public static Mesh CrystalMesh()
         {
@@ -46,13 +63,26 @@ namespace TowerDuel
         }
         private LineRenderer Line(Transform parent,string name,string material,float width)
         {
-            var line=new GameObject(name).AddComponent<LineRenderer>();line.transform.SetParent(parent,false);line.sharedMaterial=Material(material);line.useWorldSpace=true;line.widthMultiplier=width;line.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;line.receiveShadows=false;return line;
+            var line=new GameObject(name).AddComponent<LineRenderer>();line.transform.SetParent(parent,false);
+            line.sharedMaterial=Resources.Load<Material>("TowerDuel/BattleFX/Trail");
+            line.useWorldSpace=true;line.widthMultiplier=width;
+            line.startColor=line.endColor=material=="Ice"?new Color(.36f,.85f,1,.7f):new Color(1,.63f,.12f,.6f);
+            line.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;line.receiveShadows=false;return line;
         }
         public void Update(DuelSession session)
         {
             var state=session.State;if(state==null)return;
-            for(int i=bursts.Count-1;i>=0;i--){var burst=bursts[i];float remaining=(float)(burst.until-DuelSession.Now);if(remaining<=0){UnityEngine.Object.Destroy(burst.root.gameObject);bursts.RemoveAt(i);}else burst.root.localScale=Vector3.one*(1-remaining/.35f);}
             double renderTick=session.RenderTick;
+            clock=renderTick;
+            if(state.type=="welcome"&&!ReferenceEquals(welcome,state)){welcome=state;ClearSpells();feedback.Reset();}
+            if(state.phase=="ended")
+            {
+                if(endedAt<0){endedAt=DuelSession.Now;endedTick=renderTick;ClearSpells();}
+                // Gameplay has ended; let the final castle debris settle behind the result panel.
+                clock=endedTick+(DuelSession.Now-endedAt)*30;feedback.Update(clock);return;
+            }
+            endedAt=-1;
+            feedback.Update(renderTick);
             var seen=new HashSet<long>();
             foreach(var e in session.SampleEffects())
             {
@@ -60,40 +90,68 @@ namespace TowerDuel
                 if(!visuals.TryGetValue(e.id,out var visual))
                 {
                     var owner=new GameObject(e.kind+" "+e.id).transform;owner.SetParent(root,false);
-                    visual=new Visual{Root=owner,Symbol=Symbol(e.kind,owner).transform,Ring=Line(owner,"Effect radius",e.kind=="fireball"?"Fire":"Ice",.07f),Trail=Line(owner,"Fire trail","Gold",.14f)};
+                    visual=new Visual{Root=owner,Particles=new DuelParticleEffect(DuelFeedbackPool.Load(e.kind=="fireball"?"Fireball":"Frost"),owner,unchecked((uint)e.id)),Ring=Line(owner,"Effect radius",e.kind=="fireball"?"Fire":"Ice",.065f),Trail=Line(owner,"Fire trail","Gold",.22f)};
                     visual.Ring.loop=true;visual.Ring.positionCount=32;visual.Trail.positionCount=8;visuals.Add(e.id,visual);SeenSpells|=e.kind=="fireball"?1:2;
+                    visual.Trail.widthCurve=AnimationCurve.Linear(0,1,1,0);
+                    visual.Trail.startColor=new Color(1,.88f,.40f,.85f);visual.Trail.endColor=new Color(1,.27f,.035f,0);
                 }
                 var target=new Vector3(e.x,.3f,e.z);
                 for(int i=0;i<32;i++){float a=i*Mathf.PI*2/32;visual.Ring.SetPosition(i,target+new Vector3(Mathf.Cos(a)*e.radius,0,Mathf.Sin(a)*e.radius));}
                 bool impact=renderTick>=e.impact;
-                if(impact&&!visual.Impacted){visual.Impacted=true;sound?.Invoke(e.kind);}
+                if(impact&&!visual.Impacted)
+                {
+                    visual.Impacted=true;sound?.Invoke(e.kind);
+                    if(e.kind=="fireball")feedback.Play("Explosion",target,Vector3.zero,e.radius,e.impact,renderTick,e.end);
+                }
                 visual.Trail.enabled=e.kind=="fireball"&&!impact;
                 if(e.kind=="fireball")
                 {
                     float t=Mathf.Clamp01((float)(renderTick-e.start)/Mathf.Max(1,e.impact-e.start));
                     Vector3 from=new Vector3(0,5,e.seat==0?-11:11);
                     Vector3 Flight(float progress)=>Vector3.Lerp(from,target,progress)+Vector3.up*Mathf.Sin(progress*Mathf.PI)*3;
-                    visual.Symbol.position=Flight(t);visual.Symbol.localScale=Vector3.one*(impact?Mathf.Lerp(.5f,e.radius,(float)(renderTick-e.impact)/Mathf.Max(1,e.end-e.impact)):.6f);
-                    for(int i=0;i<8;i++)visual.Trail.SetPosition(i,Flight(Mathf.Clamp01(t-i*.025f)));
+                    if(impact)visual.Particles.Clear();
+                    else
+                    {
+                        visual.Particles.Place(Flight(t),Quaternion.identity,1);
+                        visual.Particles.Present((float)(renderTick-e.start)/30f+.12f);
+                    }
+                    for(int i=0;i<8;i++)visual.Trail.SetPosition(i,Flight(Mathf.Clamp01(t-i*.012f)));
                 }
                 else
                 {
-                    visual.Symbol.position=target;visual.Symbol.localScale=Vector3.one*(e.radius*.7f);visual.Symbol.Rotate(Vector3.up,16*Time.unscaledDeltaTime,Space.World);
+                    if(impact)
+                    {
+                        visual.Particles.Place(new Vector3(e.x,.24f,e.z),Quaternion.identity,e.radius);
+                        visual.Particles.Present((float)(renderTick-e.impact)/30f);
+                    }
                 }
                 float remaining=Mathf.Clamp01((float)(e.end-renderTick)/15f);visual.Ring.widthMultiplier=.07f*remaining;
-                if(impact&&e.kind=="fireball")visual.Symbol.localScale*=remaining;
+                var color=e.kind=="fireball"?new Color(1,.58f,.12f,.55f*remaining):new Color(.35f,.85f,1,.7f*remaining);
+                visual.Ring.startColor=visual.Ring.endColor=color;
             }
             var removed=new List<long>();foreach(var pair in visuals)if(!seen.Contains(pair.Key))removed.Add(pair.Key);
-            foreach(long id in removed){UnityEngine.Object.Destroy(visuals[id].Root.gameObject);visuals.Remove(id);}
+            foreach(long id in removed){visuals[id].Particles.Dispose();UnityEngine.Object.Destroy(visuals[id].Root.gameObject);visuals.Remove(id);}
         }
-        public void Burst(Vector3 position,float radius)
+        public void Burst(Vector3 position,float radius,long tick=0)
         {
-            if(bursts.Count>=24)return;
-            var burst=Symbol("fireball",root).transform;burst.position=position;burst.localScale=Vector3.zero;
-            foreach(Transform child in burst)child.localPosition*=radius;
-            bursts.Add((burst,DuelSession.Now+.35));
+            feedback.Play("Explosion",new Vector3(position.x,.20f,position.z),Vector3.zero,radius*.72f,tick>0?tick:clock,clock);
         }
-        public void Reset(){foreach(var visual in visuals.Values)UnityEngine.Object.Destroy(visual.Root.gameObject);visuals.Clear();foreach(var burst in bursts)UnityEngine.Object.Destroy(burst.root.gameObject);bursts.Clear();SeenSpells=0;}
-        public void Dispose(){Reset();UnityEngine.Object.Destroy(root.gameObject);}
+        public void Impact(Vector3 position,bool heavy,long tick)
+        {
+            feedback.Play(heavy?"HeavyHit":"Hit",position,Vector3.zero,1,tick,clock);
+        }
+        public void Slash(Vector3 position,Vector3 direction,bool heavy,long tick)
+        {
+            feedback.Play("Slash",position+Vector3.up*.65f,direction,heavy?1.7f:1.2f,tick,clock);
+        }
+        public void Death(Vector3 position)=>feedback.Play("Death",position+Vector3.up*.3f,Vector3.zero,1,clock,clock);
+        public void Collapse(Vector3 position,bool keep)=>feedback.Play("Collapse",position+Vector3.up*.8f,Vector3.zero,keep?1.5f:1.1f,clock,clock);
+        private void ClearSpells()
+        {
+            foreach(var visual in visuals.Values){visual.Particles.Dispose();UnityEngine.Object.Destroy(visual.Root.gameObject);}
+            visuals.Clear();
+        }
+        public void Reset(){ClearSpells();feedback.Reset();SeenSpells=0;clock=0;endedAt=-1;welcome=null;}
+        public void Dispose(){Reset();feedback.Dispose();UnityEngine.Object.Destroy(root.gameObject);}
     }
 }

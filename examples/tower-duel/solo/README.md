@@ -1,8 +1,13 @@
 # 可移除的單人測試外掛
 
-獨立網頁入口：[單人測試場](https://tower-duel-solo.172.233.67.181.sslip.io/)。選「單人練習」對戰電腦，或選「自由測試」讓對手不出兵；塔仍正常防守。只需一個瀏覽器視窗，不需房間碼。
+網頁入口：[雙橋對決](https://tower-duel.172.233.67.181.sslip.io/)。同一頁選「單人練習」、「自由測試」或「雙人對戰」；舊單人網址自動轉到這裡。單人模式只需一個瀏覽器視窗，不需房間碼，自由測試的對手不出兵，塔仍正常防守。
 
-網頁使用獨立部署的**原版 Go 遊戲後端**與電腦玩家程式。出牌、扣能量、手牌循環、移動、碰撞、攻擊前搖、傷害與勝負全部由後端計算。原多人網站使用自己的服務與世界，與這個測試站分開。
+三種模式共用**原版 Go 遊戲後端**；電腦玩家程式仍是可移除的獨立服務。出牌、扣能量、手牌循環、移動、碰撞、攻擊前搖、傷害與勝負全部由後端計算。建置、上線和一個命令切回純雙人版的方式見 [合併站部署](MERGED_DEPLOYMENT.md)。
+
+節奏調整版 `eight-cards-3` 的練習電腦會從前塔後方（己方深度 10.5）集結進攻，
+讓玩家先看見部隊再判斷應對；敵兵進入河道附近或己方半場時，仍會在深度 3.5 即時部署防守。
+電腦沿用原本的牌費與回能規則。詳見 [節奏調整與驗證](../PACING_VALIDATION.md)。
+玩家與電腦的部隊出場後皆先等待 1000 ms 部署，各兵種時間獨立設定；詳見 [部署時間](../DEPLOYMENT_TIME_VALIDATION.md)。
 
 Windows 本機測試入口也保留，可離線使用：
 
@@ -25,19 +30,19 @@ Windows 本機測試入口也保留，可離線使用：
 部署到現有主機：
 
 ```powershell
-./examples/tower-duel/solo/Deploy.ps1 -VmHost 172.233.67.181 -Domain tower-duel-solo.172.233.67.181.sslip.io -IdentityFile C:/Users/H/.ssh/id_rsa
+./examples/tower-duel/solo/Deploy-Merged.ps1 -IdentityFile C:/Users/H/.ssh/id_rsa
 ```
 
-`-PackageOnly` 只產生 `.local/deploy/tower-duel-solo/<release>/solo.tar.gz`。部署有檔案雜湊驗證、健康檢查及失敗還原，使用以下專用位置：
+先依主專案流程建置 `client/Builds/WebGL` 作為純雙人備用版。`-PackageOnly` 只產生 `.local/deploy/tower-duel-merged/<release>/merged.tar.gz`。部署有檔案雜湊驗證、健康檢查及失敗還原：
 
 | 項目 | 位置 |
 | --- | --- |
-| 遊戲後端 | `tower-duel-solo-api.service`，loopback 18111 |
-| WebGL、控制 API、WebSocket 代理與電腦 | `tower-duel-solo-web.service`，loopback 18112 |
-| 獨立版本與 current | `/opt/rumblebound/tower-duel-solo/` |
-| 單人站代理檔 | `/opt/rumblebound/tower-duel/tower-duel-solo.caddy` |
+| 共用遊戲後端 | `tower-duel.service`，loopback 18110 |
+| 控制 API 與電腦 | `tower-duel-modes.service`，loopback 18112 |
+| 合併版本與 current | `/opt/rumblebound/tower-duel/` |
+| 舊單人站代理檔 | 轉址到主網站 |
 
-代理檔使用既有 Caddy 的 import，不修改原代理主檔、多人站設定或多人服務。公開測試房間的控制 API 使用相同來源檢查與 HttpOnly／Secure 工作階段 cookie，不同瀏覽器不能關閉別人的測試房間。重新整理及短暫斷線沿用原遊戲的恢復協定。
+代理檔使用既有 Caddy 的 import，不修改共用代理主檔。公開測試房間的控制 API 使用相同來源檢查與 HttpOnly／Secure 工作階段 cookie，不同瀏覽器不能關閉別人的測試房間。重新整理及短暫斷線沿用原遊戲的恢復協定。舊獨立部署紀錄保留於 [WEB_DEPLOYMENT.md](WEB_DEPLOYMENT.md)。
 
 ## Windows 本機建置
 
@@ -61,17 +66,17 @@ Windows 本機測試入口也保留，可離線使用：
 
 `client/Assets/TowerDuelSolo` 是唯一 Unity 接點。只有獨立測試建置會透過 `BuildPlayerOptions.extraScriptingDefines` 帶入 `TOWER_DUEL_SOLO`；正常 Player 建置不編入外掛。Windows 測試包還必須在啟動時明確收到 `-td-solo-api`；WebGL 測試包使用自己的網站來源，透過外掛內的 `.jslib` 呼叫控制 API。原本 `TowerDuelClient`、session、HUD、UXML、伺服器、協定及套件 manifest 都不引用它。
 
-Windows 控制 API 與遊戲後端使用 loopback 動態埠。網頁版也只在 loopback 暴露內部服務，由專用 HTTPS 網域提供入口。公開多人站沒有加入此測試工具。
+Windows 控制 API 與遊戲後端使用 loopback 動態埠。網頁版只在 loopback 暴露內部服務，由主網站 HTTPS 提供入口；遊戲 WebSocket 直接連共用對戰後端。
 
 ## 移除
 
-先移除線上的測試站（`-Purge` 一併刪除其獨立版本產物）：
+先將線上網站切回已備妥的純雙人版，不需重建或重啟對戰服務：
 
 ```powershell
-./examples/tower-duel/solo/Remove-Deployment.ps1 -VmHost 172.233.67.181 -IdentityFile C:/Users/H/.ssh/id_rsa -Purge
+./examples/tower-duel/solo/Disable-Modes.ps1 -IdentityFile C:/Users/H/.ssh/id_rsa
 ```
 
-這只移除兩個 `tower-duel-solo-*` 服務和單人站代理檔，保留原多人站。接著關閉本機單人遊戲，刪除以下外掛來源即可：
+這會停用 `tower-duel-modes.service` 並切換 WebGL，保留版本產物供還原。接著關閉本機單人遊戲，刪除以下外掛來源即可：
 
 1. `examples/tower-duel/solo/`
 2. `examples/tower-duel/client/Assets/TowerDuelSolo/` 及同層 `TowerDuelSolo.meta`
@@ -85,7 +90,8 @@ Windows 控制 API 與遊戲後端使用 loopback 動態埠。網頁版也只在
 ./examples/tower-duel/solo/Test.ps1 -Native
 ./examples/tower-duel/solo/Build.ps1 -VerifyIsolation
 node examples/tower-duel/solo/Test-Web.cjs http://127.0.0.1:18113 artifacts/tower-duel/solo-web/local
-node examples/tower-duel/solo/Test-Web.cjs https://tower-duel-solo.172.233.67.181.sslip.io artifacts/tower-duel/solo-web/public
+node examples/tower-duel/solo/Test-Web.cjs https://tower-duel.172.233.67.181.sslip.io artifacts/tower-duel/merged/public-solo
+node examples/tower-duel/solo/Test-Modes.cjs https://tower-duel.172.233.67.181.sslip.io artifacts/tower-duel/merged/public-menu
 ```
 
 第一個命令建置原後端並驗證真實 WebSocket 建房、單人加入、費用與動作去重、非法部署、電腦出兵、靶場、重賽、原席位重連和退出清理。重賽使用暫存的 1 HP 塔／零塔傷害 fixture 加速結算；正式規則檔不會改動。

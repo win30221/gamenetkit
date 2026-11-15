@@ -32,10 +32,12 @@ namespace TowerDuel.Solo
         }
         private TowerDuelClient client;
         private VisualElement ui;
-        private Button practice,sandbox;
+        private Button practice,sandbox,multiplayer,modeBack;
+        private VisualElement menu;
+        private string originalSubtitle;
         private Label hint;
         private string api,room,mode,reportPath;
-        private bool busy,hadState,wasOwned,recoveryTested,finished;
+        private bool busy,hadState,wasOwned,recoveryTested,finished,multiplayerForm,previousState,keepMultiplayerForm;
         private double started,nextReport,nextDeploy;
         private readonly ProbeReport report=new ProbeReport();
 #if !UNITY_WEBGL || UNITY_EDITOR
@@ -81,21 +83,21 @@ namespace TowerDuel.Solo
             if(client==null||client.Session==null){Debug.LogError("Solo plugin could not find the running client.");yield break;}
             ui=client.GetComponent<UIDocument>().rootVisualElement;
             var create=ui.Q<Button>("createButton");
-            var menu=new VisualElement{name="soloPluginMenu"};
+            menu=new VisualElement{name="soloPluginMenu"};
             var actions=new VisualElement();actions.style.flexDirection=FlexDirection.Row;
             practice=new Button(()=>Begin("practice")){name="soloPracticeButton",text="單人練習"};
             sandbox=new Button(()=>Begin("sandbox")){name="soloSandboxButton",text="自由測試"};
             practice.AddToClassList("primary-button");sandbox.AddToClassList("secondary-button");
             foreach(var button in new[]{practice,sandbox}){button.style.flexGrow=1;button.style.flexBasis=0;button.style.minHeight=48;button.style.marginTop=12;actions.Add(button);}
             sandbox.style.marginLeft=12;menu.Add(actions);
-            hint=new Label("電腦對戰，或在對手不出兵的靶場測試。");hint.AddToClassList("hint");hint.style.marginTop=8;menu.Add(hint);
+            multiplayer=new Button(()=>ShowMultiplayer(true)){name="soloMultiplayerButton",text="雙人對戰"};
+            multiplayer.AddToClassList("secondary-button");multiplayer.style.minHeight=48;menu.Add(multiplayer);
+            hint=new Label("對戰電腦、自由測試，或邀請朋友雙人對戰。");hint.AddToClassList("hint");hint.style.marginTop=8;menu.Add(hint);
             create.parent.Insert(create.parent.IndexOf(create),menu);
-#if UNITY_WEBGL && !UNITY_EDITOR
-            foreach(string name in new[]{"createButton","joinButton","roomField","serverField"})ui.Q(name).style.display=DisplayStyle.None;
-            ui.Q("lobbyLayer").Query<VisualElement>(className:"divider").ForEach(item=>item.style.display=DisplayStyle.None);
-            ui.Q("lobbyLayer").Q<Label>(className:"title").text="單人測試場";
-            ui.Q("lobbyLayer").Q<Label>(className:"subtitle").text="電腦對戰，或自由測試出兵與攻擊效果。";
-#endif
+            originalSubtitle=ui.Q("lobbyLayer").Q<Label>(className:"subtitle").text;
+            modeBack=new Button(()=>{keepMultiplayerForm=false;ShowMultiplayer(false);}){name="soloModeBackButton",text="← 模式選擇"};
+            modeBack.style.position=Position.Absolute;modeBack.style.top=4;modeBack.style.left=10;modeBack.style.height=24;
+            create.parent.Add(modeBack);ShowMultiplayer(false);
             try
             {
                 var saved=JsonUtility.FromJson<SavedRoom>(PlayerPrefs.GetString(SavedKey,""));
@@ -116,6 +118,24 @@ namespace TowerDuel.Solo
                 yield return null;
                 Begin(automatic);
             }
+            else if(automatic=="multiplayer"){keepMultiplayerForm=true;ShowMultiplayer(true);}
+        }
+
+        private void ShowMultiplayer(bool show)
+        {
+            if(busy)return;
+            multiplayerForm=show;
+            foreach(string name in new[]{"createButton","joinButton","roomField"})ui.Q(name).style.display=show?DisplayStyle.Flex:DisplayStyle.None;
+#if UNITY_WEBGL && !UNITY_EDITOR
+            ui.Q("serverField").style.display=DisplayStyle.None;
+#else
+            ui.Q("serverField").style.display=show?DisplayStyle.Flex:DisplayStyle.None;
+#endif
+            ui.Q("lobbyLayer").Query<VisualElement>(className:"divider").ForEach(item=>item.style.display=show?DisplayStyle.Flex:DisplayStyle.None);
+            menu.style.display=show?DisplayStyle.None:DisplayStyle.Flex;
+            modeBack.style.display=show?DisplayStyle.Flex:DisplayStyle.None;
+            ui.Q("lobbyLayer").Q<Label>(className:"subtitle").text=show?originalSubtitle:"選擇單人練習、自由測試或雙人對戰。";
+            ui.Q<TextField>("nameField").Blur();
         }
 
         private void Begin(string requested)
@@ -196,9 +216,12 @@ namespace TowerDuel.Solo
             if(ui==null||client==null||finished)return;
             var state=client.Session.State;
             bool owned=state!=null&&state.room==room;
-            practice.SetEnabled(!busy&&!client.Session.Connecting&&!client.Session.Recovering);sandbox.SetEnabled(!busy&&!client.Session.Connecting&&!client.Session.Recovering);
+            bool available=!busy&&!client.Session.Connecting&&!client.Session.Recovering;
+            practice.SetEnabled(available);sandbox.SetEnabled(available);multiplayer.SetEnabled(available);modeBack.SetEnabled(available);
+            if(state==null&&previousState&&!client.Session.Connecting&&!client.Session.Recovering)ShowMultiplayer(keepMultiplayerForm);
+            previousState=state!=null;
 #if UNITY_WEBGL && !UNITY_EDITOR
-            if(state==null&&client.Session.Status=="建立房間，或輸入房間碼加入。")ui.Q<Label>("lobbyStatus").text="選擇單人練習或自由測試即可開始。";
+            if(state==null&&!multiplayerForm&&client.Session.Status=="建立房間，或輸入房間碼加入。")ui.Q<Label>("lobbyStatus").text="選擇模式即可開始。";
 #endif
             if(owned)
             {
@@ -214,6 +237,7 @@ namespace TowerDuel.Solo
             {
                 ui.Q("inviteCode").style.display=DisplayStyle.Flex;ui.Q("copyButton").style.display=DisplayStyle.Flex;ui.Q("readyButton").style.display=DisplayStyle.Flex;
                 ui.Q("waitingLayer").Q<Label>(className:"section-title").text="邀請朋友來一場";
+                ui.Q<Button>("rematchButton").text="同房再戰";
             }
             wasOwned=owned;
             if(room!=null&&state==null&&!client.Session.Connecting&&!client.Session.Recovering&&!busy&&(hadState||DuelSession.Now-started>15))
