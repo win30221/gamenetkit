@@ -7,7 +7,7 @@ namespace TowerDuel
 {
     [Serializable] public sealed class EntityState
     {
-        public long id, attackTick, target;
+        public long id, attackTick, hitTick, hitTarget, target;
         public int seat, hp, maxHP;
         public string kind;
         public float x,z,radius,dx,dz;
@@ -83,12 +83,35 @@ namespace TowerDuel
             return new Vector3((Mathf.Floor((point.x+width*.5f)/cell)+.5f)*cell-width*.5f,point.y,
                 (Mathf.Floor((point.z+length*.5f)/cell)+.5f)*cell-length*.5f);
         }
+        public bool TryNearestDeployment(int seat,Vector3 point,DuelMessage state,CardDefinition card,out Vector3 nearest)
+        {
+            nearest=default;
+            if(state==null||seat<0||seat>1||!Finite(point.x)||!Finite(point.z))return false;
+            if(card!=null&&card.IsSpell)
+            {
+                nearest=new Vector3(Mathf.Clamp(point.x,-width*.5f,width*.5f),point.y,Mathf.Clamp(point.z,-length*.5f,length*.5f));
+                return true;
+            }
+            var snapped=SnapDeployment(point,card);
+            if(CanDeploy(seat,snapped,state,card)){nearest=snapped;return true;}
+            // Measure from the original aim, including every member of a squad in legality checks.
+            float best=float.PositiveInfinity,cell=deploymentCellSize;bool found=false;
+            for(float x=-width*.5f+cell*.5f;x<width*.5f;x+=cell)
+                for(float z=-length*.5f+cell*.5f;z<length*.5f;z+=cell)
+                {
+                    var candidate=new Vector3(x,point.y,z);
+                    float distance=(candidate-point).sqrMagnitude;
+                    if(distance>=best||!CanDeploy(seat,candidate,state,card))continue;
+                    nearest=candidate;best=distance;found=true;
+                }
+            return found;
+        }
         public static bool Finite(float n)=>!float.IsNaN(n)&&!float.IsInfinity(n);
     }
     [Serializable] public sealed class CardDefinition
     {
         public string id,name,description,type,target;
-        public int count,hp,damage,cooldown,delayTicks,durationTicks;
+        public int count,hp,damage,cooldown,windupTicks,delayTicks,durationTicks;
         public float cost,speed,range,aggro,splash,chargeDistance,chargeMultiplier,radius,slow,towerScale;
         public bool IsSpell=>type=="spell";
     }

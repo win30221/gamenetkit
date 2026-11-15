@@ -102,7 +102,9 @@ func TestMutualDamageIsSimultaneous(t *testing.T) {
 	}
 	w.Units[101] = &unit{State: entity{ID: 101, Seat: 0, Kind: "guard", X: 0, Z: 9, HP: 220, Radius: guardRadius}}
 	w.Units[102] = &unit{State: entity{ID: 102, Seat: 1, Kind: "guard", X: 0, Z: -9, HP: 220, Radius: guardRadius}}
-	w.step()
+	for range w.Rules.ByID["guard"].WindupTicks + 1 {
+		w.step()
+	}
 	if w.Winner != -1 || w.Reason != "simultaneous" {
 		t.Fatalf("same tick must draw: %d %s", w.Winner, w.Reason)
 	}
@@ -194,7 +196,9 @@ func TestTimeScoreAndSuddenDeath(t *testing.T) {
 	w.Elapsed = w.Rules.Duration
 	w.Towers[4].HP = 20
 	w.Units[101] = &unit{State: entity{ID: 101, Seat: 0, Kind: "guard", X: -5, Z: 5.7, HP: 220, MaxHP: 220, Radius: guardRadius}}
-	w.step()
+	for range w.Rules.ByID["guard"].WindupTicks + 1 {
+		w.step()
+	}
 	if w.Winner != 0 || w.Reason != "sudden_death" {
 		t.Fatal("overtime tower destruction did not end the match")
 	}

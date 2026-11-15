@@ -53,6 +53,9 @@ TextField { margin: 8px 0; font-size: 19px; flex-direction: column; }
 .primary-button { min-height: 56px; margin-top: 16px; background-color: #a7752f; border-color: #e4bc72; }
 .primary-button:hover { background-color: #c18b3e; }
 .secondary-button { min-height: 48px; margin-top: 12px; }
+.waiting-actions { flex-direction: row; }
+.waiting-actions > Button { flex-grow: 1; flex-basis: 0; }
+.waiting-leave { min-height: 56px; margin-top: 16px; margin-left: 12px; }
 .divider { height: 1px; background-color: #42576b; margin-top: 24px; margin-bottom: 12px; }
 .lobby-status { min-height: 44px; }
 .section-title { font-size: 27px; -unity-text-align: middle-center; }

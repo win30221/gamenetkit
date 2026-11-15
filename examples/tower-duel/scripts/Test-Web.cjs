@@ -96,7 +96,7 @@ async function run(origin='http://127.0.0.1:18115',output=path.join(root,'artifa
   await tap(b,195,533);await b.page.keyboard.type(a.state.room,{delay:50});await tap(b,195,582);await until(()=>!!b.state?.room);await pause(500);
   assert(await b.page.locator('input').count()===0,'Mobile keyboard remained after joining');checks.mobileKeyboardClosed=true;
   assert(a.state.match===b.state.match&&a.state.seat===0&&b.state.seat===1,'Different rooms/seats');
-  await shot(b,'waiting-touch');await tap(a,360,632);await tap(b,195,514);await until(()=>records.every(r=>r.state?.phase==='playing'));
+  await shot(b,'waiting-touch');await tap(a,247,632);await tap(b,119,514);await until(()=>records.every(r=>r.state?.phase==='playing'));
   const initial=a.state.match;
   // A small pull stays a translucent card; the following valid drag becomes a model.
   let before=a.sent.length;
@@ -105,8 +105,11 @@ async function run(origin='http://127.0.0.1:18115',output=path.join(root,'artifa
   await shot(a,'card-follow-before-board');await a.page.mouse.up();await pause(250);
   assert(a.sent.length===before,'Short card pull deployed a unit');checks.shortPullCancel=true;
   let count=a.sent.length;await drag(a,0,{x:180,y:950});await pause(400);assert(a.sent.length===count,'Cancelled mouse drag sent a deployment');checks.mouseCancel=true;
-  count=b.sent.length;await drag(b,0,screen(b,-5,-4),false);await pause(150);await shot(b,'invalid-touch-preview');await b.cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await pause(400);assert(b.sent.length===count,'Illegal touch placement sent a deployment');checks.touchIllegalCancel=true;
-  await deploy(a,config.cards[0]);await deploy(b,config.cards[0]);
+  count=b.sent.length;before=accepted(b).length;
+  await drag(b,0,pointerForAim(b,screen(b,-4.2,-4)),false);await pause(150);await shot(b,'clamped-touch-preview');
+  await b.cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await until(()=>accepted(b).length>before);
+  const clamped=b.sent.at(-1);assert(b.sent.length===count+1&&Math.abs(clamped.x+4.5)<.01&&Math.abs(clamped.z-2.5)<.01,'Illegal touch aim did not deploy at the nearest legal cell');checks.touchNearestPlacement=true;
+  await deploy(a,config.cards[0]);
   if(await checkInsufficientEnergy(b,config.cards))checks.insufficientEnergyCancel=true;
   let recovered=false,socketRecovered=false,framingCaptured=false,nextProgress=0;const deadline=Date.now()+310000;
   while(Date.now()<deadline&&!records.every(r=>r.state?.phase==='ended')){
@@ -158,7 +161,7 @@ async function run(origin='http://127.0.0.1:18115',output=path.join(root,'artifa
   await tap(a,360,555);await tap(b,195,460);await until(()=>records.every(r=>r.state?.match!==initial&&r.state?.phase==='waiting'));
   assert(a.state.match===b.state.match&&a.state.handVersion===0&&b.state.handVersion===0&&a.state.units.length===0&&a.state.energy===5,'Rematch retained old state');checks.rematch=true;
   // Receiving the new welcome precedes the next Unity/UI frame.
-  await pause(800);await tap(a,360,632);await tap(b,195,514);await until(()=>records.every(r=>r.state?.phase==='playing'));await pause(500);await deploy(b,config.cards[0]);
+  await pause(800);await tap(a,247,632);await tap(b,119,514);await until(()=>records.every(r=>r.state?.phase==='playing'));await pause(500);await deploy(b,config.cards[0]);
   await shot(b,'new-match-touch');
   const proxyTotals=await readProxy();const proxy=proxyTotals?Object.fromEntries(Object.entries(proxyTotals).map(([key,value])=>[key,value-(proxyBefore?.[key]||0)])):null;
   result={passed:true,browser:browser.version(),origin,protocol:3,checks,final,newMatch:a.state.match,viewports:records.map(r=>r.viewport),framing,widthInvariant,troops:records.map(r=>[...r.kinds]),spells:records.map(r=>[...r.spells]),welcomes:records.map(r=>r.welcomes),proxy,errors:records.map(r=>r.errors)};

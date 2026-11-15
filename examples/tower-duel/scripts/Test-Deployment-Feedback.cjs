@@ -52,12 +52,19 @@ async function run(origin='http://127.0.0.1:18116',output=path.join(root,'artifa
     else if(type==='touchStart'){await page.mouse.move(point.x,point.y);await page.mouse.down()}
     else if(type==='touchMove')await page.mouse.move(point.x,point.y,{steps:10});else await page.mouse.up();
    }
-   async function attempt(name,index,x,z,expected){
-    const {dockScale}=layout();
-    const count=sent.length,start={x:viewport.width/2+(-300+16+56+122*index)*dockScale,y:viewport.height*.82+121*dockScale};
+   async function attempt(name,index,x,z,expected=true,destination=null){
+    const frame=portraitFrames(await page.screenshot())[index];
+    const count=sent.length,start={x:frame.x+frame.width*.5,y:frame.y+frame.height*.5};
     await pointer('touchStart',start);await pause(50);await pointer('touchMove',screen(x,z));await pause(160);await shot(name);
     await pointer('touchEnd');await pause(350);
-    assert(sent.length===count+(expected?1:0),name+' produced the wrong client deployment decision');checks[name]=true;
+    assert(sent.length===count+(expected?1:0),name+' produced the wrong client deployment decision');
+    if(expected&&destination){
+     const p=sent.at(-1),spell=rules.cards.find(card=>card.id===p.card).type==='spell';
+     // Free aim passes through screen pixels; troop cell centres remain exact.
+     const tolerance=spell?.06:.01;
+     assert(Math.abs(p.x-destination[0])<tolerance&&Math.abs(p.z-destination[1])<tolerance,name+' did not use the nearest legal destination: '+JSON.stringify(p));
+    }
+    checks[name]=true;
    }
    async function checkPickup(){
     const card=portraitFrames(await page.screenshot())[0],count=sent.length;
@@ -92,16 +99,23 @@ async function run(origin='http://127.0.0.1:18116',output=path.join(root,'artifa
     await (seat===0?page.mouse.click(360,524):page.touchscreen.tap(195,427));await until(()=>!!heartbeat);await pause(600);
     await checkPickup();
     const forward=seat===0?1:-1,enemy=state.towers.find(t=>t.seat!==seat&&t.kind==='tower'&&t.x<0),own=state.towers.find(t=>t.seat===seat&&t.kind==='tower'&&t.x<0);
-    await attempt('intact-enemy-closed',0,-4.5,3.5*forward,false);
-    own.hp=0;send('snapshot');await pause(150);await attempt('own-loss-does-not-annex',0,-4.5,3.5*forward,false);
-    enemy.hp=0;send('snapshot');await pause(150);await attempt('enemy-pocket-open',0,-4.5,3.5*forward,true);
-    await attempt('opposite-pocket-closed',0,4.5,3.5*forward,false);
-    await attempt('river-stays-closed',0,-4.5,0,false);
-    await attempt('squad-front-edge-closed',2,-4.5,5.5*forward,false);
+    await attempt('intact-enemy-clamps-to-bank',0,-4.2,3.2*forward,true,[-4.5,-2.5*forward]);
+    await attempt('tower-clamps-to-nearest-cell',0,-5.2,-7.7*forward,true,[-6.5,-7.5*forward]);
+    if(seat===0)await attempt('squad-clamps-inside-map',2,11,-3.2*forward,true,[8.5,-3.5*forward]);
+    own.hp=0;send('snapshot');await pause(150);await attempt('own-loss-does-not-annex',0,-4.2,3.2*forward,true,[-4.5,-2.5*forward]);
+    enemy.hp=0;send('snapshot');await pause(150);await attempt('enemy-pocket-open',0,-4.2,3.2*forward,true,[-4.5,3.5*forward]);
+    await attempt('opposite-pocket-clamps-to-open-side',0,4.2,3.2*forward,true,[-.5,3.5*forward]);
+    await attempt('river-clamps-to-nearest-bank',0,-4.2,.2*forward,true,[-4.5,2.5*forward]);
+    await attempt('squad-front-edge-clamps-inward',2,-4.2,5.4*forward,true,[-4.5,4.5*forward]);
     state.towers.find(t=>t.seat!==seat&&t.kind==='tower'&&t.x>0).hp=0;send('snapshot');await pause(150);
     await attempt('both-pockets-open',2,.5,3.5*forward,true);
     state.towers=towers();state.match+='-rematch';send('welcome');await pause(300);
-    await attempt('rematch-closes-pocket',0,-4.5,3.5*forward,false);
+    await attempt('rematch-closes-pocket',0,-4.2,3.2*forward,true,[-4.5,-2.5*forward]);
+    state.energy=0;send('snapshot');await pause(150);
+    await attempt('clamped-cell-still-needs-energy',0,-4.2,3.2*forward,false);
+    state.energy=5.25;state.hand=['fireball','archer','swords','bomber'];send('snapshot');await pause(150);
+    await attempt('spell-retains-free-aim',0,-4.24,3.16*forward,true,[-4.24,3.16*forward]);
+    state.hand=['guard','archer','swords','bomber'];send('snapshot');await pause(150);
     state.units=[{id:101,seat,kind:'guard',x:-4.5,z:-3.5*forward,hp:182,maxHP:220,radius:.32,dx:0,dz:forward,active:true}];
     state.energy=5.35;send('snapshot');await pause(200);await shot('numeric-health-fractional-energy');
     state.energy=10;send('snapshot');await pause(70);await shot('full-energy-reminder');

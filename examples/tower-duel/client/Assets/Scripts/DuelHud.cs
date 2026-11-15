@@ -19,7 +19,6 @@ namespace TowerDuel
         private readonly List<DuelCardDrag> cardDrags=new List<DuelCardDrag>();
         private Button draggingCard;
         private Vector2 dragOrigin,dragPosition,dragSize,dragCardOrigin,dragAimOffset;
-        private bool modelPreview;
         private readonly List<VisualElement> pips=new List<VisualElement>();
         private readonly Dictionary<long,VisualElement> bars=new Dictionary<long,VisualElement>();
         private readonly Dictionary<long,VisualElement> fills=new Dictionary<long,VisualElement>();
@@ -82,6 +81,7 @@ namespace TowerDuel
             create.clicked+=()=>{BlurInputs();client.Connect(serverField.value,"create","",nameField.value);};
             join.clicked+=()=>{BlurInputs();client.Connect(serverField.value,"join",roomField.value,nameField.value);};
             root.Q<Button>("leaveButton").clicked+=client.Leave;
+            root.Q<Button>("waitingLeaveButton").clicked+=client.Leave;
             root.Q<Button>("backButton").clicked+=client.Leave;
             copy=root.Q<Button>("copyButton");copy.clicked+=CopyRoomCode;
             ready.clicked+=()=>client.Session.Ready();
@@ -114,7 +114,7 @@ namespace TowerDuel
         private void StartDrag(string card,Button button,Vector2 point,bool touch)
         {
             client.BeginDeployment(card);draggingCard=button;
-            dragOrigin=point;dragPosition=point;modelPreview=false;
+            dragOrigin=point;dragPosition=point;
             dragSize=button.worldBound.size;dragCardOrigin=button.worldBound.position;
             dragPreview.style.scale=new Scale(new Vector3(dragSize.x/112,dragSize.y/150,1));
             float uiPerPixel=root.resolvedStyle.height/Mathf.Max(1,Screen.height);
@@ -136,21 +136,20 @@ namespace TowerDuel
         private void MoveDrag(Vector2 point)
         {
             dragPosition=point;
-            bool onBoard=DragPoint(point,out var p);
-            if(!onBoard)modelPreview=false;
-            else if(client.Map.CanDeploy(client.Session.State.seat,p,client.Session.State,client.Rules.Find(client.SelectedCard)))modelPreview=true;
-            bool model=onBoard&&modelPreview;
+            bool model=DragPoint(point,out var p);
             var position=dragCardOrigin+point-dragOrigin;
             dragPreview.style.translate=new Translate(position.x,position.y);
             Display(dragPreview,!model);
-            dragPreview.EnableInClassList("invalid",onBoard&&!client.CanDeploy(p));
+            dragPreview.EnableInClassList("invalid",model&&!client.CanDeploy(p));
             client.ShowPreview(p,model);
         }
         private bool DragPoint(Vector2 point,out Vector3 p)
         {
             p=default;
             if(!root.worldBound.Contains(point)||Vector2.Distance(point,dragOrigin)<dragSize.y*.2f)return false;
-            return DropPoint(point+dragAimOffset,out p);
+            if(!DropPoint(point+dragAimOffset,out var aim))return false;
+            var state=client.Session.State;
+            return client.Map.TryNearestDeployment(state?.seat??-1,aim,state,client.Rules.Find(client.SelectedCard),out p);
         }
         private void DropDrag(Vector2 point)
         {
@@ -162,7 +161,7 @@ namespace TowerDuel
         private void CancelDrag()
         {
             draggingCard?.RemoveFromClassList("dragging");draggingCard=null;
-            Display(dragPreview,false);modelPreview=false;
+            Display(dragPreview,false);
             client.Selected=false;client.HidePreview();
         }
         private void CancelCardDrags(){foreach(var drag in cardDrags)drag.Cancel();CancelDrag();}
@@ -200,7 +199,7 @@ namespace TowerDuel
             var screen=new Vector2(ui.x/width*Screen.width,(1-ui.y/height)*Screen.height);
             if(!client.Camera.pixelRect.Contains(screen))return false;
             var ray=client.Camera.ScreenPointToRay(screen);var plane=new Plane(Vector3.up,Vector3.zero);
-            if(!plane.Raycast(ray,out var enter))return false;point=client.SnapDeployment(ray.GetPoint(enter));return true;
+            if(!plane.Raycast(ray,out var enter))return false;point=ray.GetPoint(enter);return true;
         }
         private void CancelPointer(){if(pointer>=0&&world.HasPointerCapture(pointer))world.ReleasePointer(pointer);pointer=-1;client.HidePreview();}
         private void Text(string name,string value){var label=root.Q<Label>(name);if(label.text!=value)label.text=value;}

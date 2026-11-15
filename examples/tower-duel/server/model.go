@@ -31,6 +31,8 @@ type entity struct {
 	DX           float64 `json:"dx"`
 	DZ           float64 `json:"dz"`
 	AttackTick   uint64  `json:"attackTick"`
+	HitTick      uint64  `json:"hitTick,omitempty"`
+	HitTarget    uint64  `json:"hitTarget,omitempty"`
 	Target       uint64  `json:"target"`
 	LockedTarget uint64  `json:"lockedTarget,omitempty"`
 	Active       bool    `json:"active"`
@@ -83,6 +85,8 @@ type unit struct {
 	SlowUntil        uint64
 	SlowFactor       float64
 	CooldownProgress float64
+	WindupTarget     uint64
+	WindupProgress   float64
 }
 type playerInfo struct {
 	Seat               int     `json:"seat"`

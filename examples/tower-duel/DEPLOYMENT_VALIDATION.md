@@ -1,6 +1,6 @@
 # 部署、血量與能量驗收 · 2026-11-13
 
-後續血條與拖牌修正已以版本 `20261113T024139Z-99d819bc` 更新公開站，最新驗收見 [拖牌修正驗收](DRAG_REFINEMENT_VALIDATION.md)。下方保留前一版的完整規則驗證紀錄。
+公開站目前為版本 `20261113T074624Z-7cae3c74`，後續修正見 [拖牌修正驗收](DRAG_REFINEMENT_VALIDATION.md) 與 [等待房間退出驗證](ROOM_EXIT_VALIDATION.md)。下方保留前一版的完整規則驗證紀錄。
 
 本輪功能與地圖構想見 [部署與地圖設計](DEPLOYMENT_AND_MAP_DESIGN.md)。本輪變更已於 2026-11-13 10:12（台灣時間）部署至[公開站](https://tower-duel.172.233.67.181.sslip.io/)。
 

@@ -36,7 +36,6 @@
     <ui:VisualElement name="lobbyLayer" class="overlay">
       <ui:VisualElement class="lobby-panel">
         <ui:Label text="雙橋對決" class="title" />
-        <ui:Label text="TOWER DUEL" class="eyebrow" />
         <ui:Label text="部隊放己方半場，法術可跨河。&#10;出牌後補下一張，保留能量反制。" class="subtitle" />
         <ui:TextField name="nameField" label="你的名稱" max-length="20" />
         <ui:TextField name="serverField" label="伺服器" />
@@ -53,7 +52,10 @@
         <ui:Label name="inviteCode" class="invite-code" />
         <ui:Button name="copyButton" text="複製房間碼" class="secondary-button" />
         <ui:Label name="playersLabel" class="players" />
-        <ui:Button name="readyButton" text="準備對戰" class="primary-button" />
+        <ui:VisualElement class="waiting-actions">
+          <ui:Button name="readyButton" text="準備對戰" class="primary-button" />
+          <ui:Button name="waitingLeaveButton" text="退出房間" class="waiting-leave" />
+        </ui:VisualElement>
         <ui:Label name="waitingHint" class="hint" />
       </ui:VisualElement>
     </ui:VisualElement>

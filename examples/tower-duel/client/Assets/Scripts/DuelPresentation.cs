@@ -12,7 +12,7 @@ namespace TowerDuel
             public DuelUnitArt Art;
             public Vector3 Previous;
             public Quaternion Leg,Arm,Hip;
-            public long Attack;
+            public long Attack,Hit;
             public double Until;
         }
         private sealed class Bolt { public LineRenderer Line; public double Until; }
@@ -83,7 +83,7 @@ namespace TowerDuel
             var art=go.GetComponent<DuelUnitArt>();
             art.TeamMarker.sharedMaterial=e.seat==0?blue:red;
             RenderedKinds|=CardBit(e.kind);
-            return new UnitVisual{Art=art,Previous=e.Position,Leg=art.WalkProbe.localRotation,Arm=art.AttackProbe.localRotation,Hip=art.DeathProbe.localRotation};
+            return new UnitVisual{Art=art,Previous=e.Position,Hit=e.hitTick,Leg=art.WalkProbe.localRotation,Arm=art.AttackProbe.localRotation,Hip=art.DeathProbe.localRotation};
         }
         public void Update(DuelSession session)
         {
@@ -101,11 +101,16 @@ namespace TowerDuel
                 var direction=new Vector3(e.dx,0,e.dz);
                 if(direction.sqrMagnitude>.001f)v.Art.transform.rotation=Quaternion.Slerp(v.Art.transform.rotation,Quaternion.LookRotation(direction),15*Time.unscaledDeltaTime);
                 float speed=travel/Mathf.Max(.001f,Time.unscaledDeltaTime)/definition.speed;
+                v.Art.Animator.speed=e.slowed?rules.Find("frost").slow:1;
                 v.Art.Animator.SetFloat(SpeedHash,Mathf.Clamp01(speed),.08f,Time.unscaledDeltaTime);
                 if(e.attackTick>v.Attack)
                 {
                     v.Attack=e.attackTick;v.Art.Animator.SetTrigger(StrikeHash);
-                    if((e.kind=="archer"||e.kind=="bomber")&&TryTarget(state,e.target,out var target))
+                }
+                if(e.hitTick>v.Hit)
+                {
+                    v.Hit=e.hitTick;
+                    if((e.kind=="archer"||e.kind=="bomber")&&TryTarget(state,e.hitTarget,out var target))
                     {
                         Vector3 from=position+Vector3.up*v.Art.Height*.72f;
                         var arrow=UnityEngine.Object.Instantiate(e.kind=="bomber"?bombPrefab:arrowPrefab,root,false).transform;
@@ -123,7 +128,7 @@ namespace TowerDuel
             var removed=new List<long>();foreach(var pair in units)if(!live.Contains(pair.Key))removed.Add(pair.Key);
             foreach(long id in removed)
             {
-                var v=units[id];units.Remove(id);v.Art.Animator.SetBool(DeadHash,true);v.Art.Animator.SetFloat(SpeedHash,0);
+                var v=units[id];units.Remove(id);v.Art.Animator.ResetTrigger(StrikeHash);v.Art.Animator.SetBool(DeadHash,true);v.Art.Animator.SetFloat(SpeedHash,0);v.Art.Animator.speed=1;
                 v.Art.TeamMarker.enabled=false;v.Until=DuelSession.Now+1.15;corpses.Add(v);DeathCount++;
             }
             for(int i=corpses.Count-1;i>=0;i--)

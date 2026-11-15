@@ -1,0 +1,21 @@
+[Unit]
+Description=Tower Duel isolated solo test game backend
+After=network.target
+
+[Service]
+Type=simple
+User=towerduelsolo
+Group=towerduelsolo
+WorkingDirectory=/opt/rumblebound/tower-duel-solo/current
+ExecStart=/opt/rumblebound/tower-duel-solo/current/tower-duel-api -http 127.0.0.1:18111 -map protocol/map.json -rules protocol/rules.json -transport-runtime public/transport.js
+Restart=on-failure
+RestartSec=2
+KillSignal=SIGINT
+TimeoutStopSec=10
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

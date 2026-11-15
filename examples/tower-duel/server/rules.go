@@ -20,6 +20,7 @@ type cardDefinition struct {
 	HP               int     `json:"hp"`
 	Damage           int     `json:"damage"`
 	Cooldown         int     `json:"cooldown"`
+	WindupTicks      int     `json:"windupTicks"`
 	Speed            float64 `json:"speed"`
 	Range            float64 `json:"range"`
 	Aggro            float64 `json:"aggro"`
@@ -65,7 +66,7 @@ func loadRules(path string) (rules, error) {
 			return r, errors.New("invalid card")
 		}
 		if c.Type == "troop" {
-			if (c.Count != 1 && c.Count != 3) || c.HP <= 0 || c.Damage <= 0 || c.Cooldown < 1 || !finite(c.Speed) || c.Speed <= 0 || !finite(c.Range) || c.Range <= 0 || !finite(c.Aggro) || c.Aggro < c.Range || !finite(c.Splash) || c.Splash < 0 || c.Splash > 5 || !finite(c.ChargeDistance) || c.ChargeDistance < 0 || !finite(c.ChargeMultiplier) || c.ChargeMultiplier < 0 || c.ChargeMultiplier > 4 || (c.ChargeDistance > 0 && c.ChargeMultiplier < 1) {
+			if (c.Count != 1 && c.Count != 3) || c.HP <= 0 || c.Damage <= 0 || c.Cooldown < 1 || c.WindupTicks < 1 || c.WindupTicks >= c.Cooldown || !finite(c.Speed) || c.Speed <= 0 || !finite(c.Range) || c.Range <= 0 || !finite(c.Aggro) || c.Aggro < c.Range || !finite(c.Splash) || c.Splash < 0 || c.Splash > 5 || !finite(c.ChargeDistance) || c.ChargeDistance < 0 || !finite(c.ChargeMultiplier) || c.ChargeMultiplier < 0 || c.ChargeMultiplier > 4 || (c.ChargeDistance > 0 && c.ChargeMultiplier < 1) {
 				return r, errors.New("invalid troop")
 			}
 		} else if c.Type == "spell" {

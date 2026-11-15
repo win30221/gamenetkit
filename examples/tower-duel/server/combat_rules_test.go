@@ -6,8 +6,8 @@ func testSoldier(id uint64, seat int, kind string, x, z float64) *unit {
 	return &unit{State: entity{ID: id, Seat: seat, Kind: kind, X: x, Z: z, Radius: guardRadius, HP: 10000, MaxHP: 10000}}
 }
 
-func TestSoldierKeepsAttackedTargetUntilDeath(t *testing.T) {
-	for _, kind := range []string{"guard", "archer", "swords"} {
+func TestSoldierKeepsAttackedTargetWithinAggro(t *testing.T) {
+	for _, kind := range []string{"guard", "archer", "swords", "bomber", "charger"} {
 		t.Run(kind, func(t *testing.T) {
 			w := playingMatch(t)
 			w.Rules.TowerDamage = 0
@@ -26,10 +26,10 @@ func TestSoldierKeepsAttackedTargetUntilDeath(t *testing.T) {
 			if u.State.Target != 201 || closer.State.HP != 10000 {
 				t.Fatal("switched to the closer enemy", u.State)
 			}
-			old.State.X, old.State.Z = 8, 5
+			old.State.X, old.State.Z = w.Rules.ByID[kind].Aggro-.1, u.State.Z
 			w.step()
 			if u.State.Target != 201 {
-				t.Fatal("dropped living target outside aggro range", u.State)
+				t.Fatal("dropped living target still inside aggro range", u.State)
 			}
 			delete(w.Units, 201)
 			w.step()
@@ -117,6 +117,14 @@ func TestKeepSleepsAndWakesOnOwnFrontTowerOrDamage(t *testing.T) {
 				enemy.Cooldown = 0
 			}
 			w.step()
+			if trigger == "damage" {
+				if keep.Active || keep.HP != keep.MaxHP {
+					t.Fatal("windup activated the keep before damage")
+				}
+				for range w.Rules.ByID[enemy.State.Kind].WindupTicks {
+					w.step()
+				}
+			}
 			if !keep.Active || keep.AttackTick == 0 || keep.Target != 201 {
 				t.Fatal("keep did not activate and retaliate", keep)
 			}

@@ -1,0 +1,22 @@
+[Unit]
+Description=Tower Duel removable solo WebGL test companion
+Requires=tower-duel-solo-api.service
+After=network.target tower-duel-solo-api.service
+
+[Service]
+Type=simple
+User=towerduelsolo
+Group=towerduelsolo
+WorkingDirectory=/opt/rumblebound/tower-duel-solo/current
+ExecStart=/opt/rumblebound/tower-duel-solo/current/tower-duel-solo -http 127.0.0.1:18112 -server http://127.0.0.1:18111 -web public -origin https://__DOMAIN__
+Restart=on-failure
+RestartSec=2
+KillSignal=SIGINT
+TimeoutStopSec=10
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

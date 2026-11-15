@@ -101,7 +101,7 @@ func TestCapacitySnapshotFitsTransportAndLatestQueueIsBounded(t *testing.T) {
 	for i := 0; i < maxUnits; i++ {
 		id := uint64(200 + i)
 		card := w.Rules.Cards[i%6]
-		w.Units[id] = &unit{State: entity{ID: id, Seat: i % 2, Kind: card.ID, X: 8.123456789, Z: 12.987654321, Radius: guardRadius, HP: card.HP, MaxHP: card.HP, DX: .123456789, DZ: .987654321, AttackTick: 999999, Target: 999999, LockedTarget: 999999}}
+		w.Units[id] = &unit{State: entity{ID: id, Seat: i % 2, Kind: card.ID, X: 8.123456789, Z: 12.987654321, Radius: guardRadius, HP: card.HP, MaxHP: card.HP, DX: .123456789, DZ: .987654321, AttackTick: 999999, HitTick: 999999, HitTarget: 999999, Target: 999999}, LockedTarget: 999999}
 	}
 	for i := 0; i < 16; i++ {
 		w.Effects = append(w.Effects, effectState{ID: uint64(400 + i), Kind: "frost", Seat: i % 2, X: 8.123456789, Z: 12.987654321, Radius: 2.8, Start: 999999, Impact: 1000000, End: 1000120})

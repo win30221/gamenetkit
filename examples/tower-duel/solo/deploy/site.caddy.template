@@ -1,0 +1,12 @@
+__DOMAIN__ {
+    encode zstd gzip
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy same-origin
+        Cache-Control no-cache
+    }
+    request_body {
+        max_size 2KB
+    }
+    reverse_proxy 127.0.0.1:18112
+}

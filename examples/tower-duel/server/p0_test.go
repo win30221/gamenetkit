@@ -118,7 +118,9 @@ func TestBomberSplashChargerAndSiege(t *testing.T) {
 		id := uint64(201 + i)
 		w.Units[id] = &unit{State: entity{ID: id, Seat: 1, Kind: "guard", X: float64(i) * .8, Z: -3.8, HP: 220, Radius: guardRadius}, Cooldown: 100}
 	}
-	w.step()
+	for range w.Rules.ByID["bomber"].WindupTicks + 1 {
+		w.step()
+	}
 	if w.Units[201].State.HP != 182 || w.Units[202].State.HP != 182 {
 		t.Fatal("bomber did not damage group")
 	}
@@ -126,7 +128,9 @@ func TestBomberSplashChargerAndSiege(t *testing.T) {
 	w.Rules.TowerDamage = 0
 	w.Units[200] = &unit{State: entity{ID: 200, Seat: 0, Kind: "charger", X: 0, Z: -5, HP: 160, Radius: guardRadius}, Travelled: 3}
 	w.Units[201] = &unit{State: entity{ID: 201, Seat: 1, Kind: "guard", X: 0, Z: -4, HP: 220, Radius: guardRadius}, Cooldown: 100}
-	w.step()
+	for range w.Rules.ByID["charger"].WindupTicks + 1 {
+		w.step()
+	}
 	if w.Units[201].State.HP != 148 || w.Units[200].Travelled != 0 {
 		t.Fatal("charge not consumed exactly once")
 	}

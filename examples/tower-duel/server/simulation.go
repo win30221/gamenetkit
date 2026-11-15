@@ -10,80 +10,6 @@ func (w *match) end(winner int, reason string) {
 	w.Winner = winner
 	w.Reason = reason
 }
-func (w *match) target(u *unit, units []*unit) (entity, bool) {
-	definition := w.Rules.ByID[u.State.Kind]
-	if u.LockedTarget != 0 {
-		for _, enemy := range units {
-			if enemy.State.ID == u.LockedTarget && enemy.State.HP > 0 && enemy.State.Seat != u.State.Seat {
-				return enemy.State, true
-			}
-		}
-		for _, tower := range w.Towers {
-			if tower.ID == u.LockedTarget && tower.HP > 0 && tower.Seat != u.State.Seat {
-				return tower, true
-			}
-		}
-		u.LockedTarget = 0
-	}
-	if u.LaneX == 0 {
-		u.LaneX = w.nearestBridge(u.State.Seat, u.State.X)
-	}
-	best := math.Inf(1)
-	var chosen entity
-	found := false
-	for _, enemy := range units {
-		if definition.Target == "buildings" || enemy.State.Seat == u.State.Seat || enemy.State.HP <= 0 {
-			continue
-		}
-		d := distance(position(u.State), position(enemy.State))
-		if d > definition.Aggro {
-			continue
-		}
-		// Across the river, engage through a bridge rather than attacking over water.
-		if definition.Range < 2 && u.State.Z*enemy.State.Z < 0 && math.Abs(u.State.Z) < 2.0 && math.Abs(enemy.State.Z) < 2.0 {
-			mid := point{(u.State.X + enemy.State.X) / 2, 0}
-			if !w.walkable(mid) {
-				continue
-			}
-		}
-		if d < best {
-			chosen = enemy.State
-			best = d
-			found = true
-		}
-	}
-	if found {
-		return chosen, true
-	}
-	for _, t := range w.Towers {
-		if t.Seat != u.State.Seat && t.HP > 0 {
-			d := distance(position(u.State), position(t))
-			if d <= u.State.Radius+t.Radius+definition.Range && d < best {
-				best = d
-				chosen = t
-				found = true
-			}
-		}
-	}
-	if found {
-		return chosen, true
-	}
-	// Keep the lane chosen by the deployment centre, including every squad
-	// member. After that front tower falls, continue to the keep.
-	var keep entity
-	for _, t := range w.Towers {
-		if t.Seat == u.State.Seat || t.HP <= 0 {
-			continue
-		}
-		if t.Kind == "tower" && t.X == u.LaneX {
-			return t, true
-		}
-		if t.Kind == "keep" {
-			keep = t
-		}
-	}
-	return keep, keep.ID != 0
-}
 func (w *match) step() {
 	w.Tick++
 	if w.Phase == "countdown" {
@@ -126,14 +52,23 @@ func (w *match) step() {
 			}
 		}
 		target, ok := w.target(u, units)
+		inRange := ok && distance(position(u.State), position(target)) <= u.State.Radius+target.Radius+definition.Range
+		if u.WindupTarget != 0 && (!inRange || target.ID != u.WindupTarget) {
+			// A cancelled swing cannot carry its progress over to another target.
+			u.WindupTarget = 0
+			u.WindupProgress = 0
+		}
 		if !ok {
 			u.State.Target = 0
 			continue
 		}
 		u.State.Target = target.ID
-		if distance(position(u.State), position(target)) <= u.State.Radius+target.Radius+definition.Range {
-			if u.Cooldown == 0 {
-				u.LockedTarget = target.ID
+		if inRange {
+			if u.WindupTarget != 0 {
+				u.WindupProgress += factor
+				if u.WindupProgress+1e-9 < float64(definition.WindupTicks) {
+					continue
+				}
 				hit := definition.Damage
 				if u.State.Charging {
 					hit = int(math.Round(float64(hit) * definition.ChargeMultiplier))
@@ -144,6 +79,16 @@ func (w *match) step() {
 					damage[target.ID] += hit
 				}
 				u.Travelled = 0
+				u.State.Charging = false
+				u.State.HitTick = w.Tick
+				u.State.HitTarget = target.ID
+				u.WindupTarget = 0
+				u.WindupProgress = 0
+			} else if u.Cooldown == 0 {
+				u.LockedTarget = target.ID
+				u.WindupTarget = target.ID
+				u.WindupProgress = 0
+				// Cooldown includes windup so the interval between attacks stays the same.
 				u.Cooldown = definition.Cooldown
 				u.CooldownProgress = 0
 				u.State.AttackTick = w.Tick
@@ -226,7 +171,8 @@ func (w *match) step() {
 			t.Target = target.State.ID
 		}
 	}
-	// Apply the whole tick together, including retaliation by units killed this tick.
+	// Completed attacks on the same tick resolve together. Unfinished windups
+	// never enter the damage map and disappear with soldiers killed this tick.
 	destroyed := [2]bool{}
 	for i := range w.Towers {
 		t := &w.Towers[i]
@@ -239,6 +185,8 @@ func (w *match) step() {
 	for _, u := range units {
 		u.State.HP -= damage[u.State.ID]
 		if u.State.HP <= 0 {
+			u.WindupTarget = 0
+			u.WindupProgress = 0
 			delete(w.Units, u.State.ID)
 		}
 	}

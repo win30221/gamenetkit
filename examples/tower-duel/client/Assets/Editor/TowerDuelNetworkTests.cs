@@ -68,9 +68,11 @@ namespace TowerDuel.Editor
                 BackoffAndExpiry();
                 RestoreAndPendingAction();
                 CancellationAndFatalErrors();
+                NearestDeployment();
                 SharedEffectTimeline();
                 StalledTimelineAndMatchReset();
-                return "TOWER_DUEL_NETWORK_TESTS PASS: SDK backoff/expiry, saved-seat restore, pending-action recovery, cancellation, shared effect timing, snapshot stalls and match resets";
+                RangedWindupAndRelease();
+                return "TOWER_DUEL_NETWORK_TESTS PASS: SDK backoff/expiry, saved-seat restore, pending-action recovery, cancellation, nearest legal deployment, shared effect timing, snapshot stalls, match resets and ranged windup/release";
             }
             finally
             {
@@ -145,6 +147,110 @@ namespace TowerDuel.Editor
                 Require(!f.Session.Recovering&&!f.Recovery.Armed&&f.Recovery.Attempts==0,"Manual disconnect restarted recovery.");
                 f.Deliver(f.State(200,"welcome"));f.Error("connection_closed");f.Error("rules_mismatch");
                 Require(f.Session.State==null&&!f.Session.Recovering&&!f.Recovery.Armed,"An incompatible server kept retrying.");
+            }
+        }
+
+        private static void NearestDeployment()
+        {
+            using(var f=new Fixture())foreach(int seat in new[]{0,1})
+            {
+                var state=f.State(100);state.seat=seat;
+                float forward=seat==0?1:-1;
+                var guard=f.Rules.Find("guard");var squad=f.Rules.Find("swords");var spell=f.Rules.Find("fireball");
+                void Expect(float x,float z,CardDefinition card,float targetX,float targetZ)
+                {
+                    Require(f.Map.TryNearestDeployment(seat,new Vector3(x,0,z*forward),state,card,out var p),"No legal drag destination for "+card.id);
+                    Require(Mathf.Abs(p.x-targetX)<.001f&&Mathf.Abs(p.z-targetZ*forward)<.001f,"Wrong nearest destination for "+card.id+": "+p);
+                    Require(f.Map.CanDeploy(seat,p,state,card),"Nearest destination contains an illegal formation member.");
+                }
+                Expect(-4.2f,-3.8f,guard,-4.5f,-3.5f);
+                Expect(-4.2f,.2f,guard,-4.5f,-2.5f);
+                Expect(-4.2f,3.2f,guard,-4.5f,-2.5f);
+                Expect(-5.2f,-7.7f,guard,-6.5f,-7.5f);
+                Expect(30,-3.2f,guard,9.5f,-3.5f);
+                Expect(30,-3.2f,squad,8.5f,-3.5f);
+                Expect(-4.2f,-1.7f,squad,-4.5f,-2.5f);
+                foreach(var tower in state.towers)if(tower.seat==seat&&tower.kind=="tower"&&tower.x<0)tower.hp=0;
+                Expect(-4.2f,3.2f,guard,-4.5f,-2.5f);
+                foreach(var tower in state.towers)if(tower.seat!=seat&&tower.kind=="tower"&&tower.x<0)tower.hp=0;
+                Expect(-4.2f,3.2f,guard,-4.5f,3.5f);
+                Expect(4.2f,3.2f,guard,-.5f,3.5f);
+                Expect(-4.2f,5.4f,squad,-4.5f,4.5f);
+                state=f.State(102);state.seat=seat;
+                Expect(-4.2f,3.2f,guard,-4.5f,-2.5f);
+                Expect(-4.24f,3.16f,spell,-4.24f,3.16f);
+                Expect(30,40,spell,10,15);
+                state.energy=0;
+                Expect(-4.2f,.2f,guard,-4.5f,-2.5f);
+                f.Deliver(state);
+                Require(!f.Session.Deploy(new Vector3(-4.5f,0,-2.5f*forward)),"Nearest destination bypassed the energy check.");
+                Require(!f.Map.TryNearestDeployment(seat,new Vector3(float.NaN,0,0),state,guard,out _),"Nonfinite aim resolved to a cell.");
+                Require(!f.Map.TryNearestDeployment(seat,new Vector3(0,0,float.PositiveInfinity),state,spell,out _),"Nonfinite spell aim resolved to a point.");
+                var blocked=new DuelMap{width=1,length=1,deploymentCellSize=1,riverHalfWidth=1.5f};
+                Require(!blocked.TryNearestDeployment(seat,Vector3.zero,state,guard,out _),"A map with no legal cell produced a destination.");
+            }
+        }
+
+        private static void RangedWindupAndRelease()
+        {
+            foreach(string kind in new[]{"archer","bomber"})
+            {
+                using(var f=new Fixture())
+                {
+                    var root=new GameObject("Attack windup regression");
+                    DuelPresentation presentation=null;
+                    try
+                    {
+                        foreach(var tower in f.Map.towers)
+                        {
+                            string color=tower.seat==0?"blue":"red";
+                            string name="SM_"+color+(tower.kind=="keep"?"_MainCastle":"_Tower_"+(tower.x<0?"-5":"5"));
+                            new GameObject(name).transform.SetParent(root.transform,false);
+                        }
+                        presentation=new DuelPresentation(root.transform,f.Map,f.Rules);
+                        DuelMessage Attack(long tick,string type="snapshot",long hit=0)
+                        {
+                            var state=f.State(tick,type);
+                            state.units=new[]{
+                                new EntityState{id=100,seat=0,kind=kind,x=0,z=-5,radius=.32f,hp=90,maxHP=90,attackTick=100,hitTick=hit,hitTarget=hit>0?200:0,target=hit>0?201:200},
+                                new EntityState{id=200,seat=1,kind="guard",x=0,z=-3,radius=.32f,hp=200,maxHP=220},
+                                new EntityState{id=201,seat=1,kind="guard",x=3,z=-5,radius=.32f,hp=220,maxHP=220}};
+                            return state;
+                        }
+                        f.Deliver(Attack(100,"welcome"));presentation.Update(f.Session);
+                        Require(presentation.ArrowsFired==0,"Windup launched a projectile for "+kind);
+                        var visuals=Field<IDictionary>(presentation,"units");
+                        var art=(DuelUnitArt)visuals[100L].GetType().GetField("Art").GetValue(visuals[100L]);
+                        art.Animator.Update(.05f);
+                        Require(art.Animator.GetCurrentAnimatorStateInfo(0).shortNameHash==Animator.StringToHash("Attack")||art.Animator.IsInTransition(0),"Windup did not start the attack animation for "+kind);
+                        var slowed=Attack(102);slowed.units[0].slowed=true;
+                        f.Deliver(slowed);presentation.Update(f.Session);
+                        Require(Mathf.Abs(art.Animator.speed-f.Rules.Find("frost").slow)<.0001f,"Frost did not slow the windup animation.");
+                        long hitTick=100+f.Rules.Find(kind).windupTicks;
+                        f.Deliver(Attack(hitTick,hit:hitTick));presentation.Update(f.Session);
+                        Require(presentation.ArrowsFired==1,"Confirmed release did not launch a projectile for "+kind);
+                        var arrows=Field<IList>(presentation,"arrows");
+                        var destination=(Vector3)arrows[0].GetType().GetField("To").GetValue(arrows[0]);
+                        Require(Mathf.Abs(destination.x)<.001f,"Projectile used a new target instead of the confirmed hit target.");
+                        presentation.Update(f.Session);
+                        f.Deliver(Attack(hitTick+2,hit:hitTick));presentation.Update(f.Session);
+                        Require(presentation.ArrowsFired==1,"Repeated snapshots duplicated a projectile.");
+
+                        presentation.Reset();
+                        var winding=Attack(200,"welcome");winding.units[0].attackTick=200;
+                        f.Deliver(winding);presentation.Update(f.Session);
+                        var dead=Attack(202);dead.units=new[]{dead.units[1],dead.units[2]};
+                        f.Deliver(dead);presentation.Update(f.Session);
+                        dead=Attack(220);dead.units=new[]{dead.units[1],dead.units[2]};
+                        f.Deliver(dead);presentation.Update(f.Session);
+                        Require(presentation.ArrowsFired==0&&Field<IList>(presentation,"arrows").Count==0&&presentation.DeathCount==1,"Death during windup left a delayed projectile for "+kind);
+
+                        presentation.Reset();
+                        f.Deliver(Attack(300,"welcome",hitTick));presentation.Update(f.Session);
+                        Require(presentation.ArrowsFired==0,"Restoring an actor replayed an old projectile.");
+                    }
+                    finally{presentation?.Dispose();UnityEngine.Object.DestroyImmediate(root);}
+                }
             }
         }
 

@@ -95,13 +95,42 @@ destruction, or simultaneous tower destruction during overtime, draws.
 
 The deployment centre chooses the nearest bridge for the formation. Building
 objectives follow that lane's front tower, then the keep. Before the first attack,
-eligible nearby troops take priority; an attacker then keeps its living target
-until death. Siege ignores troop targets. Towers also retain living targets outside
+eligible enemy troops within the card's centre-based `aggro` radius compete with
+that objective and nearby enemy buildings by collision-edge distance, rather than
+automatically taking priority. A nearer tower therefore wins over its rear defender.
+Equal distances favour a building; troop ties use the lower entity ID. Without
+eligible troops, normal deployment-lane routing remains in effect, with an enemy
+building already in attack range also eligible. Units approach the selected target
+until it is within attack range, re-evaluating while approaching. Starting an attack
+windup locks the living target. A troop lock remains only while the enemy's centre
+is within the attacker's `aggro` radius (inclusive). If the enemy escapes or dies,
+the same tick clears the lock, cancels any unfinished windup and runs normal
+nearest-target selection again; without eligible troops the unit resumes its
+building objective. A newly selected target cannot inherit the cancelled windup,
+and the existing attack cooldown continues. Building locks last until destruction.
+Siege ignores troop targets.
+Towers also retain living targets outside
 range and wait for their return. `target` is current intent; optional `lockedTarget`
-is the attack lock. `attackTick` may refer to an earlier target that has since died.
+is the attack lock. For troops, `attackTick` starts the attack animation and
+windup, while `hitTick` and `hitTarget` record the most recent completed attack.
+These event ticks may refer to an earlier target that has since died; current
+intent must not redirect a completed shot's projectile. Tower `attackTick` still
+records its shot directly.
+
+Every troop has a positive `windupTicks` in `rules.json`: guard 8, archer 12,
+swords 6, bomber 15, charger 9 and siege 12 (30 ticks per second). Starting a
+windup deals no damage. Only a living soldier that finishes its windup against
+the same living target in range adds damage, splash or a charged hit. Death
+cancels the unfinished attack; target death or leaving range discards its
+progress. A replacement target needs a fresh windup. Frost slows both windup
+and cooldown progress. Cooldown runs from attack start and includes windup,
+preserving the original interval between attacks. Ranged projectiles launch
+only after an authoritative `hitTick`, rather than at animation start.
 
 Front towers start `active`; keeps activate permanently after taking damage or
 losing either friendly front tower. `slowed` and `charging` drive presentation.
+Attacks whose windups finish on the same tick resolve together, including mutual
+lethal hits. A soldier killed on an earlier tick cannot complete its windup.
 Same-tick damage is accumulated before results are decided.
 
 After an ended match, both seats must confirm `rematch`. The same room and seats

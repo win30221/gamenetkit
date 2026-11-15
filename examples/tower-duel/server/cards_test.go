@@ -39,8 +39,14 @@ func TestArcherFiresAcrossBridgeWithoutAdvancing(t *testing.T) {
 	}
 	before := position(w.Units[a.UnitID].State)
 	w.step()
-	if w.Units[b.UnitID].State.HP != 196 || position(w.Units[a.UnitID].State) != before || w.Units[a.UnitID].State.AttackTick != w.Tick {
-		t.Fatal("archer did not stop and fire at range")
+	if w.Units[b.UnitID].State.HP != 220 || position(w.Units[a.UnitID].State) != before || w.Units[a.UnitID].State.AttackTick != w.Tick {
+		t.Fatal("archer did not stop and begin windup at range")
+	}
+	for range w.Rules.ByID["archer"].WindupTicks {
+		w.step()
+	}
+	if w.Units[b.UnitID].State.HP != 196 || position(w.Units[a.UnitID].State) != before || w.Units[a.UnitID].State.HitTick != w.Tick {
+		t.Fatal("archer did not fire after windup")
 	}
 }
 
