@@ -36,8 +36,7 @@ namespace TowerDuel
         private readonly Dictionary<long,Item> buildings=new();
         private readonly List<Item> items=new();
         private readonly List<Sprite> owned=new();
-        private readonly SpriteRenderer ground,meadow;
-        private readonly Texture2D meadowTexture;
+        private readonly SpriteRenderer ground;
         private readonly Sprite[] groundViews=new Sprite[2];
         private readonly Item wall;
         private int seat=-1;
@@ -71,15 +70,6 @@ namespace TowerDuel
                 }
                 atlases.Add(atlas.id,atlas);
             }
-            var loadedMeadow=Resources.Load<Texture2D>("TowerDuel/B3/Environment/meadow");
-            if(!loadedMeadow){meadowTexture=CreateMeadowTexture();loadedMeadow=meadowTexture;}
-            var meadowSprite=Sprite.Create(loadedMeadow,new Rect(0,0,loadedMeadow.width,loadedMeadow.height),new Vector2(.5f,.5f),loadedMeadow.width/4f,0,SpriteMeshType.FullRect);
-            owned.Add(meadowSprite);
-            meadow=Renderer(root,"Meadow Backdrop",meadowSprite,bodyMaterial);
-            meadow.drawMode=SpriteDrawMode.Tiled;
-            meadow.size=new Vector2(90,90);
-            meadow.transform.localPosition=new Vector3(0,-.005f,0);
-
             for(int i=0;i<2;i++)
             {
                 var texture=Resources.Load<Texture2D>("TowerDuel/B3/Environment/ground-"+(i==0?"south":"north"));
@@ -124,32 +114,6 @@ namespace TowerDuel
             }
             if(Camera.main)SetView(Camera.main,0);
         }
-        private static Texture2D CreateMeadowTexture()
-        {
-            const int size=128;
-            var texture=new Texture2D(size,size,TextureFormat.RGBA32,false);
-            var pixels=new Color[size*size];
-            Color baseCol=new Color(159f/255f, 214f/255f, 32f/255f);
-            for(int y=0;y<size;y++)
-            {
-                for(int x=0;x<size;x++)
-                {
-                    float broad=Mathf.PerlinNoise(x*.05f+14.2f,y*.05f+7.8f);
-                    float fine=Mathf.PerlinNoise(x*.22f+88.1f,y*.22f+41.3f);
-                    float tone=.96f+broad*.06f+fine*.02f;
-                    Color c=baseCol*tone;
-                    if(broad>.72f&&fine>.68f)c=Color.Lerp(c,new Color(.95f,.92f,.55f),.45f);
-                    else if(broad<.28f&&fine<.32f)c=Color.Lerp(c,new Color(.52f,.74f,.10f),.30f);
-                    c.a=1f;
-                    pixels[y*size+x]=c;
-                }
-            }
-            texture.SetPixels(pixels);
-            texture.wrapMode=TextureWrapMode.Repeat;
-            texture.filterMode=FilterMode.Bilinear;
-            texture.Apply();
-            return texture;
-        }
         private Sprite Frame(Texture2D texture,int col,int row,DuelEnvironmentAtlas atlas,Vector2 pivot)
         {
             var sprite=Sprite.Create(texture,new Rect(col*atlas.width,texture.height-(row+1)*atlas.height,atlas.width,atlas.height),pivot,atlas.width,0,SpriteMeshType.FullRect);
@@ -191,7 +155,6 @@ namespace TowerDuel
             }
             var forward=Vector3.ProjectOnPlane(camera.transform.forward,Vector3.up).normalized;
             ground.transform.rotation=Quaternion.LookRotation(Vector3.down,forward);
-            meadow.transform.rotation=Quaternion.LookRotation(Vector3.down,forward);
             foreach(var item in items)
             {
                 item.Body.transform.rotation=Quaternion.LookRotation(forward);
@@ -213,7 +176,6 @@ namespace TowerDuel
         public void Dispose()
         {
             foreach(var sprite in owned)if(sprite)UnityEngine.Object.Destroy(sprite);
-            if(meadowTexture)UnityEngine.Object.Destroy(meadowTexture);
             if(bodyMaterial)UnityEngine.Object.Destroy(bodyMaterial);
             if(root)UnityEngine.Object.Destroy(root.gameObject);
         }
