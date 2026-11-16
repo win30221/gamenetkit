@@ -46,7 +46,8 @@ try {
     if(-not $api){throw "Solo companion did not become ready. See $sessionRoot/companion-error.log"}
     Write-Output "Tower Duel $Mode - original backend: $url; optional companion: $api"
     Write-Output "Close the game to stop both local processes. Logs: $sessionRoot"
-    $arguments=@('-td-server',$url,'-td-solo-api',$api,'-td-solo-mode',$Mode,'-screen-fullscreen','0',
+    $arguments=@('-td-server',$url,'-td-solo-api',$api,'-td-solo-mode',$Mode,
+        '-screen-fullscreen','0','-screen-width','720','-screen-height','1000',
         '-logFile',(Quote-NativeArgument (Join-Path $sessionRoot 'player.log')))
     if($VerifyOutput){$arguments+=@('-td-solo-report',(Quote-NativeArgument ([IO.Path]::GetFullPath($VerifyOutput))))}
     # The caller requested an interactive game; automated checks keep it hidden.
