@@ -1045,6 +1045,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerDuel.DuelUnitArt
   Animator: {fileID: 3016245552133612663}
+  Sprites: {fileID: 0}
   WalkProbe: {fileID: 4679448433368502521}
   AttackProbe: {fileID: 4777143443446882551}
   DeathProbe: {fileID: 2873957366575838454}
