@@ -136,14 +136,16 @@ namespace TowerDuel
                     continue;
                 }
                 if(!units.TryGetValue(e.id,out var v)){v=Create(e);units.Add(e.id,v);}
+                bool justRevealed=false;
                 if(v.Hidden)
                 {
                     v.Hidden=false;v.Art.gameObject.SetActive(true);v.Previous=e.Position;
                     v.Health=e.hp;v.Hit=e.hitTick;v.Attack=e.attackTick;
+                    justRevealed=true;
                 }
                 var definition=rules.Find(e.kind);
                 bool deploying=e.IsDeploying(session.RenderTick);
-                Vector3 position=session.Sample(e);
+                Vector3 position=justRevealed?e.Position:session.Sample(e);
                 float travel=Vector3.Distance(position,v.Previous);
                 v.Art.transform.position=position;v.Previous=position;
                 var direction=new Vector3(e.dx,0,e.dz);

@@ -40,7 +40,7 @@ try {
     $null=Invoke-Unity -Arguments @('command','editor.playmode','start','--caller','plugin','--skill','unity-cli','--project-path',$project,'--format','json')
     $playing=$true
     $null=Invoke-Unity -Arguments @('status','--until-ready','--project-path',$project,'--format','json')
-    $frameWait=Invoke-Unity -Arguments @('command','job','wait','--caller','plugin','--skill','unity-cli','--project-path',$project,'--format','json','--','--condition','{"member":"UnityEngine.Time.frameCount","op":"changed"}','--timeout','10') | ConvertFrom-Json
+    $frameWait=Invoke-Unity -Arguments @('command','job','wait','--caller','plugin','--skill','unity-cli','--project-path',$project,'--format','json','--','--condition','{\"member\":\"UnityEngine.Time.frameCount\",\"op\":\"changed\"}','--timeout','10') | ConvertFrom-Json
     if(-not $frameWait.met){throw 'The Unity Player loop did not advance before the client tests.'}
     $result=Eval 'return TowerDuel.Editor.TowerDuelNetworkTests.Run();' | ConvertFrom-Json
     if($result -notlike 'TOWER_DUEL_NETWORK_TESTS PASS:*'){throw "Client regression tests did not pass: $result"}
@@ -57,7 +57,7 @@ try {
     if($prepared){
         $null=Invoke-Unity -Arguments @('command','editor','set_auto_tick','--caller','plugin','--skill','unity-cli','--project-path',$project,'--format','json','--','--enabled','false')
         $null=Invoke-Unity -Arguments @('command','editor.playmode','set_run_in_background','--caller','plugin','--skill','unity-cli','--project-path',$project,'--format','json','--','--enabled','false')
-        if($state.scene){$sceneLiteral=ConvertTo-Json -InputObject $state.scene -Compress;$null=Eval "UnityEditor.SceneManagement.EditorSceneManager.OpenScene($sceneLiteral);"}
+        if($state.scene){$sceneLiteral=$state.scene.Replace('\','/');$null=Eval ('UnityEditor.SceneManagement.EditorSceneManager.OpenScene(\"'+$sceneLiteral+'\");')}
     }
     if($owned -and -not $owned.HasExited){$null=Eval 'UnityEditor.EditorApplication.delayCall += () => UnityEditor.EditorApplication.Exit(0);';$owned.Dispose()}
 }

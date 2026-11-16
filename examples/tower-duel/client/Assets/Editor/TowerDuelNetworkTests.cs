@@ -207,7 +207,7 @@ namespace TowerDuel.Editor
             {
                 var state=f.State(100);state.seat=seat;
                 float forward=seat==0?1:-1;
-                float home=-(Mathf.Ceil(f.Map.BarrierHalfWidth+.40f-.5f)+.5f);
+                float home=-(Mathf.Ceil(f.Map.BarrierHalfWidth+.40f-.5f-1e-4f)+.5f);
                 var guard=f.Rules.Find("guard");var squad=f.Rules.Find("swords");var spell=f.Rules.Find("fireball");
                 void Expect(float x,float z,CardDefinition card,float targetX,float targetZ)
                 {
