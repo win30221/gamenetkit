@@ -71,8 +71,9 @@ namespace TowerDuel
                 }
                 atlases.Add(atlas.id,atlas);
             }
-            meadowTexture=CreateMeadowTexture();
-            var meadowSprite=Sprite.Create(meadowTexture,new Rect(0,0,meadowTexture.width,meadowTexture.height),new Vector2(.5f,.5f),meadowTexture.width/4f,0,SpriteMeshType.FullRect);
+            var loadedMeadow=Resources.Load<Texture2D>("TowerDuel/B3/Environment/meadow");
+            if(!loadedMeadow){meadowTexture=CreateMeadowTexture();loadedMeadow=meadowTexture;}
+            var meadowSprite=Sprite.Create(loadedMeadow,new Rect(0,0,loadedMeadow.width,loadedMeadow.height),new Vector2(.5f,.5f),loadedMeadow.width/4f,0,SpriteMeshType.FullRect);
             owned.Add(meadowSprite);
             meadow=Renderer(root,"Meadow Backdrop",meadowSprite,bodyMaterial);
             meadow.drawMode=SpriteDrawMode.Tiled;
@@ -128,7 +129,7 @@ namespace TowerDuel
             const int size=128;
             var texture=new Texture2D(size,size,TextureFormat.RGBA32,false);
             var pixels=new Color[size*size];
-            Color baseCol=new Color(.596f,.824f,.122f);
+            Color baseCol=new Color(159f/255f, 214f/255f, 32f/255f);
             for(int y=0;y<size;y++)
             {
                 for(int x=0;x<size;x++)

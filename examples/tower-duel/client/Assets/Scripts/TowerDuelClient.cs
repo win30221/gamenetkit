@@ -98,7 +98,7 @@ namespace TowerDuel
             // The offset preserves the arena framing above the dock without a partial viewport.
             Camera.transform.position += Camera.transform.up * (focus-(center-.5f)*2*size);
             Camera.rect = new Rect(0, 0, 1, 1);
-            Camera.backgroundColor = Map.HasWall ? new Color(.596f, .824f, .122f) : new Color(.16f, .28f, .14f);
+            Camera.backgroundColor = Map.HasWall ? new Color(159f/255f, 214f/255f, 32f/255f) : new Color(.16f, .28f, .14f);
             DuelLighting.Apply(Camera);
             presentation?.Environment?.SetView(Camera,seat);
         }
