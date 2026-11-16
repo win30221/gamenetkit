@@ -1,0 +1,13 @@
+{
+    "kind": "guard",
+    "tileSize": 192,
+    "baseline": 176,
+    "referenceHeight": 160,
+    "walkFrames": 6,
+    "attackFrames": 6,
+    "impactFrame": 3,
+    "unitHeight": 3.0,
+    "worldHeight": 1.5,
+    "teamMaskTop": 0.0,
+    "baked": true
+}

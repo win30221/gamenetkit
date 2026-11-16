@@ -1,0 +1,64 @@
+{
+    "atlases": [
+        {
+            "id": "keep-static",
+            "texture": "TowerDuel/B3/Environment/keep-static-baked",
+            "width": 512,
+            "height": 512,
+            "columns": 2,
+            "rows": 2,
+            "baseline": 484,
+            "frameWidths": [
+                0.67578125,
+                0.677734375,
+                0.67578125,
+                0.677734375
+            ]
+        },
+        {
+            "id": "tower-static",
+            "texture": "TowerDuel/B3/Environment/tower-static-baked",
+            "width": 512,
+            "height": 512,
+            "columns": 2,
+            "rows": 2,
+            "baseline": 484,
+            "frameWidths": [
+                0.625,
+                0.66015625,
+                0.626953125,
+                0.66015625
+            ]
+        },
+        {
+            "id": "wall-gates",
+            "texture": "TowerDuel/B3/Environment/wall-gates-baked",
+            "width": 2048,
+            "height": 256,
+            "columns": 1,
+            "rows": 2,
+            "baseline": 236,
+            "frameWidths": [
+                0.984375,
+                0.984375
+            ]
+        },
+        {
+            "id": "border-props",
+            "texture": "TowerDuel/B3/Environment/border-props-baked",
+            "width": 384,
+            "height": 384,
+            "columns": 2,
+            "rows": 3,
+            "baseline": 354,
+            "frameWidths": [
+                0.8177083134651184,
+                0.6484375,
+                0.7838541865348816,
+                0.6484375,
+                0.546875,
+                0.3619791567325592
+            ]
+        }
+    ]
+}

@@ -35,6 +35,7 @@ namespace TowerDuel.Editor
             TowerDuelContent.Prepare();
             TowerDuelVfxContent.Prepare();
             PrepareText();
+            TowerDuelEnvironmentContent.Prepare();
             var scene = EditorSceneManager.OpenScene("Assets/TwinbridgeArena/TwinbridgeArena.unity");
             TowerDuelSurroundings.Build();
             new GameObject("TowerDuelClient").AddComponent<TowerDuelClient>();
@@ -100,6 +101,11 @@ namespace TowerDuel.Editor
         public static void BuildWindows()
         {
             Setup();
+            BuildPreparedWindows();
+        }
+        public static void BuildPreparedWindows()
+        {
+            TowerDuelEnvironmentContent.Prepare();
             Directory.CreateDirectory("Builds/Windows");
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
                 scenes = new[] { Scene }, locationPathName = "Builds/Windows/TowerDuel.exe",

@@ -43,7 +43,7 @@ func TestDeploymentLaneAfterFrontTowerDestroyed(t *testing.T) {
 					for range 20 * tickRate {
 						w.step()
 						for id, u := range w.Units {
-							if math.Abs(u.State.Z) < w.Map.RiverHalfWidth {
+							if math.Abs(u.State.Z) < w.Map.barrierHalfWidth() {
 								if math.Abs(u.State.X-lane) > w.Map.BridgeHalfWidth-guardRadius {
 									t.Fatalf("unit %d used the other bridge: %+v", id, u.State)
 								}

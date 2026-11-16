@@ -66,7 +66,7 @@ namespace TowerDuel
             if(state.match!=match){health.Clear();match=state.match;phase=null;}
             if(state.phase!=phase){phase=state.phase;if(phase=="countdown")Play("countdown",true);else if(phase=="ended")Play(state.winner==state.seat?"win":"lose",true);}
             bool hit=false;var seen=new HashSet<long>();
-            foreach(var group in new[]{state.units,state.towers})foreach(var unit in group){seen.Add(unit.id);if(health.TryGetValue(unit.id,out int hp)&&unit.hp<hp)hit=true;health[unit.id]=unit.hp;}
+            foreach(var group in new[]{state.units,state.towers})foreach(var unit in group){seen.Add(unit.id);if(unit.concealed){health.Remove(unit.id);continue;}if(health.TryGetValue(unit.id,out int hp)&&unit.hp<hp)hit=true;health[unit.id]=unit.hp;}
             var removed=new List<long>();foreach(long id in health.Keys)if(!seen.Contains(id))removed.Add(id);
             foreach(long id in removed)health.Remove(id);
             if(DuelSession.Now>=nextHit&&(hit||removed.Count>0)){Play(removed.Count>0?"death":"hit");nextHit=DuelSession.Now+.12;}

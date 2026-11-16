@@ -29,6 +29,7 @@ try {
     if($state.playing -or $state.dirty -or $state.count -ne 1){throw 'Client tests require an idle Editor with one clean scene; the current scene has been preserved.'}
     $null=Invoke-Unity -Arguments @('recompile','--project-path',$project,'--timeout','120','--format','json')
     $null=Invoke-Unity -Arguments @('status','--until-ready','--project-path',$project,'--format','json')
+    $null=Eval 'TowerDuel.Editor.TowerDuelEnvironmentContent.Prepare();'
     $null=Eval 'TowerDuel.Editor.TowerDuelVfxContent.Prepare();'
     $balanceResult=Eval 'return TowerDuel.Editor.TowerDuelBalanceTests.Run();' | ConvertFrom-Json
     if($balanceResult -notlike 'TOWER_DUEL_BALANCE_TESTS PASS:*'){throw "Balance editor tests did not pass: $balanceResult"}
@@ -45,7 +46,9 @@ try {
     if($result -notlike 'TOWER_DUEL_NETWORK_TESTS PASS:*'){throw "Client regression tests did not pass: $result"}
     $vfxResult=Eval 'return TowerDuel.Editor.TowerDuelVfxTests.Run();' | ConvertFrom-Json
     if($vfxResult -notlike 'TOWER_DUEL_VFX_TESTS PASS:*'){throw "VFX regression tests did not pass: $vfxResult"}
-    [ordered]@{passed=$true;result=$result;vfx=$vfxResult;unity=$script:GameNetKitVersions.unity} | ConvertTo-Json | Tee-Object -FilePath (Join-Path $Output 'result.json')
+    $spriteResult=Eval 'return TowerDuel.Editor.TowerDuelSpriteTests.Run();' | ConvertFrom-Json
+    if($spriteResult -notlike 'TOWER_DUEL_B3_TESTS PASS:*'){throw "B3 sprite regression tests did not pass: $spriteResult"}
+    [ordered]@{passed=$true;result=$result;vfx=$vfxResult;sprites=$spriteResult;unity=$script:GameNetKitVersions.unity} | ConvertTo-Json | Tee-Object -FilePath (Join-Path $Output 'result.json')
 } finally {
     if($playing){
         $null=Invoke-Unity -Arguments @('command','editor.playmode','stop','--caller','plugin','--skill','unity-cli','--project-path',$project,'--format','json')

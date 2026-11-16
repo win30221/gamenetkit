@@ -1,0 +1,24 @@
+{
+  "baked": true, "kind": "swords",
+  "tool": "built-in image_gen",
+  "identityReference": "artifacts/tower-duel/style-studies/2026-11-15/B3-family-v1/05-swords-squad.png",
+  "headLandmark": "green",
+  "tileSize": 224,
+  "baseline": 208,
+  "referenceHeight": 160,
+  "worldHeight": 1.28,
+  "unitHeight": 2.56,
+  "walkFrames": 6,
+  "attackFrames": 6,
+  "impactFrame": 3,
+  "directions": ["S", "SW", "W", "NW", "N", "NE", "E", "SE"],
+  "sources": {
+    "idle": "artifacts/tower-duel/sprites-b3/source/swords/idle-source.png",
+    "walk-a": "artifacts/tower-duel/sprites-b3/source/swords/walk-a.png",
+    "walk-b": "artifacts/tower-duel/sprites-b3/source/swords/walk-b.png",
+    "attack-a": "artifacts/tower-duel/sprites-b3/source/swords/attack-a.png",
+    "attack-b": "artifacts/tower-duel/sprites-b3/source/swords/attack-b.png",
+    "card": "artifacts/tower-duel/sprites-b3/source/swords/card.png",
+    "frame": "artifacts/tower-duel/sprites-b3/source/guard/card-frame.png"
+  }
+}

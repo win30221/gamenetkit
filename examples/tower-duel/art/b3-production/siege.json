@@ -1,0 +1,18 @@
+{
+  "baked": true, "kind": "siege", "tool": "built-in image_gen", "headLandmark": "orange", "anchorFeet": true, "bootPalette": "leather", "rowGutters": true,
+  "identityReference": "artifacts/tower-duel/style-studies/2026-11-15/B3-family-v1/08-siege.png",
+  "tileSize": 256, "baseline": 224, "referenceHeight": 144,
+  "worldHeight": 2.25, "unitHeight": 4.5,
+  "walkFrames": 6, "attackFrames": 6, "impactFrame": 3,
+  "directions": ["S","SW","W","NW","N","NE","E","SE"],
+  "idleSourceDirections": ["S","SE","E","NE","N","NW","W","SW"],
+  "sources": {
+    "idle": "artifacts/tower-duel/sprites-b3/source/siege/idle-source.png",
+    "walk-a": "artifacts/tower-duel/sprites-b3/source/siege/walk-a.png",
+    "walk-b": "artifacts/tower-duel/sprites-b3/source/siege/walk-b.png",
+    "attack-a": "artifacts/tower-duel/sprites-b3/source/siege/attack-a.png",
+    "attack-b": "artifacts/tower-duel/sprites-b3/source/siege/attack-b.png",
+    "card": "artifacts/tower-duel/sprites-b3/source/siege/card.png",
+    "frame": "artifacts/tower-duel/sprites-b3/source/guard/card-frame.png"
+  }
+}

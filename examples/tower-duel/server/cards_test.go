@@ -4,7 +4,7 @@ import "testing"
 
 func TestSquadDeploymentIsAtomicAndIdempotent(t *testing.T) {
 	w := playingMatch(t)
-	invalid := w.deploy(0, w.ID, 1, "swords", -5, -2.1)
+	invalid := w.deploy(0, w.ID, 1, "swords", -5, -w.Map.barrierHalfWidth()-.6)
 	if invalid.Accepted || len(w.Units) != 0 || w.Energy[0] != 5 {
 		t.Fatal("formation partly entered river or charged on failure")
 	}

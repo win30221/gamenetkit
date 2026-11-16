@@ -1,0 +1,13 @@
+{
+    "kind": "bomber",
+    "tileSize": 224,
+    "baseline": 208,
+    "referenceHeight": 160,
+    "walkFrames": 6,
+    "attackFrames": 6,
+    "impactFrame": 3,
+    "unitHeight": 2.9200000762939453,
+    "worldHeight": 1.4600000381469727,
+    "teamMaskTop": 0.4000000059604645,
+    "baked": true
+}

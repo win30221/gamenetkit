@@ -1,12 +1,22 @@
 {
-  "id": "twinbridge-1",
+  "id": "wall-gates-mud-1",
   "width": 20,
   "length": 30,
-  "riverHalfWidth": 1.5,
+  "riverHalfWidth": 0,
+  "wallHalfWidth": 0.1,
+  "wallHeight": 4.2,
+  "unitSightHeights": [
+    {"kind":"guard","height":3}, {"kind":"archer","height":2.72},
+    {"kind":"swords","height":2.56}, {"kind":"bomber","height":2.92},
+    {"kind":"charger","height":3.16}, {"kind":"siege","height":4.5}
+  ],
   "bridgeHalfWidth": 1.25,
   "deploymentCellSize": 1,
   "pocketDepth": 4,
   "bridges": [-5, 5],
+  "terrainZones": [
+    {"id":"old-gate-road","kind":"mud","x":5,"z":0,"halfWidth":1.7,"halfLength":7.7,"moveFactor":0.7}
+  ],
   "towers": [
     {"id": 1, "seat": 0, "kind": "keep", "x": 0, "z": -11, "radius": 1.5},
     {"id": 2, "seat": 0, "kind": "tower", "x": -5, "z": -7.7, "radius": 1.05},

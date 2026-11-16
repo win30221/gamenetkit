@@ -56,7 +56,8 @@ namespace TowerDuel
             {
                 var ghost=UnityEngine.Object.Instantiate(prefabs[card],root,false);ghost.name=card+" translucent placement "+i;
                 var art=ghost.GetComponent<DuelUnitArt>();art.TeamMarker.gameObject.SetActive(false);
-                art.Animator.Rebind();art.Animator.Update(0);art.Animator.enabled=false;
+                if(art.Sprites)art.Sprites.PresentPreview(0,true);
+                else{art.Animator.Rebind();art.Animator.Update(0);art.Animator.enabled=false;}
                 foreach(var collider in ghost.GetComponentsInChildren<Collider>(true))collider.enabled=false;
                 foreach(var renderer in ghost.GetComponentsInChildren<Renderer>(true))
                 {
@@ -67,7 +68,8 @@ namespace TowerDuel
                         var source=materials[slot];if(!source)continue;
                         if(!ghostMaterials.TryGetValue(source,out var material))
                         {
-                            material=new Material(template){name=source.name+" placement ghost"};
+                            material=new Material(renderer is SpriteRenderer?source:template){name=source.name+" placement ghost"};
+                            if(renderer is SpriteRenderer){material.SetFloat("_ZWrite",0);material.renderQueue=(int)RenderQueue.Transparent;}
                             if(source.HasProperty("_BaseMap")){material.SetTexture("_BaseMap",source.GetTexture("_BaseMap"));material.SetTextureScale("_BaseMap",source.GetTextureScale("_BaseMap"));material.SetTextureOffset("_BaseMap",source.GetTextureOffset("_BaseMap"));}
                             ghostMaterials.Add(source,material);
                         }
@@ -91,6 +93,7 @@ namespace TowerDuel
             {
                 var ghost=ghosts[i];ghost.SetActive(!spell&&i<formation.Length);
                 if(!ghost.activeSelf)continue;ghost.transform.position=formation[i];ghost.transform.rotation=Quaternion.Euler(0,seat==0?0:180,0);
+                var art=ghost.GetComponent<DuelUnitArt>();if(art.Sprites)art.Sprites.PresentPreview(seat,valid);
             }
             area.gameObject.SetActive(spell);
             if(spell){area.position=new Vector3(point.x,.24f,point.z);area.localScale=new Vector3(radius,1,radius);color.a=.17f;areaMaterial.SetColor("_BaseColor",color);}

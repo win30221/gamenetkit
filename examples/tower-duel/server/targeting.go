@@ -62,7 +62,7 @@ func (w *match) target(u *unit, units []*unit) (entity, bool) {
 		for _, enemy := range units {
 			// A troop lock lasts only while that enemy remains inside aggro.
 			// Escaping enemies fall through to ordinary nearest-target selection.
-			if enemy.State.ID == u.LockedTarget && enemy.State.HP > 0 && enemy.State.Seat != u.State.Seat && distance(position(u.State), position(enemy.State)) <= definition.Aggro {
+			if enemy.State.ID == u.LockedTarget && enemy.State.HP > 0 && enemy.State.Seat != u.State.Seat && !w.concealedFor(u.State.Seat, enemy.State) && distance(position(u.State), position(enemy.State)) <= definition.Aggro {
 				return enemy.State, true
 			}
 		}
@@ -79,7 +79,7 @@ func (w *match) target(u *unit, units []*unit) (entity, bool) {
 	}
 	detectedEnemy := false
 	for _, enemy := range units {
-		if enemy.State.Seat == u.State.Seat || enemy.State.HP <= 0 {
+		if enemy.State.Seat == u.State.Seat || enemy.State.HP <= 0 || w.concealedFor(u.State.Seat, enemy.State) {
 			continue
 		}
 		if distance(position(u.State), position(enemy.State)) > definition.Aggro {

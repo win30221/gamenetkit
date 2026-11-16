@@ -1,5 +1,9 @@
 # 雙橋推塔場景原型
 
+後續統一美術採用使用者已確認的 **B3 圓潤 Q 版動漫風格**；共同規範、盾衛參考、炮台主堡及 sprite 製作規劃見 [B3 美術方向](STYLE_GUIDE_B3.md)。以下保留既有 KayKit 原型的重建說明。
+
+泥濘舊路、雙門高牆、炮台主堡及弩砲箭塔的第一批 2D 分層美術已完成，見 [B3 場景與建築素材](environment-b3-v1/README.md)。已產出 Unity 雙方相機預覽；正式對戰仍使用原地圖。
+
 免費 KayKit 素材組裝的獨立美術原型。原始 FBX 與貼圖位於 `source`，授權為 CC0，來源與下載檔案 hash 見 `source/provenance.json`，原授權見 `source/License.txt`。只使用免費包內容。
 
 ## 打開目前成果

@@ -57,7 +57,7 @@ func (w *match) step() {
 			}
 		}
 		target, ok := w.target(u, units)
-		inRange := ok && distance(position(u.State), position(target)) <= u.State.Radius+target.Radius+definition.Range
+		inRange := ok && distance(position(u.State), position(target)) <= u.State.Radius+target.Radius+definition.Range && w.wallClear(position(u.State), position(target))
 		if u.WindupTarget != 0 && (!inRange || target.ID != u.WindupTarget) {
 			// A cancelled swing cannot carry its progress over to another target.
 			u.WindupTarget = 0
@@ -153,7 +153,7 @@ func (w *match) step() {
 		best := math.Inf(1)
 		var target *unit
 		for _, u := range units {
-			if u.State.ID == t.Target && u.State.HP > 0 && u.State.Seat != t.Seat {
+			if u.State.ID == t.Target && u.State.HP > 0 && u.State.Seat != t.Seat && !w.concealedFor(t.Seat, u.State) {
 				target = u
 				break
 			}
@@ -161,7 +161,7 @@ func (w *match) step() {
 		if target == nil {
 			t.Target = 0
 			for _, u := range units {
-				if u.State.Seat == t.Seat {
+				if u.State.Seat == t.Seat || w.concealedFor(t.Seat, u.State) {
 					continue
 				}
 				d := distance(position(*t), position(u.State))
@@ -255,6 +255,7 @@ func (w *match) refreshUnitSlows(units []*unit) {
 		u.SlowUntil = 0
 		u.SlowFactor = 0
 		u.State.Slowed = false
+		u.State.Muddy = w.Map.terrainFactor(position(u.State)) < 1
 		for _, e := range w.Effects {
 			if e.Slow <= 0 || w.Tick < e.Impact || w.Tick >= e.End || u.State.Seat == e.Seat {
 				continue

@@ -1,0 +1,34 @@
+{
+  "baked": true, "kind": "guard",
+  "date": "2026-11-15",
+  "tool": "built-in image_gen",
+  "approvedReference": "examples/tower-duel/art/references/B3-round-chibi-guard.png",
+  "tileSize": 192,
+  "baseline": 176,
+  "referenceHeight": 160,
+  "worldHeight": 1.5,
+  "unitHeight": 3.0,
+  "walkFrames": 6,
+  "attackFrames": 6,
+  "impactFrame": 3,
+  "directions": [
+    "S",
+    "SW",
+    "W",
+    "NW",
+    "N",
+    "NE",
+    "E",
+    "SE"
+  ],
+  "sources": {
+    "idle": "artifacts/tower-duel/sprites-b3/source/guard/idle-source.png",
+    "walk-a": "artifacts/tower-duel/sprites-b3/source/guard/guard-walk-a.png",
+    "walk-b": "artifacts/tower-duel/sprites-b3/source/guard/guard-walk-b.png",
+    "attack-a": "artifacts/tower-duel/sprites-b3/source/guard/guard-attack-a.png",
+    "attack-b": "artifacts/tower-duel/sprites-b3/source/guard/guard-attack-b.png",
+    "card": "artifacts/tower-duel/sprites-b3/source/guard/guard-card.png",
+    "frame": "artifacts/tower-duel/sprites-b3/source/guard/card-frame.png"
+  }
+}
+

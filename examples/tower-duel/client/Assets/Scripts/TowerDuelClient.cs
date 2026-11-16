@@ -15,7 +15,7 @@ namespace TowerDuel
         public string SelectedCard {get;private set;}="guard";
         public DuelPresentation Presentation=>presentation;
         public DuelAudio Audio {get;private set;}
-        public const float KeepHealthHeight=5.3f;
+        public const float KeepHealthHeight=10.2f;
         public float BoardBottom=>boardBottom;
         public float BoardTop=>boardTop;
         private DuelHud hud;
@@ -99,6 +99,8 @@ namespace TowerDuel
             Camera.transform.position += Camera.transform.up * (focus-(center-.5f)*2*size);
             Camera.rect = new Rect(0, 0, 1, 1);
             Camera.backgroundColor = new Color(.16f,.28f,.14f);
+            DuelLighting.Apply(Camera);
+            presentation?.Environment?.SetView(Camera,seat);
         }
         public void SetBoardInsets(float bottom,float top)
         {

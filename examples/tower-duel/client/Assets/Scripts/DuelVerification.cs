@@ -12,9 +12,18 @@ namespace TowerDuel
         [Serializable] private sealed class Report
         {
             public string room, match, phase, status, role, reason, resultTitle;
+            public string mapID;
+            public bool environment2D,ownBuildingsAway,mudObserved;
+            public int mudSyncErrors,mudMoveSamples;
+            public float mudMoveRatioTotal;
             public int seat, winner, accepted, rejected, frames, unitCount, unitsRemoved;
             public float uiWidth, uiHeight;
             public int cardsUsed,models,walkPose,attackPose,deathPose,walkKinds,attackKinds,deaths,arrows,previewCards;
+            public int sprites,b3Cards,b3Frames;
+            public int spriteShadows;
+            public int visibleTeamDiscs;
+            public float shadowX,shadowY;
+            public bool shadowsLowerLeft;
             public int completedRounds,resumes,spellsSeen,maxUnits,snapshotBytes;
             public float frameP95MS;
             public string[] hand,completedMatches;
@@ -31,7 +40,7 @@ namespace TowerDuel
         private readonly VisualElement ui;
         private HashSet<long> previousUnits=new HashSet<long>();
         private double nextReport, nextDeploy;
-        private bool captured, endCaptured, connected;
+        private bool captured, endCaptured, connected,b3Captured;
         private readonly int rounds;
         private readonly bool exerciseRecovery;
         private bool recoveryTriggered;
@@ -39,6 +48,9 @@ namespace TowerDuel
         private readonly List<string> completed=new List<string>();
         private readonly List<float> frameTimes=new List<float>();
         private int acceptedObserved;
+        private readonly Dictionary<long,Vector3> mudPositions=new();
+        private readonly Dictionary<long,long> mudTicks=new();
+        private readonly HashSet<long> muddyBefore=new();
         public DuelVerification(TowerDuelClient client)
         {
             this.client = client;
@@ -60,7 +72,22 @@ namespace TowerDuel
                 if(fraction>.05f&&fraction<.95f)report.fractionalEnergy=true;
             });
             var energyRow=ui.Q("energyRow");
-            if(energyRow.ClassListContains("energy-full")&&Mathf.Abs(energyRow.style.translate.value.x.value)>.1f)report.fullEnergyReminder=true;
+            if(energyRow.ClassListContains("energy-full")&&ui.Q<Label>("energyMode").text.StartsWith("能量已滿"))report.fullEnergyReminder=true;
+            report.sprites|=client.Presentation.SpriteKinds;
+            report.spriteShadows|=client.Presentation.SpriteShadowKinds;
+            report.visibleTeamDiscs=Mathf.Max(report.visibleTeamDiscs,client.Presentation.VisibleTeamDiscs);
+            var shadowDirection=DuelLighting.ScreenShadow(client.Camera);
+            report.shadowX=shadowDirection.x;report.shadowY=shadowDirection.y;
+            report.shadowsLowerLeft=shadowDirection.x<-.1f&&shadowDirection.y<-.1f;
+            for(int i=0;i<client.Rules.cards.Length;i++)
+            {
+                var button=ui.Q<Button>(client.Rules.cards[i].id+"Card");
+                if(button!=null&&button.ClassListContains("b3-card"))
+                {
+                    report.b3Cards|=1<<i;
+                    if(button.Q(className:"b3-card-frame")!=null)report.b3Frames|=1<<i;
+                }
+            }
             var presentation=client.Presentation;report.models|=presentation.RenderedKinds;report.walkPose=presentation.WalkPoseSamples;report.attackPose=presentation.AttackPoseSamples;report.deathPose=presentation.DeathPoseSamples;report.deaths=presentation.DeathCount;report.arrows=presentation.ArrowsFired;report.walkKinds|=presentation.WalkKinds;report.attackKinds|=presentation.AttackKinds;report.spellsSeen|=presentation.SpellsSeen;
             if(client.Session.Accepted>acceptedObserved){for(int i=0;i<client.Rules.cards.Length;i++)if(client.Rules.cards[i].id==client.Session.LastPlayedCard)report.cardsUsed|=1<<i;acceptedObserved=client.Session.Accepted;}
             if (!connected && report.uiWidth>100 && report.uiHeight>100)
@@ -75,9 +102,29 @@ namespace TowerDuel
             report.status = client.Session.Status;
             if (state != null)
             {
-                if(currentMatch!=state.match){currentMatch=state.match;acceptedObserved=0;previousUnits.Clear();captured=endCaptured=false;}
+                if(currentMatch!=state.match){currentMatch=state.match;acceptedObserved=0;previousUnits.Clear();captured=endCaptured=b3Captured=false;}
                 report.room = state.room; report.match = state.match; report.phase = state.phase;
                 report.seat = state.seat; report.tick = state.tick; report.winner = state.winner;
+                report.mapID=client.Map.id;
+                var environment=client.Presentation.Environment;
+                report.environment2D=environment!=null&&environment.BuildingCount==6;
+                report.ownBuildingsAway=report.environment2D&&environment.ViewSeat==state.seat;
+                if(report.ownBuildingsAway)foreach(var tower in state.towers)
+                    report.ownBuildingsAway&=environment.BuildingFrame(tower.id)%2==(tower.seat==state.seat?0:1);
+                foreach(var unit in state.units)
+                {
+                    if(unit.concealed)continue;
+                    bool mud=client.Map.TerrainMovementFactor(unit.Position)<1;
+                    if(mud!=unit.muddy)report.mudSyncErrors++;
+                    report.mudObserved|=mud&&unit.muddy;
+                    if(mudTicks.TryGetValue(unit.id,out long tick)&&tick<state.tick&&mud&&muddyBefore.Contains(unit.id)&&!unit.IsDeploying(state.tick))
+                    {
+                        float travel=Vector3.Distance(unit.Position,mudPositions[unit.id]);
+                        if(travel>.001f){report.mudMoveRatioTotal+=travel/((state.tick-tick)/30f*client.Rules.Find(unit.kind).speed);report.mudMoveSamples++;}
+                    }
+                    if(!mudTicks.TryGetValue(unit.id,out long previous)||previous<state.tick)
+                    {mudTicks[unit.id]=state.tick;mudPositions[unit.id]=unit.Position;if(mud)muddyBefore.Add(unit.id);else muddyBefore.Remove(unit.id);}
+                }
                 report.accepted = client.Session.Accepted; report.rejected = client.Session.Rejected;
                 report.unitCount = state.units.Length; report.towers = state.towers;
                 if(state.phase=="ended"&&!completed.Contains(state.match)){completed.Add(state.match);report.completedRounds=completed.Count;report.completedMatches=completed.ToArray();}
@@ -93,12 +140,15 @@ namespace TowerDuel
                 foreach(long id in previousUnits)if(!currentUnits.Contains(id))report.unitsRemoved++;
                 previousUnits=currentUnits;
                 foreach (var tower in state.towers) if (tower.hp < tower.maxHP) report.damagedTower = true;
+                if(!b3Captured&&state.phase=="playing"&&report.frames>300)
+                    foreach(string id in state.hand)if(DuelSpriteLibrary.Converted(id)){Capture("b3-cards");b3Captured=true;break;}
                 if ((role == "attacker" || (role=="defender" && client.Session.Accepted<8)) && client.Session.CanAct && (state.phase == "playing" || state.phase == "overtime") && !client.Session.Pending && DuelSession.Now >= nextDeploy)
                 {
                     string card=client.Rules.cards[client.Session.Accepted%8].id;
                     if(client.Session.InHand(card)&&state.energy>=client.Rules.Find(card).cost)
                     {
                     float x=card=="swords"?-5:-5+(report.accepted%2==0?-.38f:.38f);
+                    if(role=="attacker"&&report.accepted==0&&TowerDuelClient.Argument("-td-terrain-audit","")=="1")x=5;
                     float z=card=="archer"||card=="bomber"?4.2f:3.2f;
                     var position=new Vector3(x,0,state.seat==0?-z:z);
                     if(client.Rules.Find(card).IsSpell){position=new Vector3(-5,0,state.seat==0?7.7f:-7.7f);foreach(var unit in state.units)if(unit.seat!=state.seat){position=unit.Position;break;}}
@@ -128,7 +178,7 @@ namespace TowerDuel
             {
                 foreach(float x in new[]{tower.x-1.7f,tower.x+1.7f})
                     if(!InCombatView(new Vector3(x,0,tower.z)))return false;
-                if(!InCombatView(new Vector3(tower.x,tower.kind=="keep"?TowerDuelClient.KeepHealthHeight:3.9f,tower.z)))return false;
+                if(!InCombatView(new Vector3(tower.x,tower.kind=="keep"?TowerDuelClient.KeepHealthHeight:client.Map.HasWall?7.4f:3.9f,tower.z)))return false;
                 if(tower.kind=="keep"&&!InCombatView(new Vector3(tower.x,0,tower.z+Mathf.Sign(tower.z)*2.1f)))return false;
             }
             foreach(float bridge in client.Map.bridges)foreach(float z in new[]{-2.5f,2.5f})

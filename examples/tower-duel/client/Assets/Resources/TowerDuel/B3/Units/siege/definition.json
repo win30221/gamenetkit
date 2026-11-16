@@ -1,0 +1,13 @@
+{
+    "kind": "siege",
+    "tileSize": 256,
+    "baseline": 224,
+    "referenceHeight": 144,
+    "walkFrames": 6,
+    "attackFrames": 6,
+    "impactFrame": 3,
+    "unitHeight": 4.5,
+    "worldHeight": 2.25,
+    "teamMaskTop": 2.0,
+    "baked": true
+}

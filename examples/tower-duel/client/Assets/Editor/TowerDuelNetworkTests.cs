@@ -75,6 +75,7 @@ namespace TowerDuel.Editor
                 RangedWindupAndRelease();
                 CosmeticImpactDeduplication();
                 DeploymentWaitAndRecovery();
+                EnvironmentAndTerrain();
                 return "TOWER_DUEL_NETWORK_TESTS PASS: SDK backoff/expiry, saved-seat restore, pending-action recovery, cancellation, nearest legal deployment, shared effect timing, rendered frost boundary, snapshot stalls, match resets, ranged windup/release, cosmetic impact deduplication and deployment readiness/recovery";
             }
             finally
@@ -84,6 +85,53 @@ namespace TowerDuel.Editor
             }
         }
 
+        private static void EnvironmentAndTerrain()
+        {
+            using(var f=new Fixture())
+            {
+                Require(f.Map.HasWall&&f.Map.id=="wall-gates-mud-1","Canonical wall map was not imported");
+                foreach(float z in new[]{-7.7f,-.5f,0,.5f,7.7f})
+                    Require(Mathf.Abs(f.Map.TerrainMovementFactor(new Vector3(5,0,z))-.7f)<.0001f,"Mud has a gap through the gate");
+                Require(f.Map.TerrainMovementFactor(new Vector3(-5,0,0))==1&&f.Map.TerrainMovementFactor(new Vector3(6.71f,0,0))==1,"Dry lane or mud exit slowed");
+                foreach(var height in f.Map.unitSightHeights)
+                    Require(Mathf.Abs(DuelSpriteLibrary.Prefab(height.kind).GetComponent<DuelUnitArt>().Height-height.height)<.001f,"Server/client sight height differs: "+height.kind);
+                var root=new GameObject("Environment and mud regression");DuelPresentation presentation=null;
+                GameObject temporaryCamera=null;var camera=Camera.main;
+                if(!camera){temporaryCamera=new GameObject("Environment test camera");camera=temporaryCamera.AddComponent<Camera>();temporaryCamera.tag="MainCamera";}
+                var oldRotation=camera.transform.rotation;
+                try
+                {
+                    presentation=new DuelPresentation(root.transform,f.Map,f.Rules);
+                    Require(presentation.Environment!=null&&presentation.Environment.BuildingCount==6,"B3 buildings not active");
+                    for(int seat=0;seat<2;seat++)
+                    {
+                        camera.transform.rotation=Quaternion.Euler(60,seat*180,0);
+                        presentation.Environment.SetView(camera,seat);
+                        foreach(var tower in f.Map.towers)
+                            Require(presentation.Environment.BuildingFrame(tower.id)%2==(tower.seat==seat?0:1),"Building did not face opponent");
+                    }
+                    var state=f.State(100,"welcome");state.units[0].seat=1;state.units[0].x=5;state.units[0].z=-4;state.units[0].muddy=true;
+                    f.Deliver(state);presentation.Update(f.Session);
+                    Require(Mathf.Abs(f.Session.SampleTerrainFactor(state.units[0])-.7f)<.0001f,"Rendered muddy foot not recognized");
+                    var visuals=Field<IDictionary>(presentation,"units");
+                    var art=(DuelUnitArt)visuals[100L].GetType().GetField("Art").GetValue(visuals[100L]);
+                    var hidden=f.State(102);hidden.units=new[]{new EntityState{id=100,seat=1,concealed=true}};
+                    f.Deliver(hidden);presentation.Update(f.Session);
+                    Require(!art.gameObject.activeSelf,"Concealed enemy or its shadow remained visible");
+                    var revealed=f.State(104);revealed.units[0].seat=1;revealed.units[0].x=0;revealed.units[0].z=1.5f;
+                    f.Deliver(revealed);presentation.Update(f.Session);
+                    Require(art.gameObject.activeSelf&&Mathf.Abs(art.transform.position.z-1.5f)<.001f,"Reveal interpolated from redacted origin");
+                    Require(presentation.DeathCount==0,"Conceal/reveal produced a death effect");
+                    Require(f.Session.SampleTerrainFactor(new EntityState{id=999,kind="guard",x=-5,z=-4})==1,"Mud persisted after leaving");
+                }
+                finally
+                {
+                    presentation?.Dispose();camera.transform.rotation=oldRotation;
+                    if(temporaryCamera)UnityEngine.Object.Destroy(temporaryCamera);
+                    UnityEngine.Object.Destroy(root);
+                }
+            }
+        }
         private static void BackoffAndExpiry()
         {
             using(var f=new Fixture())
@@ -159,6 +207,7 @@ namespace TowerDuel.Editor
             {
                 var state=f.State(100);state.seat=seat;
                 float forward=seat==0?1:-1;
+                float home=-(Mathf.Ceil(f.Map.BarrierHalfWidth+.40f-.5f)+.5f);
                 var guard=f.Rules.Find("guard");var squad=f.Rules.Find("swords");var spell=f.Rules.Find("fireball");
                 void Expect(float x,float z,CardDefinition card,float targetX,float targetZ)
                 {
@@ -167,24 +216,24 @@ namespace TowerDuel.Editor
                     Require(f.Map.CanDeploy(seat,p,state,card),"Nearest destination contains an illegal formation member.");
                 }
                 Expect(-4.2f,-3.8f,guard,-4.5f,-3.5f);
-                Expect(-4.2f,.2f,guard,-4.5f,-2.5f);
-                Expect(-4.2f,3.2f,guard,-4.5f,-2.5f);
+                Expect(-4.2f,.2f,guard,-4.5f,home);
+                Expect(-4.2f,3.2f,guard,-4.5f,home);
                 Expect(-5.2f,-7.7f,guard,-6.5f,-7.5f);
                 Expect(30,-3.2f,guard,9.5f,-3.5f);
                 Expect(30,-3.2f,squad,8.5f,-3.5f);
-                Expect(-4.2f,-1.7f,squad,-4.5f,-2.5f);
+                Expect(-4.2f,-1.7f,squad,-4.5f,Mathf.Min(-1.5f,home));
                 foreach(var tower in state.towers)if(tower.seat==seat&&tower.kind=="tower"&&tower.x<0)tower.hp=0;
-                Expect(-4.2f,3.2f,guard,-4.5f,-2.5f);
+                Expect(-4.2f,3.2f,guard,-4.5f,home);
                 foreach(var tower in state.towers)if(tower.seat!=seat&&tower.kind=="tower"&&tower.x<0)tower.hp=0;
                 Expect(-4.2f,3.2f,guard,-4.5f,3.5f);
-                Expect(4.2f,3.2f,guard,-.5f,3.5f);
-                Expect(-4.2f,5.4f,squad,-4.5f,4.5f);
+                Expect(4.2f,3.2f,guard,f.Map.HasWall?4.5f:-.5f,f.Map.HasWall?home:3.5f);
+                Expect(-4.2f,5.4f,squad,-4.5f,f.Map.HasWall?3.5f:4.5f);
                 state=f.State(102);state.seat=seat;
-                Expect(-4.2f,3.2f,guard,-4.5f,-2.5f);
+                Expect(-4.2f,3.2f,guard,-4.5f,home);
                 Expect(-4.24f,3.16f,spell,-4.24f,3.16f);
                 Expect(30,40,spell,10,15);
                 state.energy=0;
-                Expect(-4.2f,.2f,guard,-4.5f,-2.5f);
+                Expect(-4.2f,.2f,guard,-4.5f,home);
                 f.Deliver(state);
                 Require(!f.Session.Deploy(new Vector3(-4.5f,0,-2.5f*forward)),"Nearest destination bypassed the energy check.");
                 Require(!f.Map.TryNearestDeployment(seat,new Vector3(float.NaN,0,0),state,guard,out _),"Nonfinite aim resolved to a cell.");
@@ -219,8 +268,9 @@ namespace TowerDuel.Editor
                     var visuals=Field<IDictionary>(presentation,"units");
                     var art=(DuelUnitArt)visuals[100L].GetType().GetField("Art").GetValue(visuals[100L]);
                     f.Deliver(Deploy(128,x:.2f));presentation.Update(f.Session);
-                    art.Animator.Update(.1f);
-                    Require(art.Animator.GetFloat("Speed")==0&&(long)visuals[100L].GetType().GetField("Attack").GetValue(visuals[100L])==0,"A pushed deploying troop walked or attacked.");
+                    if(art.Animator)art.Animator.Update(.1f);
+                    bool idle=art.Sprites?art.Sprites.Clip==DuelSpriteClip.Idle:art.Animator.GetFloat("Speed")==0;
+                    Require(idle&&(long)visuals[100L].GetType().GetField("Attack").GetValue(visuals[100L])==0,"A pushed deploying troop walked or attacked.");
                     Advance(f.Session,f.Now+5);presentation.Update(f.Session);
                     Require(f.Session.State.units[0].IsDeploying(f.Session.RenderTick),"A stalled timeline completed deployment using local wall time.");
                     f.Deliver(Deploy(129,"welcome",x:.2f));presentation.Update(f.Session);
@@ -264,18 +314,34 @@ namespace TowerDuel.Editor
                         Require(presentation.ArrowsFired==0,"Windup launched a projectile for "+kind);
                         var visuals=Field<IDictionary>(presentation,"units");
                         var art=(DuelUnitArt)visuals[100L].GetType().GetField("Art").GetValue(visuals[100L]);
-                        art.Animator.Update(.05f);
-                        Require(art.Animator.GetCurrentAnimatorStateInfo(0).shortNameHash==Animator.StringToHash("Attack")||art.Animator.IsInTransition(0),"Windup did not start the attack animation for "+kind);
+                        if(art.Sprites&&f.Session.RenderTick<100)
+                            Require(art.Sprites.Clip==DuelSpriteClip.Idle,"Sprite anticipated an attack before its render tick for "+kind);
+                        Advance(f.Session,f.Now+.2);presentation.Update(f.Session);
+                        if(art.Animator)art.Animator.Update(.05f);
+                        bool attacking=art.Sprites?art.Sprites.Clip==DuelSpriteClip.Attack:art.Animator.GetCurrentAnimatorStateInfo(0).shortNameHash==Animator.StringToHash("Attack")||art.Animator.IsInTransition(0);
+                        Require(attacking,"Windup did not start the attack animation for "+kind);
                         var slowed=Attack(102);slowed.units[0].slowed=true;
                         slowed.effects=new[]{frost};
                         f.Deliver(slowed);presentation.Update(f.Session);
-                        Require(Mathf.Abs(art.Animator.speed-f.Rules.Find("frost").slow)<.0001f,"Frost did not slow the windup animation.");
+                        Require(Mathf.Abs((art.Sprites?art.Sprites.PlaybackSpeed:art.Animator.speed)-f.Rules.Find("frost").slow)<.0001f,"Frost did not slow the windup animation.");
                         long hitTick=100+f.Rules.Find(kind).windupTicks;
                         f.Deliver(Attack(hitTick,hit:hitTick));presentation.Update(f.Session);
                         Require(presentation.ArrowsFired==1,"Confirmed release did not launch a projectile for "+kind);
                         var arrows=Field<IList>(presentation,"arrows");
                         var destination=(Vector3)arrows[0].GetType().GetField("To").GetValue(arrows[0]);
                         Require(Mathf.Abs(destination.x)<.001f,"Projectile used a new target instead of the confirmed hit target.");
+                        if(art.Sprites)
+                        {
+                            double released=(double)arrows[0].GetType().GetField("Started").GetValue(arrows[0]);
+                            // Observe() advances to the transport's arrival time, which can
+                            // follow the fixture's pre-serialization timestamp. Start there
+                            // so Editor serialization time cannot leave us before release.
+                            double observedAt=Math.Max(f.Now,Field<double>(f.Session,"lastReceive"));
+                            Advance(f.Session,observedAt+Math.Max(0,(released-f.Session.RenderTick+.001)/30));presentation.Update(f.Session);
+                            Require(art.Sprites.FrameIndex==art.Sprites.Set.ImpactFrame&&art.Sprites.Clip==DuelSpriteClip.Attack,$"Release pose did not match projectile departure for {kind}: tick={f.Session.RenderTick:F4}, departure={released:F4}, clip={art.Sprites.Clip}, frame={art.Sprites.FrameIndex}");
+                            var projectile=(Transform)arrows[0].GetType().GetField("Root").GetValue(arrows[0]);
+                            Require(projectile.gameObject.activeSelf,"Release pose appeared without a visible projectile for "+kind);
+                        }
                         presentation.Update(f.Session);
                         f.Deliver(Attack(hitTick+2,hit:hitTick));presentation.Update(f.Session);
                         Require(presentation.ArrowsFired==1,"Repeated snapshots duplicated a projectile.");

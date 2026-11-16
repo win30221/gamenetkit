@@ -48,7 +48,7 @@ namespace TowerDuel
             for(float x=-map.width*.5f+cell*.5f;x<map.width*.5f;x+=cell)
                 for(float z=-map.length*.5f+cell*.5f;z<map.length*.5f;z+=cell)
                 {
-                    var p=new Vector3(x,.22f,z);bool legal=map.CanDeploy(state.seat,p,state,card);
+                    var p=new Vector3(x,map.HasWall?.012f:.22f,z);bool legal=map.CanDeploy(state.seat,p,state,card);
                     if(legal){Border(good,goodIndices,p,cell);AllowedCells++;}
                     else Border(bad,badIndices,p,cell);
                 }
@@ -58,7 +58,7 @@ namespace TowerDuel
         {
             hover.Clear();if(!visible)return;
             // Spells retain free aim; only troop centres are snapped by the map.
-            point=map.SnapDeployment(point,null);point.y=.235f;
+            point=map.SnapDeployment(point,null);point.y=map.HasWall?.016f:.235f;
             var vertices=new List<Vector3>();var indices=new List<int>();
             Quad(vertices,indices,point,map.deploymentCellSize*.48f,map.deploymentCellSize*.48f);
             SetMesh(hover,vertices,indices);

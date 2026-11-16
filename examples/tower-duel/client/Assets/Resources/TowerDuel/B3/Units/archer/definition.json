@@ -1,0 +1,13 @@
+{
+    "kind": "archer",
+    "tileSize": 192,
+    "baseline": 176,
+    "referenceHeight": 160,
+    "walkFrames": 6,
+    "attackFrames": 6,
+    "impactFrame": 3,
+    "unitHeight": 2.7200000286102295,
+    "worldHeight": 1.3600000143051147,
+    "teamMaskTop": 0.0,
+    "baked": true
+}

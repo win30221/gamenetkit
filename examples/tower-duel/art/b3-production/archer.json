@@ -1,0 +1,24 @@
+{
+  "baked": true, "kind": "archer",
+  "tool": "built-in image_gen",
+  "approvedReference": "artifacts/tower-duel/style-studies/2026-11-15/B3-family-v1/04-archer.png",
+  "headLandmark": "green",
+  "tileSize": 192,
+  "baseline": 176,
+  "referenceHeight": 160,
+  "worldHeight": 1.36,
+  "unitHeight": 2.72,
+  "walkFrames": 6,
+  "attackFrames": 6,
+  "impactFrame": 3,
+  "directions": ["S", "SW", "W", "NW", "N", "NE", "E", "SE"],
+  "sources": {
+    "idle": "artifacts/tower-duel/sprites-b3/source/archer/idle-source.png",
+    "walk-a": "artifacts/tower-duel/sprites-b3/source/archer/walk-a.png",
+    "walk-b": "artifacts/tower-duel/sprites-b3/source/archer/walk-b.png",
+    "attack-a": "artifacts/tower-duel/sprites-b3/source/archer/attack-a.png",
+    "attack-b": "artifacts/tower-duel/sprites-b3/source/archer/attack-b.png",
+    "card": "artifacts/tower-duel/sprites-b3/source/archer/card.png",
+    "frame": "artifacts/tower-duel/sprites-b3/source/guard/card-frame.png"
+  }
+}

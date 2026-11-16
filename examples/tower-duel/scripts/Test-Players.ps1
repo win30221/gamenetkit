@@ -1,5 +1,5 @@
 <# End-to-end test: a real server and two development Windows Players. #>
-param([int]$TimeoutSeconds=800, [string]$Output='', [ValidateSet(0,1)][int]$AttackerSeat=0, [ValidateRange(1,3)][int]$Rounds=1, [switch]$ExerciseRecovery, [switch]$WeakNetwork)
+param([int]$TimeoutSeconds=800, [string]$Output='', [ValidateSet(0,1)][int]$AttackerSeat=0, [ValidateRange(1,3)][int]$Rounds=1, [switch]$ExerciseRecovery, [switch]$WeakNetwork, [switch]$Capture, [switch]$TerrainAudit)
 $ErrorActionPreference='Stop'
 $example=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $repo=[IO.Path]::GetFullPath((Join-Path $example '../..'))
@@ -23,6 +23,8 @@ function Read-Report([string]$Path){
 function Launch-Player([string]$Mode,[string]$Role,[string]$Room,[string]$Report){
     $arguments=@('-screen-fullscreen','0','-screen-width','720','-screen-height','1000','-td-server',$serverURL,'-td-auto',$Mode,'-td-role',$Role,'-td-rounds',$Rounds,'-td-report',(Quote-Argument $Report),'-logFile',(Quote-Argument (Join-Path $Output "$Role.log")))
     if($ExerciseRecovery -and $Role -eq 'attacker'){$arguments+=@('-td-recover','1')}
+    if($Capture){$arguments+=@('-td-capture','1')}
+    if($TerrainAudit){$arguments+=@('-td-terrain-audit','1')}
     if($Room){$arguments+=@('-td-room',$Room)}
     $p=Start-Process -FilePath $player -ArgumentList $arguments -WindowStyle Hidden -PassThru
     $processes.Add($p)
@@ -62,11 +64,17 @@ try {
     if(-not($a -and $b -and $a.ended -and $b.ended)){throw 'Players did not finish the match before timeout'}
     if($a.match -ne $b.match -or $a.seat -ne 0 -or $b.seat -ne 1 -or $a.winner -ne $AttackerSeat -or $b.winner -ne $AttackerSeat -or $a.reason -ne $b.reason -or $a.completedRounds -ne $Rounds -or $b.completedRounds -ne $Rounds){throw 'Players disagree about the match or result'}
     $attacker=@($a,$b)[$AttackerSeat];$defender=@($a,$b)[1-$AttackerSeat]
+    foreach($report in @($a,$b)){if($report.mapID -ne 'wall-gates-mud-1' -or -not $report.environment2D -or -not $report.ownBuildingsAway -or $report.mudSyncErrors -ne 0){throw 'New environment, facing or authoritative terrain synchronization failed'}}
+    if($TerrainAudit){foreach($report in @($a,$b)){if(-not $report.mudObserved -or $report.mudMoveSamples -lt 3){throw 'Missing moving mud evidence in the real Player'}}}
     if($attacker.resultTitle -ne '勝利！' -or $defender.resultTitle -ne '再接再厲'){throw 'UI result labels do not match authoritative winner'}
     if($attacker.accepted -lt 8 -or $defender.accepted -ne 8 -or -not($a.crossed -and $b.crossed -and $a.damagedTower -and $b.damagedTower -and $a.damagedUnit -and $b.damagedUnit) -or $a.unitsRemoved -lt 1 -or $b.unitsRemoved -lt 1 -or $a.frames -lt 120 -or $b.frames -lt 120 -or $a.uiHeight -lt 500 -or $b.uiHeight -lt 500){throw 'Missing UI, deployment, combat, death or live-frame evidence'}
     foreach($report in @($a,$b)){if($report.cardsUsed -ne 255 -or $report.models -ne 63 -or $report.walkKinds -ne 63 -or $report.attackKinds -ne 63 -or $report.spellsSeen -ne 3 -or $report.walkPose -lt 10 -or $report.attackPose -lt 10 -or $report.deathPose -lt 3 -or $report.arrows -lt 1 -or -not $report.tacticalContentVisible -or $report.previewCards -ne 255 -or -not $report.previewsCleared){throw 'Missing eight-card UI/preview, six-unit animation, spell, death, projectile or combat-view framing evidence'}}
     foreach($report in @($a,$b)){if(-not $report.numericHealth -or -not $report.fractionalEnergy){throw 'Missing numeric health or fractional energy evidence'}}
-    if(-not($a.fullEnergyReminder -or $b.fullEnergyReminder)){throw 'No full-energy shake reminder was observed'}
+    $expectedSprites=0;$catalog=Get-Content -LiteralPath (Join-Path $example 'protocol/rules.json') -Raw | ConvertFrom-Json
+    for($i=0;$i -lt $catalog.cards.Count;$i++){if(Test-Path -LiteralPath (Join-Path $example ('client/Assets/Resources/TowerDuel/B3/Prefabs/'+$catalog.cards[$i].id+'.prefab'))){$expectedSprites=$expectedSprites -bor (1 -shl $i)}}
+    foreach($report in @($a,$b)){if($report.sprites -ne $expectedSprites -or $report.b3Cards -ne $expectedSprites -or $report.b3Frames -ne $expectedSprites -or $report.spriteShadows -ne $expectedSprites -or -not $report.shadowsLowerLeft -or $report.visibleTeamDiscs -ne 0){throw 'B3 sprites, matching cards, frames, lower-left shadows or hidden team discs failed in the real Player'}}
+    if([Math]::Abs($a.shadowX-$b.shadowX) -gt .02 -or [Math]::Abs($a.shadowY-$b.shadowY) -gt .02){throw 'The two players saw different screen-space shadow directions'}
+    if(-not($a.fullEnergyReminder -or $b.fullEnergyReminder)){throw 'No static full-energy reminder was observed'}
     if($ExerciseRecovery -and $attacker.resumes -lt 1){throw 'No successful recovery was observed'}
     foreach($tower in $a.towers){$other=$b.towers | Where-Object id -eq $tower.id;if($other.hp -ne $tower.hp){throw "Tower $($tower.id) differs"}}
     $summary=[ordered]@{passed=$true;room=$room;match=$a.match;winner=$a.winner;reason=$a.reason;rounds=@($a.completedRounds,$b.completedRounds);resumes=@($a.resumes,$b.resumes);accepted=@($a.accepted,$b.accepted);unitsRemoved=@($a.unitsRemoved,$b.unitsRemoved);frames=@($a.frames,$b.frames);cardsUsed=@($a.cardsUsed,$b.cardsUsed);models=@($a.models,$b.models);walkKinds=@($a.walkKinds,$b.walkKinds);attackKinds=@($a.attackKinds,$b.attackKinds);spells=@($a.spellsSeen,$b.spellsSeen);frameP95MS=@($a.frameP95MS,$b.frameP95MS);snapshotBytes=@($a.snapshotBytes,$b.snapshotBytes);reports=@($aPath,$bPath)}
@@ -75,6 +83,14 @@ try {
     $summary.numericHealth=@($a.numericHealth,$b.numericHealth);$summary.fractionalEnergy=@($a.fractionalEnergy,$b.fractionalEnergy);$summary.fullEnergyReminder=@($a.fullEnergyReminder,$b.fullEnergyReminder)
     $summary.previewCards=@($a.previewCards,$b.previewCards);$summary.previewsCleared=@($a.previewsCleared,$b.previewsCleared)
     $summary.networkProfile=if($WeakNetwork){'Message-level: one-way 120 +/-80 ms; drop every third deploy and fifth ack; duplicate every fourth deploy'}else{'Direct local connection'}
+    $summary.mapID=@($a.mapID,$b.mapID);$summary.environment2D=@($a.environment2D,$b.environment2D)
+    $summary.ownBuildingsAway=@($a.ownBuildingsAway,$b.ownBuildingsAway);$summary.mudObserved=@($a.mudObserved,$b.mudObserved)
+    $summary.mudSyncErrors=@($a.mudSyncErrors,$b.mudSyncErrors);$summary.mudMoveSamples=@($a.mudMoveSamples,$b.mudMoveSamples)
+    $summary.mudMoveRatio=@(($a.mudMoveRatioTotal/[Math]::Max(1,$a.mudMoveSamples)),($b.mudMoveRatioTotal/[Math]::Max(1,$b.mudMoveSamples)))
+    $summary.b3Sprites=@($a.sprites,$b.sprites);$summary.b3Cards=@($a.b3Cards,$b.b3Cards);$summary.b3Frames=@($a.b3Frames,$b.b3Frames)
+    $summary.spriteShadows=@($a.spriteShadows,$b.spriteShadows);$summary.shadowsLowerLeft=@($a.shadowsLowerLeft,$b.shadowsLowerLeft)
+    $summary.visibleTeamDiscs=@($a.visibleTeamDiscs,$b.visibleTeamDiscs)
+    $summary.shadowDirections=@(@($a.shadowX,$a.shadowY),@($b.shadowX,$b.shadowY))
     if($WeakNetwork){$summary.proxyStats=Invoke-RestMethod "$serverURL/__qa/stats";if($summary.proxyStats.dropped -lt 1 -or $summary.proxyStats.duplicated -lt 1){throw 'Proxy did not exercise message loss and duplication'}}
     $summary | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $Output 'result.json') -Encoding utf8
     # Allow the end-of-frame screenshot request to complete before closing our Players.

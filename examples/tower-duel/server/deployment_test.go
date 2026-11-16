@@ -53,7 +53,7 @@ func TestDestroyedEnemyTowerUnlocksOnlyItsPocket(t *testing.T) {
 func TestPocketFormationIsAtomicAndBothTowersOpenBothSides(t *testing.T) {
 	w := playingMatch(t)
 	w.Towers[4].HP = 0
-	for action, p := range []point{{-.1, 3}, {-5, 2.1}, {-5, 5.2}} {
+	for action, p := range []point{{-.1, 3}, {-5, w.Map.barrierHalfWidth() + .6}, {-5, w.Map.barrierHalfWidth() + w.Map.PocketDepth - .3}} {
 		r := w.deploy(0, w.ID, uint64(action+1), "swords", p.X, p.Z)
 		if r.Accepted || w.Energy[0] != 5 || len(w.Units) != 0 {
 			t.Fatal("formation crossed pocket boundary or charged on failure", p, r)

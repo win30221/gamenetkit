@@ -1,0 +1,13 @@
+{
+    "kind": "charger",
+    "tileSize": 256,
+    "baseline": 224,
+    "referenceHeight": 144,
+    "walkFrames": 6,
+    "attackFrames": 6,
+    "impactFrame": 3,
+    "unitHeight": 3.1600000858306885,
+    "worldHeight": 1.5800000429153442,
+    "teamMaskTop": 2.0,
+    "baked": true
+}

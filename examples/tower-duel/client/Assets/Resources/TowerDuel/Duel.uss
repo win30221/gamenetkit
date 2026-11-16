@@ -36,6 +36,16 @@ Button:disabled { color: #91a1ad; background-color: #24313e; border-color: #3e4c
 .unit-card.dragging { opacity: 0; }
 .drag-card { display: none; position: absolute; left: 0; top: 0; width: 112px; height: 150px; transform-origin: 0 0; overflow: hidden; opacity: 0.68; border-width: 3px; border-color: #f5d17a; border-radius: 10px; background-color: #183149; }
 .drag-card.invalid { border-color: #f08270; }
+.unit-card.b3-card, .drag-card.b3-card { border-width: 0; border-radius: 12px; background-color: #14223b; }
+.b3-card .card-art { left: 5px; right: 5px; top: 5px; bottom: 5px; border-radius: 9px; }
+.b3-card-frame { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-image: url("B3/UI/CardFrame.png"); -unity-slice-left: 48; -unity-slice-right: 48; -unity-slice-top: 48; -unity-slice-bottom: 48; -unity-slice-scale: 0.35px; }
+.b3-small-frame { -unity-slice-scale: 0.18px; }
+.b3-card .card-name { left: 7px; right: 7px; bottom: 7px; height: 25px; border-radius: 4px; background-color: rgba(12,28,55,0.94); color: #fff1be; }
+.b3-card .card-cost { left: 5px; top: 5px; width: 29px; height: 29px; background-color: #194fb5; border-color: #f7d064; color: #fff6d0; }
+.unit-card.b3-card.selected { border-width: 2px; border-color: #fff4ab; }
+.b3-card.unaffordable .b3-card-frame { -unity-background-image-tint-color: #929aa7; }
+.drag-card.b3-card.invalid .b3-card-frame { -unity-background-image-tint-color: #f08270; }
+.next-card-art.b3-next { border-width: 0; border-radius: 8px; }
 .keep-status { position: absolute; top: 8px; left: 0; width: 84px; font-size: 10px; color: #f5d17a; -unity-text-align: middle-center; background-color: rgba(9,19,31,0.8); }
 .card-copy { flex-grow: 1; margin-left: 20px; }
 .card-title { font-size: 22px; margin-bottom: 5px; }

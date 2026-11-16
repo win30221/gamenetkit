@@ -13,6 +13,7 @@ namespace TowerDuel
         private readonly UIDocument document;
         private readonly PanelSettings panel;
         private readonly VisualElement root,world,lobby,waiting,result,dock,health,dragPreview,energyRow;
+        private readonly VisualElement dragFrame,nextFrame;
         private readonly TextField nameField,serverField,roomField;
         private readonly Button ready,create,join,copy;
         private readonly Dictionary<string,Button> cards=new Dictionary<string,Button>();
@@ -51,6 +52,8 @@ namespace TowerDuel
             root.Query<Label>().ForEach(label=>label.enableRichText=false);
             world=root.Q("worldInput");health=root.Q("healthLayer");lobby=root.Q("lobbyLayer");waiting=root.Q("waitingLayer");result=root.Q("resultLayer");dock=root.Q("dock");
             dragPreview=root.Q("dragPreview");energyRow=root.Q("energyRow");
+            dragFrame=CardFrame();dragPreview.Insert(1,dragFrame);Display(dragFrame,false);
+            nextFrame=CardFrame(true);root.Q("nextCardArt").Add(nextFrame);Display(nextFrame,false);
             nameField=root.Q<TextField>("nameField");serverField=root.Q<TextField>("serverField");roomField=root.Q<TextField>("roomField");
             nameField.value="玩家"+UnityEngine.Random.Range(10,99);serverField.value=client.Server;
 #if UNITY_WEBGL && !UNITY_EDITOR
@@ -60,7 +63,8 @@ namespace TowerDuel
             foreach(var definition in client.Rules.cards)
             {
                 string id=definition.id;var button=new Button{name=id+"Card",tooltip=definition.name+" · "+definition.cost+" 能量\n"+definition.description};button.AddToClassList("unit-card");
-                var portrait=new VisualElement{pickingMode=PickingMode.Ignore};portrait.AddToClassList("card-art");portrait.style.backgroundImage=Resources.Load<Texture2D>("TowerDuel/Cards/"+id);button.Add(portrait);
+                var portrait=new VisualElement{pickingMode=PickingMode.Ignore};portrait.AddToClassList("card-art");portrait.style.backgroundImage=DuelSpriteLibrary.Card(id);button.Add(portrait);
+                if(DuelSpriteLibrary.Converted(id)){button.AddToClassList("b3-card");button.Add(CardFrame());}
                 var title=new Label(definition.name){pickingMode=PickingMode.Ignore};title.AddToClassList("card-name");button.Add(title);
                 var cost=new Label(definition.cost.ToString("0")){pickingMode=PickingMode.Ignore};cost.AddToClassList("card-cost");button.Add(cost);
                 root.Q("cardRow").Add(button);
@@ -103,6 +107,11 @@ namespace TowerDuel
             Update();
         }
         private bool CanPlay()=>client.Session.CanAct&&(client.Session.State.phase=="playing"||client.Session.State.phase=="overtime")&&!client.Session.Pending;
+        private static VisualElement CardFrame(bool small=false)
+        {
+            var frame=new VisualElement{pickingMode=PickingMode.Ignore};frame.AddToClassList("b3-card-frame");
+            if(small)frame.AddToClassList("b3-small-frame");return frame;
+        }
         private void BlurInputs()
         {
             foreach(var field in new[]{roomField,nameField,serverField}){var keyboard=field.touchScreenKeyboard;if(keyboard!=null)keyboard.active=false;field.Blur();}world.Focus();
@@ -113,6 +122,7 @@ namespace TowerDuel
         private void StartDrag(string card,Button button,Vector2 point,bool touch)
         {
             client.BeginDeployment(card);draggingCard=button;
+            bool b3=DuelSpriteLibrary.Converted(card);dragPreview.EnableInClassList("b3-card",b3);Display(dragFrame,b3);
             dragOrigin=point;dragPosition=point;
             dragSize=button.worldBound.size;dragCardOrigin=button.worldBound.position;
             dragPreview.style.scale=new Scale(new Vector3(dragSize.x/112,dragSize.y/150,1));
@@ -258,7 +268,8 @@ namespace TowerDuel
                     var opponent=state.players[1-state.seat];
                     Text("noticeLabel",client.Session.Recovering?"正在恢復連線，對戰持續進行…":!opponent.connected&&opponent.reconnectRemaining>0?"等待對手返回　"+Mathf.CeilToInt(opponent.reconnectRemaining)+" 秒":client.Session.Pending?"正在確認出牌…":client.Session.Status);
                     Text("nextCardLabel","下一張\n"+client.Rules.Find(state.nextCard).name);
-                    root.Q("nextCardArt").style.backgroundImage=Resources.Load<Texture2D>("TowerDuel/Cards/"+state.nextCard);
+                    var next=root.Q("nextCardArt");next.style.backgroundImage=DuelSpriteLibrary.Card(state.nextCard);
+                    bool nextB3=DuelSpriteLibrary.Converted(state.nextCard);next.EnableInClassList("b3-next",nextB3);Display(nextFrame,nextB3);
                     Text("inviteCode",state.room);
                     string names="";for(int i=0;i<2;i++)names+=(i==state.seat?"你：":"對手：")+(state.players[i].connected?state.players[i].name+(state.players[i].ready?"　已準備":"　尚未準備"):"等待加入")+(i==0?"\n":"");Text("playersLabel",names);
                     ready.SetEnabled(client.Session.CanAct&&state.phase=="waiting"&&!state.players[state.seat].ready);
@@ -306,7 +317,7 @@ namespace TowerDuel
             float healthScale=root.resolvedStyle.height/1000f;
             foreach(var group in new[]{state.towers,state.units})foreach(var e in group)
             {
-                if(e.hp<=0)continue;seen.Add(e.id);
+                if(e.hp<=0||e.concealed)continue;seen.Add(e.id);
                 if(!bars.TryGetValue(e.id,out var bar))
                 {
                     bar=new VisualElement{pickingMode=PickingMode.Ignore};bar.AddToClassList("health-bar");if(client.Rules.Find(e.kind)!=null)bar.AddToClassList("unit-health");if(e.seat!=state.seat)bar.AddToClassList("enemy");
@@ -323,9 +334,10 @@ namespace TowerDuel
                 else if(unit)
                 {
                     float deployMilliseconds=Mathf.Clamp((float)(e.readyTick-client.Session.RenderTick)*1000/state.tickRate,0,client.Rules.Find(e.kind).deployTicks*1000f/state.tickRate);
-                    bar.Q<Label>(className:"unit-status").text=e.IsDeploying(client.Session.RenderTick)?"部署 "+Mathf.CeilToInt(deployMilliseconds)+"ms":client.Session.SampleSlowed(e)?"減速":e.charging?"衝鋒":"";
+                    bool mud=client.Session.SampleTerrainFactor(e)<1;
+                    bar.Q<Label>(className:"unit-status").text=e.IsDeploying(client.Session.RenderTick)?"部署 "+Mathf.CeilToInt(deployMilliseconds)+"ms":client.Session.SampleSlowed(e)?(mud?"冰霜・泥濘":"減速"):mud?"泥濘":e.charging?"衝鋒":"";
                 }
-                var worldPos=unit?client.Session.Sample(e):e.Position;worldPos.y=e.kind=="keep"?TowerDuelClient.KeepHealthHeight:e.kind=="tower"?3.9f:client.Presentation.UnitHeight(e.kind)+.22f;
+                var worldPos=unit?client.Session.Sample(e):e.Position;worldPos.y=e.kind=="keep"?TowerDuelClient.KeepHealthHeight:e.kind=="tower"?(client.Map.HasWall?7.4f:3.9f):client.Presentation.UnitHeight(e.kind)+.22f;
                 var screen=client.Camera.WorldToScreenPoint(worldPos);bool visible=screen.z>0&&client.Camera.pixelRect.Contains(new Vector2(screen.x,screen.y));Display(bar,visible);
                 if(visible)
                 {

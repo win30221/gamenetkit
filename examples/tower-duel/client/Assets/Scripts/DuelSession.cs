@@ -181,10 +181,15 @@ namespace TowerDuel
         }
         public Vector3 Sample(EntityState entity)
         {
-            if(frames.TryBracket(timeline.RenderTick,entity.id,SelectUnit,out SnapshotBracket<EntityState> bracket))return bracket.HasAfter?Vector3.Lerp(bracket.Before.Position,bracket.After.Position,(float)bracket.Fraction):bracket.Before.Position;
+            if(frames.TryBracket(timeline.RenderTick,entity.id,SelectUnit,out SnapshotBracket<EntityState> bracket))
+            {
+                if(bracket.Before.concealed||(bracket.HasAfter&&bracket.After.concealed))return entity.Position;
+                return bracket.HasAfter?Vector3.Lerp(bracket.Before.Position,bracket.After.Position,(float)bracket.Fraction):bracket.Before.Position;
+            }
             return entity.Position;
         }
         private static bool SelectUnit(DuelFrame frame,long id,out EntityState entity)=>frame.Units.TryGetValue(id,out entity);
+        public float SampleTerrainFactor(EntityState entity)=>map.TerrainMovementFactor(Sample(entity));
         public bool SampleSlowed(EntityState entity)
         {
             // Match the ring and interpolated foot position, rather than a newer
@@ -231,8 +236,17 @@ namespace TowerDuel
             var hand=new HashSet<string>();foreach(string id in m.hand)if(string.IsNullOrEmpty(id)||!hand.Add(id)||(catalog!=null&&catalog.Find(id)==null))throw new InvalidOperationException("invalid hand");
             if(string.IsNullOrEmpty(m.nextCard)||hand.Contains(m.nextCard)||(catalog!=null&&catalog.Find(m.nextCard)==null))throw new InvalidOperationException("invalid next card");
             var ids=new HashSet<long>();
-            foreach(var group in new[]{m.units,m.towers})foreach(var e in group)if(e==null||e.id<=0||!ids.Add(e.id)||e.seat<0||e.seat>1||!DuelMap.Finite(e.x)||!DuelMap.Finite(e.z)||Mathf.Abs(e.x)>10||Mathf.Abs(e.z)>15||e.hp<0||e.hp>e.maxHP||e.maxHP<=0||!DuelMap.Finite(e.radius)||e.radius<=0)throw new InvalidOperationException("invalid entity");
-            foreach(var e in m.units)if(catalog!=null&&(catalog.Find(e.kind)==null||catalog.Find(e.kind).IsSpell))throw new InvalidOperationException("unsupported unit");
+            foreach(var group in new[]{m.units,m.towers})foreach(var e in group)
+            {
+                if(e==null||e.id<=0||!ids.Add(e.id)||e.seat<0||e.seat>1)throw new InvalidOperationException("invalid entity identity");
+                if(e.concealed)
+                {
+                    if(ReferenceEquals(group,m.towers)||e.seat==m.seat||!string.IsNullOrEmpty(e.kind)||e.hp!=0||e.maxHP!=0||e.radius!=0||e.x!=0||e.z!=0)throw new InvalidOperationException("invalid concealed unit");
+                    continue;
+                }
+                if(!DuelMap.Finite(e.x)||!DuelMap.Finite(e.z)||Mathf.Abs(e.x)>10||Mathf.Abs(e.z)>15||e.hp<0||e.hp>e.maxHP||e.maxHP<=0||!DuelMap.Finite(e.radius)||e.radius<=0)throw new InvalidOperationException("invalid entity");
+            }
+            foreach(var e in m.units)if(!e.concealed&&catalog!=null&&(catalog.Find(e.kind)==null||catalog.Find(e.kind).IsSpell))throw new InvalidOperationException("unsupported unit");
             foreach(var e in m.towers)if(e.kind!="keep"&&e.kind!="tower")throw new InvalidOperationException("unsupported tower");
             foreach(var e in m.effects)if(e==null||!ids.Add(e.id)||catalog==null||catalog.Find(e.kind)==null||!catalog.Find(e.kind).IsSpell||!DuelMap.Finite(e.x)||!DuelMap.Finite(e.z)||!DuelMap.Finite(e.radius)||e.radius<=0||e.radius>5||e.start>e.impact||e.impact>=e.end)throw new InvalidOperationException("invalid effect");
         }

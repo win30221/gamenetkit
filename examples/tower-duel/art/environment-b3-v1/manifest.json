@@ -1,0 +1,573 @@
+{
+  "schema_version": 1,
+  "art_direction_brief": "examples/tower-duel/art/environment-b3-v1/README.md",
+  "scope": "environment artwork; not deployed to the battle scene",
+  "camera": {
+    "pitch": 60,
+    "orthographic": true,
+    "bodyUprightScaleY": "1/camera.up.y"
+  },
+  "lighting": {
+    "source": "screen-upper-right",
+    "castShadow": "screen-lower-left",
+    "body": "authored in imagegen; no runtime self-shading overlay",
+    "shadow": "paired sprite in same PNG, projected offline from body silhouette"
+  },
+  "viewMapping": {
+    "southSeat": {
+      "ground": "south",
+      "wall": "south",
+      "own": "blue-away",
+      "enemy": "red-toward"
+    },
+    "northSeat": {
+      "ground": "north",
+      "wall": "north",
+      "own": "red-away",
+      "enemy": "blue-toward"
+    }
+  },
+  "assets": [
+    {
+      "id": "keep-static",
+      "role": "buildings",
+      "path": "buildings/keep-static-baked.png",
+      "bodyOnlyPath": "buildings/keep-static.png",
+      "status": "awaiting-user-review",
+      "sha256": "4d0cbd1fbb91979811e0d955064bbae8f5de83f7b4ca13eec70fac5f0ec7d9f0",
+      "technical": {
+        "dimensions": [
+          1024,
+          2048
+        ],
+        "tileSize": [
+          512,
+          512
+        ],
+        "columns": 2,
+        "bodyRows": 2,
+        "shadowRowOffset": 2,
+        "alpha": true,
+        "bodyPivot": [
+          0.5,
+          0.0546875
+        ],
+        "shadowPivot": [
+          0.75,
+          0.75
+        ],
+        "shadowScale": 2.2,
+        "shadowFootprint": "lower contour within per-frame base band; camera pitch 60 degrees",
+        "pixelsPerUnit": 512,
+        "filtering": "bilinear",
+        "mipmaps": false,
+        "compression": "none",
+        "visibleWorldWidth": 3.8,
+        "frames": [
+          {
+            "name": "blue-away",
+            "column": 0,
+            "bodyRow": 0,
+            "shadowRow": 2,
+            "bodyBounds": [
+              83,
+              36,
+              429,
+              484
+            ],
+            "footprintBandFraction": 0.25
+          },
+          {
+            "name": "blue-toward",
+            "column": 1,
+            "bodyRow": 0,
+            "shadowRow": 2,
+            "bodyBounds": [
+              82,
+              36,
+              429,
+              484
+            ],
+            "footprintBandFraction": 0.25
+          },
+          {
+            "name": "red-away",
+            "column": 0,
+            "bodyRow": 1,
+            "shadowRow": 3,
+            "bodyBounds": [
+              83,
+              36,
+              429,
+              484
+            ],
+            "footprintBandFraction": 0.25
+          },
+          {
+            "name": "red-toward",
+            "column": 1,
+            "bodyRow": 1,
+            "shadowRow": 3,
+            "bodyBounds": [
+              82,
+              36,
+              429,
+              484
+            ],
+            "footprintBandFraction": 0.25
+          }
+        ]
+      },
+      "visual_locks": [
+        "B3",
+        "palette",
+        "silhouette",
+        "upper-right-light",
+        "lower-left-shadow",
+        "facing"
+      ],
+      "source": {
+        "kind": "generated-and-normalized",
+        "url_or_tool": "built-in image_gen",
+        "creator": "OpenAI imagegen / Codex technical normalization",
+        "created_at": "2026-11-16",
+        "license": "generated for this project",
+        "attribution": "",
+        "raw": "artifacts/tower-duel/environment-b3-v1/keep-static-lit-raw.png",
+        "prompt_or_source_record": "artifacts/tower-duel/environment-b3-v1/prompts"
+      },
+      "verification": {
+        "native_scale_reviewed": false,
+        "in_engine_reviewed": false,
+        "technical_checks_passed": true,
+        "approved_by": ""
+      }
+    },
+    {
+      "id": "tower-static",
+      "role": "buildings",
+      "path": "buildings/tower-static-baked.png",
+      "bodyOnlyPath": "buildings/tower-static.png",
+      "status": "awaiting-user-review",
+      "sha256": "082f118e15eb7a2804e877da2ee9a6d8b6c2424a4770a71651799a75c2d0cab7",
+      "technical": {
+        "dimensions": [
+          1024,
+          2048
+        ],
+        "tileSize": [
+          512,
+          512
+        ],
+        "columns": 2,
+        "bodyRows": 2,
+        "shadowRowOffset": 2,
+        "alpha": true,
+        "bodyPivot": [
+          0.5,
+          0.0546875
+        ],
+        "shadowPivot": [
+          0.75,
+          0.75
+        ],
+        "shadowScale": 2.2,
+        "shadowFootprint": "lower contour within per-frame base band; camera pitch 60 degrees",
+        "pixelsPerUnit": 512,
+        "filtering": "bilinear",
+        "mipmaps": false,
+        "compression": "none",
+        "visibleWorldWidth": 2.6,
+        "frames": [
+          {
+            "name": "blue-away",
+            "column": 0,
+            "bodyRow": 0,
+            "shadowRow": 2,
+            "bodyBounds": [
+              96,
+              37,
+              416,
+              484
+            ],
+            "footprintBandFraction": 0.25
+          },
+          {
+            "name": "blue-toward",
+            "column": 1,
+            "bodyRow": 0,
+            "shadowRow": 2,
+            "bodyBounds": [
+              87,
+              41,
+              425,
+              484
+            ],
+            "footprintBandFraction": 0.25
+          },
+          {
+            "name": "red-away",
+            "column": 0,
+            "bodyRow": 1,
+            "shadowRow": 3,
+            "bodyBounds": [
+              95,
+              36,
+              416,
+              484
+            ],
+            "footprintBandFraction": 0.25
+          },
+          {
+            "name": "red-toward",
+            "column": 1,
+            "bodyRow": 1,
+            "shadowRow": 3,
+            "bodyBounds": [
+              87,
+              40,
+              425,
+              484
+            ],
+            "footprintBandFraction": 0.25
+          }
+        ]
+      },
+      "visual_locks": [
+        "B3",
+        "palette",
+        "silhouette",
+        "upper-right-light",
+        "lower-left-shadow",
+        "facing"
+      ],
+      "source": {
+        "kind": "generated-and-normalized",
+        "url_or_tool": "built-in image_gen",
+        "creator": "OpenAI imagegen / Codex technical normalization",
+        "created_at": "2026-11-16",
+        "license": "generated for this project",
+        "attribution": "",
+        "raw": "artifacts/tower-duel/environment-b3-v1/tower-static-lit-raw.png",
+        "prompt_or_source_record": "artifacts/tower-duel/environment-b3-v1/prompts"
+      },
+      "verification": {
+        "native_scale_reviewed": false,
+        "in_engine_reviewed": false,
+        "technical_checks_passed": true,
+        "approved_by": ""
+      }
+    },
+    {
+      "id": "wall-gates",
+      "role": "wall",
+      "path": "wall/wall-gates-baked.png",
+      "bodyOnlyPath": "wall/wall-gates.png",
+      "status": "awaiting-user-review",
+      "sha256": "c9081eba630dca2f88679875719877e5ca4ea8a65269c5201ea03dec4f7d940d",
+      "technical": {
+        "dimensions": [
+          2048,
+          1024
+        ],
+        "tileSize": [
+          2048,
+          256
+        ],
+        "columns": 1,
+        "bodyRows": 2,
+        "shadowRowOffset": 2,
+        "alpha": true,
+        "bodyPivot": [
+          0.5,
+          0.078125
+        ],
+        "shadowPivot": [
+          0.75,
+          0.75
+        ],
+        "shadowScale": 2.2,
+        "shadowFootprint": "lower contour within per-frame base band; camera pitch 60 degrees",
+        "pixelsPerUnit": 2048,
+        "filtering": "bilinear",
+        "mipmaps": false,
+        "compression": "none",
+        "visibleWorldWidth": 20,
+        "frames": [
+          {
+            "name": "south",
+            "column": 0,
+            "bodyRow": 0,
+            "shadowRow": 2,
+            "bodyBounds": [
+              16,
+              24,
+              2032,
+              236
+            ],
+            "footprintBandFraction": 0.25
+          },
+          {
+            "name": "north",
+            "column": 0,
+            "bodyRow": 1,
+            "shadowRow": 3,
+            "bodyBounds": [
+              16,
+              24,
+              2032,
+              236
+            ],
+            "footprintBandFraction": 0.25
+          }
+        ]
+      },
+      "visual_locks": [
+        "B3",
+        "palette",
+        "silhouette",
+        "upper-right-light",
+        "lower-left-shadow",
+        "facing"
+      ],
+      "source": {
+        "kind": "generated-and-normalized",
+        "url_or_tool": "built-in image_gen",
+        "creator": "OpenAI imagegen / Codex technical normalization",
+        "created_at": "2026-11-16",
+        "license": "generated for this project",
+        "attribution": "",
+        "raw": "artifacts/tower-duel/environment-b3-v1/wall-gates-atlas-raw.png",
+        "prompt_or_source_record": "artifacts/tower-duel/environment-b3-v1/prompts"
+      },
+      "verification": {
+        "native_scale_reviewed": false,
+        "in_engine_reviewed": false,
+        "technical_checks_passed": true,
+        "approved_by": ""
+      }
+    },
+    {
+      "id": "border-props",
+      "role": "props",
+      "path": "props/border-props-baked.png",
+      "bodyOnlyPath": "props/border-props.png",
+      "status": "awaiting-user-review",
+      "sha256": "2faa6b77d85a4575c279460594cc344429ba12a85eb8b2a633df5d1287e4ba92",
+      "technical": {
+        "dimensions": [
+          768,
+          2304
+        ],
+        "tileSize": [
+          384,
+          384
+        ],
+        "columns": 2,
+        "bodyRows": 3,
+        "shadowRowOffset": 3,
+        "alpha": true,
+        "bodyPivot": [
+          0.5,
+          0.078125
+        ],
+        "shadowPivot": [
+          0.75,
+          0.75
+        ],
+        "shadowScale": 2.2,
+        "shadowFootprint": "lower contour within per-frame base band; camera pitch 60 degrees",
+        "pixelsPerUnit": 384,
+        "filtering": "bilinear",
+        "mipmaps": false,
+        "compression": "none",
+        "visibleWorldWidth": [
+          2.8,
+          1.8,
+          1.1,
+          0.9,
+          1.05,
+          0.6
+        ],
+        "frames": [
+          {
+            "name": "tree-large",
+            "column": 0,
+            "bodyRow": 0,
+            "shadowRow": 3,
+            "bodyBounds": [
+              35,
+              24,
+              349,
+              354
+            ],
+            "footprintBandFraction": 0.1
+          },
+          {
+            "name": "tree-small",
+            "column": 1,
+            "bodyRow": 0,
+            "shadowRow": 3,
+            "bodyBounds": [
+              67,
+              84,
+              316,
+              354
+            ],
+            "footprintBandFraction": 0.1
+          },
+          {
+            "name": "bush",
+            "column": 0,
+            "bodyRow": 1,
+            "shadowRow": 4,
+            "bodyBounds": [
+              41,
+              154,
+              342,
+              354
+            ],
+            "footprintBandFraction": 0.25
+          },
+          {
+            "name": "boulder",
+            "column": 1,
+            "bodyRow": 1,
+            "shadowRow": 4,
+            "bodyBounds": [
+              67,
+              164,
+              316,
+              354
+            ],
+            "footprintBandFraction": 0.4
+          },
+          {
+            "name": "rocks",
+            "column": 0,
+            "bodyRow": 2,
+            "shadowRow": 5,
+            "bodyBounds": [
+              87,
+              224,
+              297,
+              354
+            ],
+            "footprintBandFraction": 0.4
+          },
+          {
+            "name": "flowers",
+            "column": 1,
+            "bodyRow": 2,
+            "shadowRow": 5,
+            "bodyBounds": [
+              122,
+              234,
+              261,
+              354
+            ],
+            "footprintBandFraction": 0.15
+          }
+        ]
+      },
+      "visual_locks": [
+        "B3",
+        "palette",
+        "silhouette",
+        "upper-right-light",
+        "lower-left-shadow",
+        "facing"
+      ],
+      "source": {
+        "kind": "generated-and-normalized",
+        "url_or_tool": "built-in image_gen",
+        "creator": "OpenAI imagegen / Codex technical normalization",
+        "created_at": "2026-11-16",
+        "license": "generated for this project",
+        "attribution": "",
+        "raw": "artifacts/tower-duel/environment-b3-v1/border-props-atlas-raw.png",
+        "prompt_or_source_record": "artifacts/tower-duel/environment-b3-v1/prompts"
+      },
+      "verification": {
+        "native_scale_reviewed": false,
+        "in_engine_reviewed": false,
+        "technical_checks_passed": true,
+        "approved_by": ""
+      }
+    },
+    {
+      "id": "ground-south",
+      "role": "terrain",
+      "path": "terrain/ground-south.png",
+      "status": "awaiting-user-review",
+      "technical": {
+        "dimensions": [
+          1024,
+          1536
+        ],
+        "alpha": false,
+        "worldSize": [
+          20,
+          30
+        ],
+        "filtering": "bilinear",
+        "mipmaps": false
+      },
+      "visual_locks": [
+        "B3",
+        "upper-right-light",
+        "continuous-mud-through-gate"
+      ],
+      "source": {
+        "kind": "generated",
+        "url_or_tool": "built-in image_gen",
+        "created_at": "2026-11-16",
+        "license": "generated for this project",
+        "prompt_or_source_record": "artifacts/tower-duel/environment-b3-v1/prompts/ground-south.txt"
+      },
+      "verification": {
+        "native_scale_reviewed": false,
+        "in_engine_reviewed": false,
+        "technical_checks_passed": true,
+        "approved_by": ""
+      }
+    },
+    {
+      "id": "ground-north",
+      "role": "terrain",
+      "path": "terrain/ground-north.png",
+      "status": "awaiting-user-review",
+      "technical": {
+        "dimensions": [
+          1024,
+          1536
+        ],
+        "alpha": false,
+        "worldSize": [
+          20,
+          30
+        ],
+        "filtering": "bilinear",
+        "mipmaps": false
+      },
+      "visual_locks": [
+        "B3",
+        "upper-right-light",
+        "continuous-mud-through-gate"
+      ],
+      "source": {
+        "kind": "generated",
+        "url_or_tool": "built-in image_gen",
+        "created_at": "2026-11-16",
+        "license": "generated for this project",
+        "prompt_or_source_record": "artifacts/tower-duel/environment-b3-v1/prompts/ground-north.txt"
+      },
+      "verification": {
+        "native_scale_reviewed": false,
+        "in_engine_reviewed": false,
+        "technical_checks_passed": true,
+        "approved_by": ""
+      }
+    }
+  ]
+}

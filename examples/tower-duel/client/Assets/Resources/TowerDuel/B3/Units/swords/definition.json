@@ -1,0 +1,13 @@
+{
+    "kind": "swords",
+    "tileSize": 224,
+    "baseline": 208,
+    "referenceHeight": 160,
+    "walkFrames": 6,
+    "attackFrames": 6,
+    "impactFrame": 3,
+    "unitHeight": 2.559999942779541,
+    "worldHeight": 1.2799999713897705,
+    "teamMaskTop": 0.0,
+    "baked": true
+}

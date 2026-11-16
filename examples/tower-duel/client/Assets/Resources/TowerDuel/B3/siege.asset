@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02da9529fb2973a4da4e4cb50b8b25c8, type: 3}
+  m_Name: siege
+  m_EditorClassIdentifier: Assembly-CSharp::TowerDuel.DuelSpriteSet
+  Kind: siege
+  Idle: {fileID: 2800000, guid: d3796107b0864bf4eb7c77c6bc47754f, type: 3}
+  Walk: {fileID: 2800000, guid: 7ac598898b7330748b8c14025ac539c0, type: 3}
+  Attack: {fileID: 2800000, guid: b469358aac2ebb6418667d51c62162ec, type: 3}
+  TileSize: 256
+  Baseline: 224
+  ReferenceHeight: 144
+  WalkFrames: 6
+  AttackFrames: 6
+  ImpactFrame: 3
+  UnitHeight: 4.5
+  WorldHeight: 2.25
+  TeamMaskTop: 2
+  Baked: 1

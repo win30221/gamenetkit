@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02da9529fb2973a4da4e4cb50b8b25c8, type: 3}
+  m_Name: archer
+  m_EditorClassIdentifier: Assembly-CSharp::TowerDuel.DuelSpriteSet
+  Kind: archer
+  Idle: {fileID: 2800000, guid: beddb21294e40a7438c1ffe4adc973f7, type: 3}
+  Walk: {fileID: 2800000, guid: e3fc2dfe84af93d45b11ef72a4c284ab, type: 3}
+  Attack: {fileID: 2800000, guid: 95c7f799d16bb284d8077a694dd6ad96, type: 3}
+  TileSize: 192
+  Baseline: 176
+  ReferenceHeight: 160
+  WalkFrames: 6
+  AttackFrames: 6
+  ImpactFrame: 3
+  UnitHeight: 2.72
+  WorldHeight: 1.36
+  TeamMaskTop: 2
+  Baked: 1

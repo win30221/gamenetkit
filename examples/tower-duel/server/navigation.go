@@ -9,7 +9,7 @@ func (w *match) walkable(p point) bool {
 	if math.Abs(p.X) > w.Map.Width/2-guardRadius || math.Abs(p.Z) > w.Map.Length/2-guardRadius {
 		return false
 	}
-	if math.Abs(p.Z) < w.Map.RiverHalfWidth+guardRadius {
+	if math.Abs(p.Z) < w.Map.barrierHalfWidth()+guardRadius {
 		bridge := false
 		for _, x := range w.Map.Bridges {
 			if math.Abs(p.X-x) <= w.Map.BridgeHalfWidth-guardRadius {
@@ -36,11 +36,11 @@ func (w *match) deploymentPoint(seat int, p point) bool {
 		forward = -1
 	}
 	depth := p.Z * forward
-	bank := w.Map.RiverHalfWidth + guardRadius + .08
+	bank := w.Map.barrierHalfWidth() + guardRadius + .08
 	if depth <= -bank {
 		return w.walkable(p)
 	}
-	if depth < bank || depth > w.Map.RiverHalfWidth+w.Map.PocketDepth {
+	if depth < bank || depth > w.Map.barrierHalfWidth()+w.Map.PocketDepth {
 		return false
 	}
 	for _, tower := range w.Towers {
@@ -85,7 +85,7 @@ func (h *routeHeap) Pop() any     { old := *h; x := old[len(old)-1]; *h = old[:l
 func (w *match) route(from, to point, stopDistance, laneX float64, mover *unit, units []*unit) []point {
 	// A soldier pulled onto another bridge during combat must be able to
 	// finish that crossing before returning to its deployment lane's objective.
-	if math.Abs(from.Z) < w.Map.RiverHalfWidth+guardRadius {
+	if math.Abs(from.Z) < w.Map.barrierHalfWidth()+guardRadius {
 		for _, bridge := range w.Map.Bridges {
 			if math.Abs(from.X-bridge) <= w.Map.BridgeHalfWidth-guardRadius {
 				laneX = bridge
@@ -120,7 +120,7 @@ func (w *match) route(from, to point, stopDistance, laneX float64, mover *unit, 
 		}
 	}
 	allowed := func(p point) bool {
-		if occupied[index(p)] || (laneX != 0 && math.Abs(p.Z) < w.Map.RiverHalfWidth+guardRadius && math.Abs(p.X-laneX) > w.Map.BridgeHalfWidth-guardRadius) {
+		if occupied[index(p)] || (laneX != 0 && math.Abs(p.Z) < w.Map.barrierHalfWidth()+guardRadius && math.Abs(p.X-laneX) > w.Map.BridgeHalfWidth-guardRadius) {
 			return false
 		}
 		return w.walkable(p)
@@ -162,7 +162,7 @@ func (w *match) route(from, to point, stopDistance, laneX float64, mover *unit, 
 		}
 		closed[id] = true
 		p := coord(id)
-		if distance(p, to) <= stopDistance {
+		if distance(p, to) <= stopDistance && w.wallClear(p, to) {
 			path := []point{p}
 			for id != start {
 				id = came[id]
@@ -256,7 +256,7 @@ func (w *match) move(u *unit, goal entity, units []*unit) {
 		u.GoalPoint = position(goal)
 		u.NextRoute = w.Tick + 20
 	}
-	remaining := definition.Speed * w.speedFactor(u) / tickRate
+	remaining := definition.Speed * w.speedFactor(u) * w.Map.terrainFactor(position(u.State)) / tickRate
 	if u.State.Charging {
 		remaining *= 1.45
 	}
@@ -269,7 +269,7 @@ func (w *match) move(u *unit, goal entity, units []*unit) {
 			scale = math.Max(0, distanceToGoal-stop) / distanceToGoal
 		}
 		perimeter := point{p.X + (goal.X-p.X)*scale, p.Z + (goal.Z-p.Z)*scale}
-		if distanceToGoal <= stop+guardRadius*3 && w.clearSegment(p, perimeter, u, units) {
+		if distanceToGoal <= stop+guardRadius*3 && w.wallClear(p, position(goal)) && w.clearSegment(p, perimeter, u, units) {
 			// Spread around the target's perimeter instead of waiting for an
 			// ally to vacate one final grid point. Static obstacles still apply.
 			q = position(goal)

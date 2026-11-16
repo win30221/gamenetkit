@@ -11,9 +11,9 @@ namespace TowerDuel
         public int seat, hp, maxHP;
         public string kind;
         public float x,z,radius,dx,dz;
-        public bool active,slowed,charging;
+        public bool active,slowed,charging,muddy,concealed;
         public bool IsDeploying(double tick)=>readyTick>0&&tick<readyTick;
-        public Vector3 Position => new Vector3(x,Mathf.Abs(z)<1.7f?.16f:.06f,z);
+        public Vector3 Position => new Vector3(x,DuelMap.GroundHeight(z),z);
     }
     [Serializable] public sealed class PlayerState { public int seat; public string name; public bool ready,connected,rematch; public float reconnectRemaining; }
     [Serializable] public sealed class EffectState { public long id,start,impact,end; public string kind; public int seat; public float x,z,radius; }
@@ -43,14 +43,29 @@ namespace TowerDuel
     [Serializable] public sealed class ControlMessage {public string type,match;}
     [Serializable] public sealed class DuelMap
     {
-        public string id;public float width,length,riverHalfWidth,bridgeHalfWidth,deploymentCellSize,pocketDepth;
+        public string id;public float width,length,riverHalfWidth,wallHalfWidth,wallHeight,bridgeHalfWidth,deploymentCellSize,pocketDepth;
         public float[] bridges; public EntityState[] towers;
+        public TerrainZone[] terrainZones;
+        public UnitSightHeight[] unitSightHeights;
+        public bool HasWall=>wallHalfWidth>0;
+        public float BarrierHalfWidth=>HasWall?wallHalfWidth:riverHalfWidth;
+        private static bool flatGround;
+        public static float GroundHeight(float z)=>flatGround?.02f:Mathf.Abs(z)<1.7f?.16f:.06f;
+        public float TerrainMovementFactor(Vector3 point)
+        {
+            float factor=1;
+            if(terrainZones!=null)foreach(var zone in terrainZones)
+                if(Mathf.Abs(point.x-zone.x)<=zone.halfWidth+1e-6f&&Mathf.Abs(point.z-zone.z)<=zone.halfLength+1e-6f)
+                    factor=Mathf.Min(factor,zone.moveFactor);
+            return factor;
+        }
         public string Hash {get;private set;}
         public static DuelMap Load()
         {
             var asset=Resources.Load<TextAsset>("TowerDuel/map");
             if (!asset) throw new InvalidOperationException("Missing canonical map");
             var map=JsonUtility.FromJson<DuelMap>(asset.text);
+            flatGround=map.HasWall;
             using (var hash=SHA256.Create()) map.Hash=BitConverter.ToString(hash.ComputeHash(asset.bytes)).Replace("-","").ToLowerInvariant();
             return map;
         }
@@ -64,10 +79,10 @@ namespace TowerDuel
         private bool CanDeployPoint(int seat,Vector3 point,DuelMessage state)
         {
             if (!Finite(point.x)||!Finite(point.z)||Mathf.Abs(point.x)>width/2-.32f||Mathf.Abs(point.z)>length/2-.32f) return false;
-            float depth=point.z*(seat==0?1:-1),bank=riverHalfWidth+.40f;
+            float depth=point.z*(seat==0?1:-1),bank=BarrierHalfWidth+.40f;
             if(depth>-bank)
             {
-                if(depth<bank||depth>riverHalfWidth+pocketDepth)return false;
+                if(depth<bank||depth>BarrierHalfWidth+pocketDepth)return false;
                 bool annexed=false;
                 foreach(var tower in state.towers)
                     if(tower.seat!=seat&&tower.kind=="tower"&&tower.hp==0&&((tower.x<0&&point.x<=0)||(tower.x>0&&point.x>=0)))annexed=true;
@@ -109,6 +124,12 @@ namespace TowerDuel
         }
         public static bool Finite(float n)=>!float.IsNaN(n)&&!float.IsInfinity(n);
     }
+    [Serializable] public sealed class TerrainZone
+    {
+        public string id,kind;
+        public float x,z,halfWidth,halfLength,moveFactor;
+    }
+    [Serializable] public sealed class UnitSightHeight {public string kind;public float height;}
     [Serializable] public sealed class CardDefinition
     {
         public string id,name,description,type,target;

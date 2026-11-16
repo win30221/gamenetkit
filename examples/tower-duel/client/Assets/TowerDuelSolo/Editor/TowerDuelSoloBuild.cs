@@ -13,6 +13,7 @@ namespace TowerDuel.Solo.Editor
         public static void Build()
         {
             if(EditorApplication.isPlayingOrWillChangePlaymode)throw new InvalidOperationException("Stop Play Mode before building.");
+            TowerDuel.Editor.TowerDuelEnvironmentContent.Prepare();
             if(EditorUserBuildSettings.activeBuildTarget!=BuildTarget.StandaloneWindows64)throw new InvalidOperationException("Open this Editor with -buildTarget Win64.");
             string output=Path.GetFullPath("../Builds/Solo");Directory.CreateDirectory(output);
             var result=BuildPipeline.BuildPlayer(new BuildPlayerOptions{

@@ -1,0 +1,16 @@
+{
+  "id": "b3-guard-approved-style",
+  "approved_date": "2026-11-15",
+  "approval_scope": "overall art direction and shield guard style reference",
+  "file": "B3-round-chibi-guard.png",
+  "sha256": "787B7A65298421CD1C61B51029E4AD143E827606D2131F9101B6ECF71C7AFB54",
+  "source_tool": "built-in image_gen",
+  "source_image": "artifacts/tower-duel/style-studies/2026-11-15/B3-round-chibi-guard.png",
+  "source_prompt_record": "artifacts/tower-duel/style-studies/2026-11-15/B3-B6-notes-and-prompts.md, B3 section",
+  "kind": "opaque concept/style board, full body plus head detail",
+  "not_yet_validated": [
+    "in-engine projection and native-scale read",
+    "sprite canvas, alpha, directions and animation consistency"
+  ]
+}
+

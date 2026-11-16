@@ -55,6 +55,7 @@ namespace TowerDuel.Editor
             Directory.CreateDirectory("Builds");
             File.WriteAllText("Builds/character-audit.json",JsonUtility.ToJson(new CharacterAudit{units=audits.ToArray(),clips=new[]{idle.name,walk.name,quick.name,death.name,shieldAttack.name,slash.name,aim.name,shoot.name,cast.name,chop.name,thrust.name}},true));
             Debug.Log("Prepared six equipped KayKit units and eleven animation clips");
+            TowerDuelSpriteContent.Prepare();
         }
         private static void ImportModel(string path,bool animated,Avatar sourceAvatar)
         {

@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02da9529fb2973a4da4e4cb50b8b25c8, type: 3}
+  m_Name: bomber
+  m_EditorClassIdentifier: Assembly-CSharp::TowerDuel.DuelSpriteSet
+  Kind: bomber
+  Idle: {fileID: 2800000, guid: 1ebc71a9d0eb77e4fa67a6e54d593f0d, type: 3}
+  Walk: {fileID: 2800000, guid: d86d6594a6964f646a838828b9b46e60, type: 3}
+  Attack: {fileID: 2800000, guid: 93daffe89206ab7438954f0086a32f31, type: 3}
+  TileSize: 224
+  Baseline: 208
+  ReferenceHeight: 160
+  WalkFrames: 6
+  AttackFrames: 6
+  ImpactFrame: 3
+  UnitHeight: 2.92
+  WorldHeight: 1.46
+  TeamMaskTop: 0.4
+  Baked: 1
