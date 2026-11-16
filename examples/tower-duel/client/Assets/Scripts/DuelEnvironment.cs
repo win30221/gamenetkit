@@ -36,7 +36,7 @@ namespace TowerDuel
         private readonly Dictionary<long,Item> buildings=new();
         private readonly List<Item> items=new();
         private readonly List<Sprite> owned=new();
-        private readonly SpriteRenderer ground;
+        private readonly SpriteRenderer ground, meadow;
         private readonly Sprite[] groundViews=new Sprite[2];
         private readonly Item wall;
         private int seat=-1;
@@ -69,6 +69,16 @@ namespace TowerDuel
                     atlas.shadow[i]=Frame(texture,i%atlas.columns,i/atlas.columns+atlas.rows,atlas,new Vector2(.75f,.75f));
                 }
                 atlases.Add(atlas.id,atlas);
+            }
+            var meadowTex=Resources.Load<Texture2D>("TowerDuel/B3/Environment/meadow-flat");
+            if(meadowTex)
+            {
+                var meadowSprite=Sprite.Create(meadowTex,new Rect(0,0,meadowTex.width,meadowTex.height),new Vector2(.5f,.5f),meadowTex.width/4f,0,SpriteMeshType.FullRect);
+                owned.Add(meadowSprite);
+                meadow=Renderer(root,"Meadow Backdrop",meadowSprite,bodyMaterial);
+                meadow.drawMode=SpriteDrawMode.Tiled;
+                meadow.size=new Vector2(90,90);
+                meadow.transform.localPosition=new Vector3(0,-.005f,0);
             }
             for(int i=0;i<2;i++)
             {
@@ -155,6 +165,7 @@ namespace TowerDuel
             }
             var forward=Vector3.ProjectOnPlane(camera.transform.forward,Vector3.up).normalized;
             ground.transform.rotation=Quaternion.LookRotation(Vector3.down,forward);
+            if(meadow)meadow.transform.rotation=Quaternion.LookRotation(Vector3.down,forward);
             foreach(var item in items)
             {
                 item.Body.transform.rotation=Quaternion.LookRotation(forward);
