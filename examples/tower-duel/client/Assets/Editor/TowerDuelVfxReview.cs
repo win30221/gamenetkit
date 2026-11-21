@@ -29,6 +29,8 @@ namespace TowerDuel.Editor
                 camera.orthographic=true;camera.orthographicSize=8.4f;
                 camera.transform.rotation=Quaternion.Euler(60,0,0);
                 camera.transform.position=new Vector3(0,0,-.8f)-camera.transform.forward*40;
+                var battlefield = UnityEngine.Object.FindAnyObjectByType<DuelBattlefieldPreview>().Environment;
+                battlefield.SetView(camera, 0);
                 Unit(root.transform,"guard",new Vector3(-5,.16f,-1.8f),false);
                 Unit(root.transform,"swords",new Vector3(-5,.16f,.1f),true);
                 Unit(root.transform,"archer",new Vector3(-4,.06f,-5.1f),false);
@@ -49,7 +51,9 @@ namespace TowerDuel.Editor
                 feedback.Reset();
                 camera.orthographicSize=5.6f;
                 camera.transform.position=new Vector3(-5,0,8)-camera.transform.forward*40;
-                var tower=GameObject.Find("SM_red_Tower_-5");if(tower)tower.SetActive(false);
+                foreach (var tower in DuelMap.Load().towers)
+                    if (tower.seat == 1 && tower.kind == "tower" && tower.x < 0)
+                        battlefield.Building(tower.id).SetActive(false);
                 feedback.Play("Collapse",new Vector3(-5,.8f,8.5f),Vector3.zero,1.1f,100,108);
                 Save(camera,output+"/tower-collapse.png");
                 return output;
@@ -63,11 +67,14 @@ namespace TowerDuel.Editor
         }
         private static void Unit(Transform parent,string kind,Vector3 position,bool enemy)
         {
-            var model=UnityEngine.Object.Instantiate(Resources.Load<GameObject>("TowerDuel/Units/"+kind),parent,false);
+            var model=UnityEngine.Object.Instantiate(DuelSpriteLibrary.Prefab(kind),parent,false);
             model.transform.SetPositionAndRotation(position,Quaternion.Euler(0,enemy?180:0,0));
             var art=model.GetComponent<DuelUnitArt>();
-            art.TeamMarker.sharedMaterial=Resources.Load<Material>("TowerDuel/Materials/"+(enemy?"Red":"Blue"));
-            art.Animator.Rebind();art.Animator.Play("Attack",0,.32f);art.Animator.Update(.001f);
+            var card = DuelRules.Load().Find(kind);
+            var entity = new EntityState { kind=kind, seat=enemy?1:0, dz=enemy?-1:1, target=99, attackTick=100 };
+            art.Sprites.SetTeam(entity.seat);
+            art.Sprites.Present(entity, card, 100 + card.windupTicks * .5, 0, false, 1, 0);
+            art.Sprites.AlignToCamera();
         }
         private static void Save(Camera camera,string path)
         {

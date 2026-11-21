@@ -75,9 +75,13 @@ namespace TowerDuel.Editor
                     var renderer = facing.AddComponent<SpriteRenderer>(); renderer.sharedMaterial = material;
                     renderer.shadowCastingMode = ShadowCastingMode.Off; renderer.receiveShadows = true;
                     var sprites = root.AddComponent<DuelSpriteUnit>(); sprites.Configure(set, renderer);
-                    var original = Resources.Load<GameObject>("TowerDuel/Units/" + definition.kind).GetComponent<DuelUnitArt>();
-                    var marker = UnityEngine.Object.Instantiate(original.TeamMarker.gameObject, root.transform, false);
-                    marker.name = "Team marker";
+                    var marker = new GameObject("Team marker");
+                    marker.transform.SetParent(root.transform, false);
+                    marker.transform.localPosition = Vector3.up * .02f;
+                    marker.AddComponent<MeshFilter>().sharedMesh = Resources.Load<Mesh>("TowerDuel/Units/TeamMarker");
+                    var markerRenderer = marker.AddComponent<MeshRenderer>();
+                    markerRenderer.sharedMaterial = Resources.Load<Material>("TowerDuel/Materials/Blue");
+                    markerRenderer.shadowCastingMode = ShadowCastingMode.Off;
                     var art = root.AddComponent<DuelUnitArt>(); art.Sprites = sprites; art.Height = set.UnitHeight;
                     art.TeamMarker = marker.GetComponent<Renderer>();
                     art.TeamMarker.enabled = false;

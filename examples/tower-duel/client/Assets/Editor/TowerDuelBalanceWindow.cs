@@ -170,14 +170,6 @@ namespace TowerDuel.Editor
             WriteRules(CanonicalPath,originalJson,json);
             originalJson=json;originalDraft=json;
             AssetDatabase.ImportAsset("Assets/Resources/TowerDuel/rules.json",ImportAssetOptions.ForceSynchronousImport|ImportAssetOptions.ForceUpdate);
-            foreach(var card in draft.cards)
-            {
-                if(card.IsSpell)continue;
-                var controller=AssetDatabase.LoadAssetAtPath<AnimatorController>("Assets/Resources/TowerDuel/Units/"+card.id+".controller");
-                if(!controller)continue;
-                foreach(var child in controller.layers[0].stateMachine.states)if(child.state.name=="Attack"&&child.state.motion is AnimationClip clip)
-                {child.state.speed=clip.length/(card.cooldown/30f);EditorUtility.SetDirty(child.state);}
-            }
             AssetDatabase.SaveAssets();RefreshState();ShowMessage("共用規則已儲存；Go 後端與 Unity 共用此檔，本機後端重啟後套用新數值。");
         }
         public override void SaveChanges(){SaveDraft();base.SaveChanges();}
