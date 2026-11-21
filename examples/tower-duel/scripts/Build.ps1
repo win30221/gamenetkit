@@ -7,8 +7,6 @@ $project=Join-Path $example 'client'
 . (Join-Path $repo 'tools/internal/Toolchain.ps1')
 if(-not $UnityCli){$UnityCli=Join-Path $repo '.local/unity-cli/bin/unity.exe'}
 if(-not(Test-Path -LiteralPath $UnityCli)){throw 'Install Unity CLI, or use Unity menu: Tower Duel > Build Windows development player'}
-Copy-Item -LiteralPath (Join-Path $example 'protocol/map.json') -Destination (Join-Path $project 'Assets/Resources/TowerDuel/map.json')
-Copy-Item -LiteralPath (Join-Path $example 'protocol/rules.json') -Destination (Join-Path $project 'Assets/Resources/TowerDuel/rules.json')
 $editor=Resolve-GameNetKitUnityEditor -ProjectPath $project
 $owned=$null
 try {

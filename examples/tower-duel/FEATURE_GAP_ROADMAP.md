@@ -11,11 +11,11 @@
 | 項目 | 目前狀態 | 實作依據 |
 | --- | --- | --- |
 | 好友對戰 | 六位房間碼、兩席、雙方準備與倒數 | [engine.go](server/engine.go)、[session.go](server/session.go) |
-| 戰場 | 雙橋、每方一座主堡及兩座前塔；雙方都以自己為近端 | [map.json](protocol/map.json)、[TowerDuelClient.cs](client/Assets/Scripts/TowerDuelClient.cs) |
+| 戰場 | 雙橋、每方一座主堡及兩座前塔；雙方都以自己為近端 | [map.json](client/Assets/Resources/TowerDuel/map.json)、[TowerDuelClient.cs](client/Assets/Scripts/TowerDuelClient.cs) |
 | 部署與交戰 | 點選／拖曳、合法區預覽、編隊生成、跨橋尋路、推擠、索敵、傷害與死亡 | [model.go](server/model.go)、[navigation.go](server/navigation.go)、[collision.go](server/collision.go) |
 | 塔與勝負 | 塔自動攻擊、主堡受傷或己方前塔倒下後啟動、主堡摧毀立即結算 | [simulation.go](server/simulation.go) |
-| 能量與時間 | 初始 5、上限 10、每 3 秒回 1；正常 3 分鐘，最後一分鐘及延長賽雙倍回能；延長 60 秒後仍未分勝負則平手 | [simulation.go](server/simulation.go)、[協定](protocol/README.md) |
-| 卡牌 | 六種部隊、火球、冰霜；固定八張、四張手牌與下一張預覽，費用 2～5 | [rules.json](protocol/rules.json)、[model.go](server/model.go)、[DuelHud.cs](client/Assets/Scripts/DuelHud.cs) |
+| 能量與時間 | 初始 5、上限 10、每 3 秒回 1；正常 3 分鐘，最後一分鐘及延長賽雙倍回能；延長 60 秒後仍未分勝負則平手 | [simulation.go](server/simulation.go)、[協定](PROTOCOL.md) |
+| 卡牌 | 六種部隊、火球、冰霜；固定八張、四張手牌與下一張預覽，費用 2～5 | [rules.json](client/Assets/Resources/TowerDuel/rules.json)、[model.go](server/model.go)、[DuelHud.cs](client/Assets/Scripts/DuelHud.cs) |
 | 操作與呈現 | 滑鼠點選／拖曳、取消、血量、能量與時間；角色待機／移動／攻擊／死亡動畫及箭矢表現 | [DuelCardDrag.cs](client/Assets/Scripts/DuelCardDrag.cs)、[DuelPresentation.cs](client/Assets/Scripts/DuelPresentation.cs) |
 | 網路正確性 | Go 權威、原子扣費／換牌、確認去重；私有能量、手牌、下一張與恢復憑證 | [model.go](server/model.go)、[session.go](server/session.go)、[DuelSession.cs](client/Assets/Scripts/DuelSession.cs) |
 | 對局恢復 | 30 秒保留席位，模擬持續；同房雙方確認重賽 | [engine.go](server/engine.go)、[DuelSession.cs](client/Assets/Scripts/DuelSession.cs) |

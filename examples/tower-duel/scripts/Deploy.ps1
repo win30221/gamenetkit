@@ -16,12 +16,12 @@ $web=Join-Path $game 'client/Builds/WebGL'
 foreach($file in @('index.html','tower-duel-build.txt','Build/WebGL.loader.js','Build/WebGL.framework.js.gz','Build/WebGL.data.gz','Build/WebGL.wasm.gz')){
     if(-not(Test-Path -LiteralPath (Join-Path $web $file) -PathType Leaf)){throw "Missing WebGL build: $file"}
 }
-$rules=Get-Content -LiteralPath (Join-Path $game 'protocol/rules.json') -Raw | ConvertFrom-Json
+$rules=Get-Content -LiteralPath (Join-Path $game 'client/Assets/Resources/TowerDuel/rules.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 $protocol=[int]$rules.schema
 $buildMarker="TowerDuel protocol $protocol / $($rules.id)"
 if((Get-Content -LiteralPath (Join-Path $web 'tower-duel-build.txt') -Raw).Trim() -ne $buildMarker){throw 'WebGL build does not match the canonical protocol/rules revision'}
-$rulesHash=(Get-FileHash -LiteralPath (Join-Path $game 'protocol/rules.json') -Algorithm SHA256).Hash.ToLowerInvariant()
-$mapHash=(Get-FileHash -LiteralPath (Join-Path $game 'protocol/map.json') -Algorithm SHA256).Hash.ToLowerInvariant()
+$rulesHash=(Get-FileHash -LiteralPath (Join-Path $game 'client/Assets/Resources/TowerDuel/rules.json') -Algorithm SHA256).Hash.ToLowerInvariant()
+$mapHash=(Get-FileHash -LiteralPath (Join-Path $game 'client/Assets/Resources/TowerDuel/map.json') -Algorithm SHA256).Hash.ToLowerInvariant()
 $env:GAMENETKIT_CACHE=Join-Path $repo '.cache'
 . (Join-Path $repo 'tools/internal/Go-Env.ps1')
 $release=[DateTime]::UtcNow.ToString('yyyyMMddTHHmmssZ')+'-'+[guid]::NewGuid().ToString('N').Substring(0,8)
@@ -36,12 +36,13 @@ try{
 }finally{$env:GOOS=$savedOS;$env:GOARCH=$savedArch;$env:CGO_ENABLED=$savedCGO}
 Copy-Item -Path (Join-Path $web '*') -Destination (Join-Path $bundle 'public') -Recurse
 Copy-Item -LiteralPath (Join-Path $repo 'packages/unity/transport/Browser/transport.js') -Destination (Join-Path $bundle 'public/transport.js')
-Copy-Item -LiteralPath (Join-Path $game 'protocol/map.json'),(Join-Path $game 'protocol/rules.json') -Destination (Join-Path $bundle 'protocol')
+Copy-Item -LiteralPath (Join-Path $game 'client/Assets/Resources/TowerDuel/map.json'),(Join-Path $game 'client/Assets/Resources/TowerDuel/rules.json') -Destination (Join-Path $bundle 'protocol')
 $site=[IO.File]::ReadAllText((Join-Path $game 'deploy/site.caddy.template')).Replace('__DOMAIN__',$Domain.ToLowerInvariant())
 [IO.File]::WriteAllText((Join-Path $bundle 'site.caddy'),$site,[Text.UTF8Encoding]::new($false))
 [IO.File]::WriteAllText((Join-Path $bundle 'install.sh'),[IO.File]::ReadAllText((Join-Path $game 'deploy/install.sh')).Replace("`r`n","`n"),[Text.UTF8Encoding]::new($false))
 $manifest=[ordered]@{release=$release;origin="https://$Domain";createdAt=[DateTime]::UtcNow.ToString('o');target='linux/amd64';protocol=$protocol;rulesRevision=$rules.id;rulesHash=$rulesHash;mapHash=$mapHash;files=@()}
-$manifest.files=@(Get-ChildItem $bundle -Recurse -File | ForEach-Object {[ordered]@{path=[IO.Path]::GetRelativePath($bundle,$_.FullName).Replace('\','/');sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant();bytes=$_.Length}})
+function Get-BundleRelative([string]$Full){$b=$bundle.TrimEnd('\','/');if($Full.StartsWith($b,[StringComparison]::OrdinalIgnoreCase)){return $Full.Substring($b.Length).TrimStart('\','/').Replace('\','/')};return $Full.Replace('\','/')}
+$manifest.files=@(Get-ChildItem $bundle -Recurse -File | ForEach-Object {[ordered]@{path=(Get-BundleRelative $_.FullName);sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant();bytes=$_.Length}})
 $manifest | ConvertTo-Json -Depth 6 | Set-Content (Join-Path $bundle 'manifest.json') -Encoding utf8
 $archive=Join-Path $out 'game.tar.gz'
 & tar -czf $archive -C $bundle .

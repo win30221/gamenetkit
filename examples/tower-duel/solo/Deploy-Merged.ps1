@@ -13,7 +13,7 @@ $example=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $repo=[IO.Path]::GetFullPath((Join-Path $example '../..'))
 $plain=Join-Path $example 'client/Builds/WebGL'
 $modes=Join-Path $example 'Builds/SoloWeb/WebGL'
-$rules=Get-Content -LiteralPath (Join-Path $example 'protocol/rules.json') -Raw | ConvertFrom-Json
+$rules=Get-Content -LiteralPath (Join-Path $example 'client/Assets/Resources/TowerDuel/rules.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 foreach($root in @($plain,$modes)){
     foreach($file in @('index.html','Build/WebGL.loader.js','Build/WebGL.framework.js.gz','Build/WebGL.data.gz','Build/WebGL.wasm.gz')){
         if(-not(Test-Path -LiteralPath (Join-Path $root $file) -PathType Leaf)){throw "Missing built player: $root/$file"}
@@ -42,7 +42,7 @@ foreach($copy in @(@{Source=$plain;Target='public'},@{Source=$modes;Target='mode
     Get-ChildItem -LiteralPath $copy.Source | ForEach-Object {Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $bundle $copy.Target) -Recurse -Force}
     Copy-Item -LiteralPath (Join-Path $repo 'packages/unity/transport/Browser/transport.js') -Destination (Join-Path $bundle "$($copy.Target)/transport.js")
 }
-Copy-Item -LiteralPath (Join-Path $example 'protocol/map.json'),(Join-Path $example 'protocol/rules.json') -Destination (Join-Path $bundle 'protocol')
+Copy-Item -LiteralPath (Join-Path $example 'client/Assets/Resources/TowerDuel/map.json'),(Join-Path $example 'client/Assets/Resources/TowerDuel/rules.json') -Destination (Join-Path $bundle 'protocol')
 function Write-MergedText([string]$Path,[string]$Content){[IO.File]::WriteAllText($Path,$Content.Replace("`r`n","`n"),[Text.UTF8Encoding]::new($false))}
 Write-MergedText (Join-Path $bundle 'site.normal.caddy') ([IO.File]::ReadAllText((Join-Path $example 'deploy/site.caddy.template')).Replace('__DOMAIN__',$Domain.ToLowerInvariant()))
 Write-MergedText (Join-Path $bundle 'site.merged.caddy') ([IO.File]::ReadAllText((Join-Path $PSScriptRoot 'deploy/merged-site.caddy.template')).Replace('__DOMAIN__',$Domain.ToLowerInvariant()))
@@ -51,11 +51,12 @@ foreach($file in @('install-merged.sh','disable-modes.sh','tower-duel-modes.serv
     Write-MergedText (Join-Path $bundle $file) ([IO.File]::ReadAllText((Join-Path $PSScriptRoot "deploy/$file")).Replace('__DOMAIN__',$Domain.ToLowerInvariant()))
 }
 $manifest=[ordered]@{release=$release;origin="https://$Domain";legacyOrigin="https://$LegacyDomain";protocol=$rules.schema;rulesRevision=$rules.id;
-    rulesHash=(Get-FileHash (Join-Path $example 'protocol/rules.json')).Hash.ToLowerInvariant();mapHash=(Get-FileHash (Join-Path $example 'protocol/map.json')).Hash.ToLowerInvariant();
+    rulesHash=(Get-FileHash -LiteralPath (Join-Path $example 'client/Assets/Resources/TowerDuel/rules.json') -Algorithm SHA256).Hash.ToLowerInvariant();mapHash=(Get-FileHash -LiteralPath (Join-Path $example 'client/Assets/Resources/TowerDuel/map.json') -Algorithm SHA256).Hash.ToLowerInvariant();
     modes=@('practice','sandbox','multiplayer');optionalService='tower-duel-modes.service';fallback='public';modePlayer='modes-public';files=@()}
-$manifest.files=@(Get-ChildItem -LiteralPath $bundle -Recurse -File | ForEach-Object {[ordered]@{path=[IO.Path]::GetRelativePath($bundle,$_.FullName).Replace('\','/');sha256=(Get-FileHash $_.FullName).Hash.ToLowerInvariant();bytes=$_.Length}})
+function Get-BundleRelative([string]$Full){$b=$bundle.TrimEnd('\','/');if($Full.StartsWith($b,[StringComparison]::OrdinalIgnoreCase)){return $Full.Substring($b.Length).TrimStart('\','/').Replace('\','/')};return $Full.Replace('\','/')}
+$manifest.files=@(Get-ChildItem -LiteralPath $bundle -Recurse -File | ForEach-Object {[ordered]@{path=(Get-BundleRelative $_.FullName);sha256=(Get-FileHash $_.FullName).Hash.ToLowerInvariant();bytes=$_.Length}})
 $manifest | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $bundle 'manifest.json') -Encoding utf8
-$checksums=Get-ChildItem -LiteralPath $bundle -Recurse -File | ForEach-Object {(Get-FileHash $_.FullName).Hash.ToLowerInvariant()+'  '+[IO.Path]::GetRelativePath($bundle,$_.FullName).Replace('\','/')}
+$checksums=Get-ChildItem -LiteralPath $bundle -Recurse -File | ForEach-Object {(Get-FileHash $_.FullName).Hash.ToLowerInvariant()+'  '+(Get-BundleRelative $_.FullName)}
 Write-MergedText (Join-Path $bundle 'SHA256SUMS') (($checksums -join "`n")+"`n")
 $archive=Join-Path $output 'merged.tar.gz'
 & tar -czf $archive -C $bundle .

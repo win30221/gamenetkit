@@ -56,7 +56,7 @@ foreach($entry in @(@{Source=(Join-Path $example 'server');Name='tower-duel-serv
         if($LASTEXITCODE -ne 0){throw "Build failed: $($entry.Name)"}
     } finally {Pop-Location}
 }
-foreach($file in @('map.json','rules.json')){Copy-Item -LiteralPath (Join-Path $example "protocol/$file") -Destination (Join-Path $support $file)}
+foreach($file in @('map.json','rules.json')){Copy-Item -LiteralPath (Join-Path $example "client/Assets/Resources/TowerDuel/$file") -Destination (Join-Path $support $file)}
 Copy-Item -LiteralPath (Join-Path $repo 'packages/unity/transport/Browser/transport.js') -Destination (Join-Path $support 'transport.js')
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Play-Solo.ps1') -Destination (Join-Path $support 'Play-Solo.ps1')
 foreach($file in @('Start-Solo.cmd','Start-Sandbox.cmd')){Copy-Item -LiteralPath (Join-Path $PSScriptRoot $file) -Destination (Join-Path $bundle $file)}

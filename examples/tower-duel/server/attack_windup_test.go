@@ -1,7 +1,8 @@
 package main
 
 import (
-	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"math"
 	"os"
@@ -177,13 +178,19 @@ func TestCompletedWindupsCanKillEachOtherOnSameTick(t *testing.T) {
 }
 
 func TestWindupRulesAreRequiredAndSharedWithClient(t *testing.T) {
-	canonical, err := os.ReadFile("../protocol/rules.json")
+	canonicalPath := "../client/Assets/Resources/TowerDuel/rules.json"
+	canonical, err := os.ReadFile(canonicalPath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	client, err := os.ReadFile("../client/Assets/Resources/TowerDuel/rules.json")
-	if err != nil || !bytes.Equal(canonical, client) {
-		t.Fatal("client and server must agree on windup rules and handshake hash", err)
+	sum := sha256.Sum256(canonical)
+	expectedHash := hex.EncodeToString(sum[:])
+	loaded, err := loadRules(canonicalPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if loaded.Hash != expectedHash {
+		t.Fatalf("rules hash mismatch: got %s, want %s", loaded.Hash, expectedHash)
 	}
 	cooldown := defaultRules().ByID["guard"].Cooldown
 	for _, ticks := range []int{-1, 0, cooldown, cooldown + 1} {

@@ -18,8 +18,8 @@ function changedPixels(a,b){
 async function run(origin='http://127.0.0.1:18115',output=path.join(root,'artifacts/tower-duel/webgl-sdk/timeline')){
  fs.mkdirSync(output,{recursive:true});
  const config=await(await fetch(origin+'/api/config')).json();
- const map=JSON.parse(fs.readFileSync(path.join(root,'examples/tower-duel/protocol/map.json'),'utf8'));
- const rules=JSON.parse(fs.readFileSync(path.join(root,'examples/tower-duel/protocol/rules.json'),'utf8'));
+ const map=JSON.parse(fs.readFileSync(path.join(root,'examples/tower-duel/client/Assets/Resources/TowerDuel/map.json'),'utf8'));
+ const rules=JSON.parse(fs.readFileSync(path.join(root,'examples/tower-duel/client/Assets/Resources/TowerDuel/rules.json'),'utf8'));
  const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--enable-unsafe-swiftshader','--disable-background-timer-throttling','--disable-renderer-backgrounding','--disable-backgrounding-occluded-windows']});
  const context=await browser.newContext({viewport:{width:720,height:1000},deviceScaleFactor:1});
  await context.addInitScript(()=>{

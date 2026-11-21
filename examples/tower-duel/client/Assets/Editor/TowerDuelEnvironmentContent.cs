@@ -36,7 +36,6 @@ namespace TowerDuel.Editor
                     baseline=Mathf.RoundToInt((1-technical.bodyPivot[1])*technical.tileSize[1]),frameWidths=widths});
             }
             File.WriteAllText(target+"/definition.json",JsonUtility.ToJson(new DuelEnvironmentDefinition{atlases=list.ToArray()},true)+"\n");
-            File.Copy(Path.GetFullPath("../protocol/map.json"),"Assets/Resources/TowerDuel/map.json",true);
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             foreach(string path in Directory.GetFiles(target,"*.png"))
             {
@@ -49,7 +48,7 @@ namespace TowerDuel.Editor
                 importer.maxTextureSize=4096;importer.textureCompression=TextureImporterCompression.Uncompressed;
                 importer.SaveAndReimport();
             }
-            AssetDatabase.SaveAssets();return "B3 environment imported: 6 textures, four atlases and canonical map";
+            AssetDatabase.SaveAssets();return "B3 environment imported: 6 textures and four atlases";
         }
     }
 }

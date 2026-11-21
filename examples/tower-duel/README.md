@@ -177,7 +177,7 @@ Go 測試另涵蓋部署範圍、編隊全部成功或全部拒絕、能量不�
 
 - `client`：受版本控制的 Unity 專案；不依賴 `artifacts` 的美術驗證工程。
 - `server`：Go 應用，引用 SDK `loop`、`transport`。
-- `protocol`：共用地圖與 [訊息協定](protocol/README.md)。
+- [訊息協定](PROTOCOL.md)：共用地圖與訊息協定規格。
 - `art`：KayKit 來源、CC0 授權、場景組裝與 URP 美術驗證流程。
 - [角色製作記錄](art/CHARACTERS.md)：原始檔雜湊、武器掛點、朝向、面數與動畫匯入方式。
 - [八張牌美術與來源](art/EXPANSION_ASSETS.md)：新增部隊、火球／冰霜、卡面及音效。
@@ -190,5 +190,5 @@ Go 測試另涵蓋部署範圍、編隊全部成功或全部拒絕、能量不�
 
 盾衛、弓箭手、劍士小隊各 3 費；炸彈兵、突擊兵、火球各 4 費，攻城兵 5 費，冰霜 2 費。
 炸彈兵造成範圍傷害，突擊兵移動蓄力衝鋒，攻城兵只攻擊建築。
-數值集中在 `protocol/rules.json`，建置腳本同步到 Unity，雙端握手比對規則雜湊。
+數值集中在 `client/Assets/Resources/TowerDuel/rules.json`，Go 後端與 Unity 共用單一來源，雙端握手比對規則雜湊。
 

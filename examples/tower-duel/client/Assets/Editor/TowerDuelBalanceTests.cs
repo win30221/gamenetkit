@@ -38,18 +38,17 @@ namespace TowerDuel.Editor
                 Require(TowerDuelBalanceWindow.Validate(rules)==null,"The editable round-trip configuration failed validation.");
                 string output=Path.GetFullPath(Path.Combine(TowerDuelBalanceWindow.ExampleRoot,"../../artifacts/tower-duel/balance"));
                 Directory.CreateDirectory(output);
-                string server=Path.Combine(output,"rules-roundtrip.json"),client=Path.Combine(output,"client-roundtrip.json");
-                File.WriteAllText(server,"server-before");File.WriteAllText(client,"client-before");
+                string fixture=Path.Combine(output,"rules-roundtrip.json");
+                File.WriteAllText(fixture,"before");
                 string serialized=TowerDuelBalanceWindow.Serialize(rules);
-                TowerDuelBalanceWindow.WritePair(server,client,"server-before","client-before",serialized);
-                Require(File.ReadAllText(server)==File.ReadAllText(client),"Saving produced different client and backend rules.");
-                var restored=JsonUtility.FromJson<DuelRules>(File.ReadAllText(server));
+                TowerDuelBalanceWindow.WriteRules(fixture,"before",serialized);
+                var restored=JsonUtility.FromJson<DuelRules>(File.ReadAllText(fixture));
                 Require(restored.Find("guard").deployTicks==editedTicks&&restored.Find("guard").damage==editedDamage&&restored.towerHP==rules.towerHP,"Saved shared rules lost a changed stat.");
-                File.AppendAllText(client,"\n");bool conflict=false;
-                try{TowerDuelBalanceWindow.WritePair(server,client,serialized,serialized,serialized);}
+                File.AppendAllText(fixture,"\n");bool conflict=false;
+                try{TowerDuelBalanceWindow.WriteRules(fixture,serialized,serialized);}
                 catch(InvalidOperationException){conflict=true;}
-                Require(conflict&&File.ReadAllText(server)==serialized,"Saving overwrote a concurrent edit or partly changed the shared rules.");
-                File.WriteAllText(client,serialized);
+                Require(conflict&&File.ReadAllText(fixture)==serialized+"\n","Saving overwrote an external edit without detecting conflict.");
+                File.WriteAllText(fixture,serialized);
                 string result="TOWER_DUEL_BALANCE_TESTS PASS: UI fields, millisecond conversion, validation, DPS comparison, shared-file round trip and external-edit protection";
                 File.WriteAllText(Path.Combine(output,"editor-result.json"),JsonUtility.ToJson(new Result{passed=true,result=result},true));
                 return result;

@@ -6,7 +6,7 @@ import (
 )
 
 func defaultRules() rules {
-	r, err := loadRules("../protocol/rules.json")
+	r, err := loadRules("../client/Assets/Resources/TowerDuel/rules.json")
 	if err != nil {
 		panic(err)
 	}
@@ -15,7 +15,7 @@ func defaultRules() rules {
 
 func testMap(t *testing.T) mapDefinition {
 	t.Helper()
-	m, err := loadMap("../protocol/map.json")
+	m, err := loadMap("../client/Assets/Resources/TowerDuel/map.json")
 	if err != nil {
 		t.Fatal(err)
 	}

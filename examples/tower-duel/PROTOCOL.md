@@ -7,7 +7,7 @@ GameNetKit transport and interpolation. Animation and projectiles do not calcula
 - WebSocket `/ws`: strict flat JSON; 1 KiB input, 32 KiB output.
 - Simulation 30 Hz; complete recipient-specific snapshots 15 Hz.
 - At most 32 two-seat rooms, 64 connections, 80 living soldiers and 16 effects per room.
-- `map.json` and `rules.json` are canonical; SHA-256 of their raw bytes becomes
+- `client/Assets/Resources/TowerDuel/map.json` and `rules.json` are canonical; SHA-256 of their raw bytes becomes
   `mapHash` and `rulesHash`. Rules schema 3, revision `eight-cards-3`.
 - Each recipient receives only their own energy, four-card hand, next card,
   hand version and action watermark. Opponent hands and queues are never projected.

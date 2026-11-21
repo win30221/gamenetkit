@@ -22,8 +22,8 @@ try {
 } finally {Pop-Location}
 function Quote-BalanceArgument([string]$value){'"'+$value.Replace('"','\"')+'"'}
 $server=Start-Process -FilePath $binary -WindowStyle Hidden -PassThru -ArgumentList @('-http',"127.0.0.1:$Port",
-    '-map',(Quote-BalanceArgument (Join-Path $example 'protocol/map.json')),
-    '-rules',(Quote-BalanceArgument (Join-Path $example 'protocol/rules.json')),
+    '-map',(Quote-BalanceArgument (Join-Path $example 'client/Assets/Resources/TowerDuel/map.json')),
+    '-rules',(Quote-BalanceArgument (Join-Path $example 'client/Assets/Resources/TowerDuel/rules.json')),
     '-transport-runtime',(Quote-BalanceArgument (Join-Path $repo 'packages/unity/transport/Browser/transport.js'))) `
     -RedirectStandardOutput (Join-Path $output 'server.log') -RedirectStandardError (Join-Path $output 'server-error.log')
 try {
