@@ -12,31 +12,25 @@ $ErrorActionPreference='Stop'
 if($StaticOnly -and $ClientOnly){throw 'Choose either -StaticOnly or -ClientOnly'}
 $game=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $repo=[IO.Path]::GetFullPath((Join-Path $game '../..'))
-$web=Join-Path $game 'client/Builds/WebGL'
-foreach($file in @('index.html','tower-duel-build.txt','Build/WebGL.loader.js','Build/WebGL.framework.js.gz','Build/WebGL.data.gz','Build/WebGL.wasm.gz')){
-    if(-not(Test-Path -LiteralPath (Join-Path $web $file) -PathType Leaf)){throw "Missing WebGL build: $file"}
-}
-$rules=Get-Content -LiteralPath (Join-Path $game 'client/Assets/Resources/TowerDuel/rules.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-$protocol=[int]$rules.schema
-$buildMarker="TowerDuel protocol $protocol / $($rules.id)"
-if((Get-Content -LiteralPath (Join-Path $web 'tower-duel-build.txt') -Raw).Trim() -ne $buildMarker){throw 'WebGL build does not match the canonical protocol/rules revision'}
-$rulesHash=(Get-FileHash -LiteralPath (Join-Path $game 'client/Assets/Resources/TowerDuel/rules.json') -Algorithm SHA256).Hash.ToLowerInvariant()
-$mapHash=(Get-FileHash -LiteralPath (Join-Path $game 'client/Assets/Resources/TowerDuel/map.json') -Algorithm SHA256).Hash.ToLowerInvariant()
-$env:GAMENETKIT_CACHE=Join-Path $repo '.cache'
-. (Join-Path $repo 'tools/internal/Go-Env.ps1')
 $release=[DateTime]::UtcNow.ToString('yyyyMMddTHHmmssZ')+'-'+[guid]::NewGuid().ToString('N').Substring(0,8)
 $out=Join-Path $repo ".local/deploy/tower-duel/$release"
 $bundle=Join-Path $out 'bundle'
-New-Item -ItemType Directory -Force (Join-Path $bundle 'public'),(Join-Path $bundle 'protocol') | Out-Null
+. (Join-Path $PSScriptRoot 'WebPackageContent.ps1')
+$packageProtocol = New-TowerDuelWebPackageContent $game $bundle @{Multiplayer='public'}
+$buildMarker = $packageProtocol.Markers.Multiplayer
+$rules = $packageProtocol.Rules
+$protocol = [int]$rules.schema
+$rulesHash = $packageProtocol.rulesHash
+$mapHash = $packageProtocol.mapHash
+$env:GAMENETKIT_CACHE=Join-Path $repo '.cache'
+. (Join-Path $repo 'tools/internal/Go-Env.ps1')
 $savedOS=$env:GOOS;$savedArch=$env:GOARCH;$savedCGO=$env:CGO_ENABLED
 try{
     $env:GOOS='linux';$env:GOARCH='amd64';$env:CGO_ENABLED='0'
     Push-Location (Join-Path $game 'server')
     try{& $Go build -buildvcs=false -trimpath -o (Join-Path $bundle 'tower-duel-api') .;if($LASTEXITCODE -ne 0){throw 'Linux API build failed'}}finally{Pop-Location}
 }finally{$env:GOOS=$savedOS;$env:GOARCH=$savedArch;$env:CGO_ENABLED=$savedCGO}
-Copy-Item -Path (Join-Path $web '*') -Destination (Join-Path $bundle 'public') -Recurse
 Copy-Item -LiteralPath (Join-Path $repo 'packages/unity/transport/Browser/transport.js') -Destination (Join-Path $bundle 'public/transport.js')
-Copy-Item -LiteralPath (Join-Path $game 'client/Assets/Resources/TowerDuel/map.json'),(Join-Path $game 'client/Assets/Resources/TowerDuel/rules.json') -Destination (Join-Path $bundle 'protocol')
 $site=[IO.File]::ReadAllText((Join-Path $game 'deploy/site.caddy.template')).Replace('__DOMAIN__',$Domain.ToLowerInvariant())
 [IO.File]::WriteAllText((Join-Path $bundle 'site.caddy'),$site,[Text.UTF8Encoding]::new($false))
 [IO.File]::WriteAllText((Join-Path $bundle 'install.sh'),[IO.File]::ReadAllText((Join-Path $game 'deploy/install.sh')).Replace("`r`n","`n"),[Text.UTF8Encoding]::new($false))

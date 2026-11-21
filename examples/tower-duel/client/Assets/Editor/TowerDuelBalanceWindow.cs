@@ -8,6 +8,7 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 using Debug = UnityEngine.Debug;
 
@@ -16,7 +17,8 @@ namespace TowerDuel.Editor
     public sealed class TowerDuelBalanceWindow : EditorWindow
     {
         [SerializeField] private DuelRules draft;
-        [SerializeField] private string originalJson, originalDraft;
+        [SerializeField, FormerlySerializedAs("originalClient")] private string originalJson;
+        [SerializeField] private string originalDraft;
         internal static string ExampleRoot => Path.GetFullPath(Path.Combine(Application.dataPath,"../.."));
         internal static string CanonicalPath => Path.Combine(Application.dataPath,"Resources/TowerDuel/rules.json");
         internal static string ClientPath => CanonicalPath;

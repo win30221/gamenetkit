@@ -160,16 +160,17 @@ namespace TowerDuel.Editor
                 throw new InvalidOperationException("Open this Editor with -buildTarget WebGL before building");
             Setup();
             ConfigureWeb();
-            Directory.CreateDirectory("Builds/WebGL");
+            const string output = "Builds/WebGL";
+            var content = TowerDuelWebContent.BeginBuild(output, out var rules);
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
-                scenes = new[] { Scene }, locationPathName = "Builds/WebGL",
+                scenes = new[] { Scene }, locationPathName = output,
                 target = BuildTarget.WebGL, options = BuildOptions.None
             });
             string result = JsonUtility.ToJson(new BuildResult { result = report.summary.result.ToString(), errors = report.summary.totalErrors, seconds = report.summary.totalTime.TotalSeconds }, true);
             File.WriteAllText("Builds/web-build-result.json", result);
             if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded) throw new InvalidOperationException(result);
-            var rules = DuelRules.Load();
-            File.WriteAllText("Builds/WebGL/tower-duel-build.txt", $"TowerDuel protocol {rules.schema} / {rules.id}\n");
+            File.WriteAllText(Path.Combine(output, "tower-duel-build.txt"), $"TowerDuel protocol {rules.schema} / {rules.id}\n");
+            content.Publish(output);
             Debug.Log("Tower Duel Web build succeeded: " + report.summary.totalSize + " bytes");
         }
     }

@@ -10,20 +10,14 @@ $ErrorActionPreference='Stop'
 if($Domain -eq 'tower-duel.172.233.67.181.sslip.io'){throw 'The solo test site must use its own domain'}
 $example=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $repo=[IO.Path]::GetFullPath((Join-Path $example '../..'))
-$web=Join-Path $example 'Builds/SoloWeb/WebGL'
-foreach($file in @('index.html','solo-build.txt','Build/WebGL.loader.js','Build/WebGL.framework.js.gz','Build/WebGL.data.gz','Build/WebGL.wasm.gz')){
-    if(-not(Test-Path -LiteralPath (Join-Path $web $file) -PathType Leaf)){throw "Missing solo WebGL asset: $file"}
-}
-$marker=(Get-Content -LiteralPath (Join-Path $web 'solo-build.txt') -Raw).Trim()
-$rules=Get-Content -LiteralPath (Join-Path $example 'client/Assets/Resources/TowerDuel/rules.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-if($marker -ne "TowerDuel Solo protocol $($rules.schema) / $($rules.id)"){throw 'Solo WebGL build does not match the canonical protocol/rules revision'}
-if((Get-Content -LiteralPath (Join-Path $web 'index.html') -Raw) -notmatch 'content="solo-plugin"'){throw 'This is not the standalone solo page'}
-$env:GAMENETKIT_CACHE=Join-Path $repo '.cache'
-. (Join-Path $repo 'tools/internal/Go-Env.ps1')
 $release=[DateTime]::UtcNow.ToString('yyyyMMddTHHmmssZ')+'-'+[guid]::NewGuid().ToString('N').Substring(0,8)
 $output=Join-Path $repo ".local/deploy/tower-duel-solo/$release"
 $bundle=Join-Path $output 'bundle'
-New-Item -ItemType Directory -Path (Join-Path $bundle 'public'),(Join-Path $bundle 'protocol') -Force | Out-Null
+. (Join-Path $example 'scripts/WebPackageContent.ps1')
+$packageProtocol = New-TowerDuelWebPackageContent $example $bundle @{Solo='public'}
+$marker = $packageProtocol.Markers.Solo
+$env:GAMENETKIT_CACHE=Join-Path $repo '.cache'
+. (Join-Path $repo 'tools/internal/Go-Env.ps1')
 $savedOS=$env:GOOS;$savedArch=$env:GOARCH;$savedCGO=$env:CGO_ENABLED
 try {
     $env:GOOS='linux';$env:GOARCH='amd64';$env:CGO_ENABLED='0'
@@ -32,17 +26,14 @@ try {
         try{& $Go build -buildvcs=false -trimpath -o (Join-Path $bundle $build.Name) .;if($LASTEXITCODE -ne 0){throw "Linux build failed: $($build.Name)"}}finally{Pop-Location}
     }
 } finally {$env:GOOS=$savedOS;$env:GOARCH=$savedArch;$env:CGO_ENABLED=$savedCGO}
-Get-ChildItem -LiteralPath $web | ForEach-Object {Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $bundle 'public') -Recurse -Force}
 Copy-Item -LiteralPath (Join-Path $repo 'packages/unity/transport/Browser/transport.js') -Destination (Join-Path $bundle 'public/transport.js')
-Copy-Item -LiteralPath (Join-Path $example 'client/Assets/Resources/TowerDuel/map.json'),(Join-Path $example 'client/Assets/Resources/TowerDuel/rules.json') -Destination (Join-Path $bundle 'protocol')
 foreach($file in @('site.caddy.template','tower-duel-solo-api.service','tower-duel-solo-web.service','install.sh','uninstall.sh','test-uninstall.sh')){
     $destination=if($file -eq 'site.caddy.template'){'site.caddy'}else{$file}
     $content=[IO.File]::ReadAllText((Join-Path $PSScriptRoot "deploy/$file")).Replace('__DOMAIN__',$Domain.ToLowerInvariant()).Replace("`r`n","`n")
     [IO.File]::WriteAllText((Join-Path $bundle $destination),$content,[Text.UTF8Encoding]::new($false))
 }
-$manifest=[ordered]@{release=$release;origin="https://$Domain";plugin='tower-duel-solo';protocol=3;build=$marker;
-    mapHash=(Get-FileHash -LiteralPath (Join-Path $example 'client/Assets/Resources/TowerDuel/map.json') -Algorithm SHA256).Hash.ToLowerInvariant();
-    rulesHash=(Get-FileHash -LiteralPath (Join-Path $example 'client/Assets/Resources/TowerDuel/rules.json') -Algorithm SHA256).Hash.ToLowerInvariant();
+$manifest=[ordered]@{release=$release;origin="https://$Domain";plugin='tower-duel-solo';protocol=$packageProtocol.Rules.schema;build=$marker;
+    mapHash=$packageProtocol.mapHash;rulesHash=$packageProtocol.rulesHash;
     services=@('tower-duel-solo-api.service','tower-duel-solo-web.service');ports=@(18111,18112);files=@()}
 function Get-BundleRelative([string]$Full){$b=$bundle.TrimEnd('\','/');if($Full.StartsWith($b,[StringComparison]::OrdinalIgnoreCase)){return $Full.Substring($b.Length).TrimStart('\','/').Replace('\','/')};return $Full.Replace('\','/')}
 $manifest.files=@(Get-ChildItem -LiteralPath $bundle -Recurse -File | ForEach-Object {

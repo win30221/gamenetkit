@@ -13,6 +13,7 @@ namespace TowerDuel.Editor
         public static string Run()
         {
             Require(!EditorApplication.isPlayingOrWillChangePlaymode,"Run balance editor tests outside Play Mode.");
+            CheckLegacyWindowDraft();
             var window=ScriptableObject.CreateInstance<TowerDuelBalanceWindow>();
             try
             {
@@ -54,6 +55,45 @@ namespace TowerDuel.Editor
                 return result;
             }
             finally{Undo.ClearUndo(window);window.DiscardChanges();window.Close();}
+        }
+
+        [Serializable] private sealed class LegacyWindowDraft
+        {
+            public DuelRules draft;
+            public string originalCanonical, originalClient, originalDraft;
+        }
+
+        private static void CheckLegacyWindowDraft()
+        {
+            string source = File.ReadAllText(TowerDuelBalanceWindow.CanonicalPath);
+            var draft = JsonUtility.FromJson<DuelRules>(source);
+            var legacy = new LegacyWindowDraft {
+                draft = draft, originalDraft = TowerDuelBalanceWindow.Serialize(draft),
+                originalClient = source, originalCanonical = "old protocol copy"
+            };
+            var swords = draft.Find("swords");
+            swords.hp += 20;
+            var window = ScriptableObject.CreateInstance<TowerDuelBalanceWindow>();
+            string fixture = Path.GetTempFileName();
+            try
+            {
+                EditorJsonUtility.FromJsonOverwrite(JsonUtility.ToJson(legacy), window);
+                window.Show();
+                window.CreateGUI();
+                using (var state = new SerializedObject(window))
+                {
+                    string baseline = state.FindProperty("originalJson").stringValue;
+                    Require(baseline == source &&
+                            state.FindProperty("originalDraft").stringValue == legacy.originalDraft,
+                            "The legacy balance window lost its file or draft baseline.");
+                    File.WriteAllText(fixture, source);
+                    TowerDuelBalanceWindow.WriteRules(fixture, baseline, TowerDuelBalanceWindow.Serialize(draft));
+                }
+                Require(window.hasUnsavedChanges && window.rootVisualElement.Q<IntegerField>("swordsHP").value == swords.hp &&
+                        JsonUtility.FromJson<DuelRules>(File.ReadAllText(fixture)).Find("swords").hp == swords.hp,
+                        "Reopening the legacy balance window discarded its pending edit.");
+            }
+            finally { File.Delete(fixture); window.DiscardChanges(); window.Close(); }
         }
         [Serializable] private sealed class Result {public bool passed;public string result;}
 
