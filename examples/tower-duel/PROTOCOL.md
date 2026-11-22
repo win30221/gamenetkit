@@ -46,10 +46,19 @@ server restarts do not persist rooms.
 
 ## Cards and cycling
 
-The catalog order defines the symmetric starting deck. The first four cards are
-in hand; the remaining four form a queue. Successful play replaces that hand slot
+The first eight catalog entries define the default deck. A new `create`, `join`,
+or `quick` hello can include `deck`, an ordered array of eight distinct catalog
+IDs. Go validates the deck before assigning a seat. For each seat, the first four
+cards are in hand and the remaining four form a queue. Successful play replaces that hand slot
 with the queue head and appends the played card to the queue. Four further plays
 return the card to hand. Failure, cancellation and retries do not cycle or charge again.
+
+In `quick` mode, Go responds with `{"type":"queued"}` immediately and every two
+seconds until a second player arrives. Closing the connection removes the waiter.
+Each player then receives their own `welcome` and the usual countdown begins.
+Quick matches include `"quick":true` in match state. Rematches deal from each
+seat's selected deck again. A `resume` hello uses the original token and restores
+the current hand and queue.
 
 | ID | Cost | Count | Role |
 | --- | --- | --- | --- |

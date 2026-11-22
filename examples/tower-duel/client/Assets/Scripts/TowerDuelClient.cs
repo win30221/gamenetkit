@@ -109,10 +109,10 @@ namespace TowerDuel
             boardBottom=bottom;boardTop=top;SetView(Session.State?.seat??0);
         }
 
-        public void Connect(string server, string mode, string room, string name)
+        public void Connect(string server, string mode, string room, string name, string[] deck = null)
         {
             Selected = false; HidePreview(); presentation.Reset();
-            try { Session.Connect(server, mode, room, name, gameObject.name); Server = server; }
+            try { Session.Connect(server, mode, room, name, gameObject.name, deck); Server = server; }
             catch (Exception error) { Debug.LogWarning("Connect: " + error.Message); Session.Disconnect("伺服器位址無效，請輸入 http:// 或 https:// 位址。"); }
         }
         public void Leave() { Selected = false; HidePreview(); Session.Leave(); presentation.Reset(); }

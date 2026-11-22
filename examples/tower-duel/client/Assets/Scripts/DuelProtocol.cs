@@ -23,16 +23,20 @@ namespace TowerDuel
         public int protocol,seat,tickRate,snapshotRate,winner,count;
         public long tick,action,unitID,handVersion,actionWatermark;
         public float energy,countdown,remaining;
-        public bool accepted;
+        public bool accepted,quick;
         public PlayerState[] players;
         public EntityState[] units,towers;
         public string[] hand;
         public EffectState[] effects;
     }
-    [Serializable] public sealed class HelloMessage
+    [Serializable] public class HelloMessage
     {
         public string type="hello"; public int protocol=3;
         public string mode,room,name,mapHash,rulesHash,token="";
+    }
+    [Serializable] public sealed class DeckHelloMessage : HelloMessage
+    {
+        public string[] deck;
     }
     [Serializable] public sealed class DeployMessage
     {
@@ -139,6 +143,7 @@ namespace TowerDuel
     }
     [Serializable] public sealed class DuelRules
     {
+        public const int DeckSize = 8;
         public float towerRange,keepRange;
         public string id;public int schema,towerHP,keepHP,towerDamage,towerCooldownTicks,duration;
         public CardDefinition[] cards;
@@ -149,7 +154,7 @@ namespace TowerDuel
             if(!asset)throw new InvalidOperationException("Missing canonical card rules");
             var rules=JsonUtility.FromJson<DuelRules>(asset.text);
             using(var hash=SHA256.Create())rules.Hash=BitConverter.ToString(hash.ComputeHash(asset.bytes)).Replace("-","").ToLowerInvariant();
-            if(rules.schema!=3||rules.towerCooldownTicks<1||rules.cards==null||rules.cards.Length!=8)throw new InvalidOperationException("Invalid card rules");
+            if(rules.schema!=3||rules.towerCooldownTicks<1||rules.cards==null||rules.cards.Length<DeckSize)throw new InvalidOperationException("Invalid card rules");
             var ids=new HashSet<string>();foreach(var card in rules.cards)if(card==null||string.IsNullOrEmpty(card.id)||!ids.Add(card.id)||(card.type!="troop"&&card.type!="spell")||!DuelMap.Finite(card.cost)||card.cost<=0||card.cost>10)throw new InvalidOperationException("Invalid card catalog");
             foreach(var card in rules.cards)if(!card.IsSpell&&(card.deployTicks<0||card.deployTicks>300))throw new InvalidOperationException("Invalid troop deployment time");
             return rules;
@@ -178,6 +183,7 @@ namespace TowerDuel
                 case "occupied":return "這個位置有士兵，請換個落點。";
                 case "not_enough_energy":return "能量不足，請等待回復。";
                 case "card_not_in_hand":return "這張牌還沒輪到手上。";
+                case "invalid_deck":return "請選擇八張不同的卡牌後再開始。";
                 case "effect_limit":return "場上效果較多，請稍候。";
                 case "resume_expired":return "恢復對戰的時間已過，請重新開房。";
                 case "seat_connected":return "正在等待原連線釋放，稍後會再嘗試。";

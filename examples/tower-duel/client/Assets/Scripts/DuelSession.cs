@@ -26,8 +26,9 @@ namespace TowerDuel
         private double deadline,lastReceive,nextSend,pendingSince,nextSave;
         private string server,playerName,callback,room,token;
         public DuelMessage State {get;private set;}
-        public string Status {get;private set;}="建立房間，或輸入房間碼加入。";
+        public string Status {get;private set;}="";
         public bool Connecting {get;private set;}
+        public bool Searching {get;private set;}
         public bool Recovering=>recovery.Pending;
         public double RenderTick=>timeline.RenderTick;
         public bool Pending=>pending!=null;
@@ -41,18 +42,27 @@ namespace TowerDuel
         public Action<DuelMessage> ActionConfirmed;
         public DuelSession(DuelMap map,DuelRules rules){this.map=map;this.rules=rules;}
         public static double Now=>MessageTransport.ClockMS/1000;
-        public void Connect(string endpoint,string mode,string code,string name,string callbackName)
+        public void Connect(string endpoint,string mode,string code,string name,string callbackName,string[] deck=null)
         {
             Disconnect();server=endpoint.Trim();playerName=name.Trim();callback=callbackName;room=code.Trim().ToUpperInvariant();
-            Open(mode,Now);Status="連線中…";
+            Open(mode,Now,deck);
+            Searching=mode=="quick";
+            Status=Searching?"正在尋找對手…":"連線中…";
         }
-        private void Open(string mode,double now)
+        private void Open(string mode,double now,string[] deck=null)
         {
             var endpoint=new UriBuilder(server);
             if(endpoint.Scheme=="http")endpoint.Scheme="ws";else if(endpoint.Scheme=="https")endpoint.Scheme="wss";
             if(endpoint.Scheme!="ws"&&endpoint.Scheme!="wss")throw new ArgumentException("Unsupported endpoint");
             endpoint.Path="/ws";endpoint.Query="";endpoint.Fragment="";
-            var hello=new HelloMessage{mode=mode,room=room??"",name=playerName??"",mapHash=map.Hash,rulesHash=rules.Hash,token=mode=="resume"?token:""};
+            HelloMessage hello=mode!="resume"&&deck!=null
+                ? new DeckHelloMessage{deck=deck} : new HelloMessage();
+            hello.mode=mode;
+            hello.room=room??"";
+            hello.name=playerName??"";
+            hello.mapHash=map.Hash;
+            hello.rulesHash=rules.Hash;
+            hello.token=mode=="resume"?token:"";
             int epoch=Transport.BeginAttempt();Transport.Open(epoch,endpoint.Uri.AbsoluteUri,JsonUtility.ToJson(hello),"",callback,false);
             Connecting=true;deadline=now+(Recovering?5:12);send=null;nextSend=0;
         }
@@ -113,6 +123,16 @@ namespace TowerDuel
                         if(message.code=="resume_expired"||message.code=="rules_mismatch"||message.code=="map_mismatch"||message.code=="invalid_hello"||(!Recovering&&State==null)){Disconnect(DuelText.Reason(message.code));break;}
                         BeginRecovery(now);break;
                     }
+                    if(message.type=="queued")
+                    {
+                        if(Searching&&State==null)
+                        {
+                            Connecting=false;
+                            deadline=now+8;
+                            Status="正在尋找對手…";
+                        }
+                        continue;
+                    }
                     if(message.type=="action")
                     {
                         if(State!=null&&pending!=null&&message.match==State.match&&message.action==pending.action)
@@ -139,6 +159,7 @@ namespace TowerDuel
                     if(message.type=="welcome")
                     {
                         if(Recovering)Resumes++;
+                        Searching=false;
                         recovery.Connected();Connecting=false;token=message.resumeToken;room=message.room;nextSave=0;SaveResume();
                         nextAction=Math.Max(nextAction,message.actionWatermark);frames.Clear();timeline.Reset(message.tick,received);pendingSince=now;nextSend=0;
                     }
@@ -155,6 +176,7 @@ namespace TowerDuel
                 catch(Exception error){Debug.LogWarning("Tower Duel rejected message: "+error.Message);Disconnect("伺服器資料不相容，請更新遊戲。");break;}
             }
             if(Connecting&&now>deadline){if(Recovering)BeginRecovery(now);else Disconnect("連線逾時，請確認伺服器位址。");return;}
+            if(Searching&&now>deadline){Disconnect("配對連線已中斷，請再試一次。");return;}
             if(State==null||Recovering)return;
             if(now-lastReceive>4){BeginRecovery(now);return;}
             timeline.Advance(now);
@@ -250,8 +272,9 @@ namespace TowerDuel
             foreach(var e in m.towers)if(e.kind!="keep"&&e.kind!="tower")throw new InvalidOperationException("unsupported tower");
             foreach(var e in m.effects)if(e==null||!ids.Add(e.id)||catalog==null||catalog.Find(e.kind)==null||!catalog.Find(e.kind).IsSpell||!DuelMap.Finite(e.x)||!DuelMap.Finite(e.z)||!DuelMap.Finite(e.radius)||e.radius<=0||e.radius>5||e.start>e.impact||e.impact>=e.end)throw new InvalidOperationException("invalid effect");
         }
-        public void Disconnect(string reason="建立房間，或輸入房間碼加入。")
+        public void Disconnect(string reason="")
         {
+            Searching=false;
             recovery.Stop();Transport.Close();State=null;Connecting=false;pending=null;send=null;readyRequested=rematchRequested=false;frames.Clear();timeline.Reset(-1,0);nextAction=0;Accepted=Rejected=0;token=null;PlayerPrefs.DeleteKey(ResumeKey);PlayerPrefs.Save();Status=reason;
         }
         public void ReceiveBrowser(string json)=>Transport.Receive(Transport.Epoch,json);

@@ -18,6 +18,7 @@ import (
 
 // All client messages are flat objects; reject duplicate/case-variant/unknown
 // keys, missing values, nulls and trailing JSON before assigning any authority.
+// A trailing question mark marks an optional property.
 func decodeStrict(data []byte, target any, keys ...string) error {
 	d := json.NewDecoder(bytes.NewReader(data))
 	token, err := d.Token()
@@ -26,7 +27,7 @@ func decodeStrict(data []byte, target any, keys ...string) error {
 	}
 	allowed := make(map[string]bool)
 	for _, k := range keys {
-		allowed[k] = true
+		allowed[strings.TrimSuffix(k, "?")] = true
 	}
 	seen := make(map[string]bool)
 	for d.More() {
@@ -42,7 +43,7 @@ func decodeStrict(data []byte, target any, keys ...string) error {
 		}
 	}
 	for _, k := range keys {
-		if !seen[k] {
+		if !strings.HasSuffix(k, "?") && !seen[k] {
 			return errors.New("missing field")
 		}
 	}
@@ -88,7 +89,18 @@ func (a *application) websocket(w http.ResponseWriter, r *http.Request) {
 	data, err := wire.ReadHello(helloCtx)
 	done()
 	var hello helloMessage
-	if err != nil || decodeStrict(data, &hello, "type", "protocol", "mode", "room", "name", "mapHash", "rulesHash", "token") != nil || hello.Type != "hello" || hello.Protocol != protocolVersion || (hello.Mode != "create" && hello.Mode != "join" && hello.Mode != "resume") {
+	if err != nil || decodeStrict(data, &hello, "type", "protocol", "mode", "room", "name", "mapHash", "rulesHash", "token", "deck?") != nil || hello.Type != "hello" || hello.Protocol != protocolVersion {
+		reject("invalid_hello")
+		return
+	}
+	switch hello.Mode {
+	case "create", "join", "quick":
+	case "resume":
+		if hello.Deck != nil {
+			reject("invalid_hello")
+			return
+		}
+	default:
 		reject("invalid_hello")
 		return
 	}
@@ -101,7 +113,7 @@ func (a *application) websocket(w http.ResponseWriter, r *http.Request) {
 		reject("invalid_name")
 		return
 	}
-	if hello.Mode != "create" && len(hello.Room) != 6 {
+	if (hello.Mode == "join" || hello.Mode == "resume") && len(hello.Room) != 6 {
 		reject("invalid_room")
 		return
 	}

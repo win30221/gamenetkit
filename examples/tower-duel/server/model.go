@@ -146,6 +146,7 @@ type stateMessage struct {
 	TickRate        int           `json:"tickRate"`
 	SnapshotRate    int           `json:"snapshotRate"`
 	Phase           string        `json:"phase"`
+	Quick           bool          `json:"quick,omitempty"`
 	Countdown       float64       `json:"countdown"`
 	Remaining       float64       `json:"remaining"`
 	Energy          float64       `json:"energy"`
@@ -167,6 +168,7 @@ type match struct {
 	Rules              rules
 	Tick               uint64
 	Phase              string
+	Quick              bool
 	Countdown, Elapsed int
 	Players            [2]playerInfo
 	Energy             [2]float64
@@ -181,6 +183,7 @@ type match struct {
 	HighWater          [2]uint64
 	Hands              [2][4]string
 	Queues             [2][4]string
+	Decks              [2][deckSize]string
 	HandVersion        [2]uint64
 	Effects            []effectState
 }
@@ -197,17 +200,22 @@ func newMatch(id, room string, m mapDefinition, r rules) *match {
 		w.Towers[i].MaxHP = hp
 		w.Towers[i].Active = w.Towers[i].Kind != "keep"
 	}
+	deck, _ := r.deck(nil)
 	for i := 0; i < 2; i++ {
 		w.Energy[i] = 5
 		w.Players[i].Seat = i
 		w.Results[i] = make(map[uint64]actionResult)
-		for j := 0; j < 4; j++ {
-			w.Hands[i][j] = r.Cards[j].ID
-			w.Queues[i][j] = r.Cards[j+4].ID
-		}
+		w.setDeck(i, deck)
 	}
 	return w
 }
+
+func (w *match) setDeck(seat int, deck [deckSize]string) {
+	w.Decks[seat] = deck
+	copy(w.Hands[seat][:], deck[:4])
+	copy(w.Queues[seat][:], deck[4:])
+}
+
 func (w *match) ready(seat int) {
 	if w.Phase != "waiting" {
 		return
@@ -331,7 +339,7 @@ func (w *match) snapshot(seat int, kind string) stateMessage {
 	if w.Phase == "overtime" {
 		remaining = math.Max(0, float64(w.Rules.Duration+60*tickRate-w.Elapsed)/tickRate)
 	}
-	return stateMessage{Type: kind, Protocol: protocolVersion, Room: w.Room, Match: w.ID, MapHash: w.Map.Hash, RulesHash: w.Rules.Hash, Seat: seat, Tick: w.Tick, TickRate: tickRate, SnapshotRate: snapshotRate, Phase: w.Phase, Countdown: float64(w.Countdown) / tickRate, Remaining: remaining, Energy: w.Energy[seat], Winner: w.Winner, Reason: w.Reason, Players: w.Players, Units: units, Towers: towers, Hand: w.Hands[seat], NextCard: w.Queues[seat][0], HandVersion: w.HandVersion[seat], ActionWatermark: w.HighWater[seat], Effects: append([]effectState{}, w.Effects...)}
+	return stateMessage{Type: kind, Protocol: protocolVersion, Room: w.Room, Match: w.ID, MapHash: w.Map.Hash, RulesHash: w.Rules.Hash, Seat: seat, Tick: w.Tick, TickRate: tickRate, SnapshotRate: snapshotRate, Phase: w.Phase, Quick: w.Quick, Countdown: float64(w.Countdown) / tickRate, Remaining: remaining, Energy: w.Energy[seat], Winner: w.Winner, Reason: w.Reason, Players: w.Players, Units: units, Towers: towers, Hand: w.Hands[seat], NextCard: w.Queues[seat][0], HandVersion: w.HandVersion[seat], ActionWatermark: w.HighWater[seat], Effects: append([]effectState{}, w.Effects...)}
 }
 func (w *match) sortedUnits() []*unit {
 	list := make([]*unit, 0, len(w.Units))

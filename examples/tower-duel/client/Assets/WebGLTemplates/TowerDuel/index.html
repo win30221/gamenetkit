@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#0b1621">
-  <title>雙橋對決 · Tower Duel</title>
+  <meta name="theme-color" content="#fff2d8">
+  <title>雙塔對決 · Tower Duel</title>
   <style>
-    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b1621;color:#f7efd9;font:16px system-ui,sans-serif}
+    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#e8cda7;color:#26334e;font:16px system-ui,sans-serif}
     #game{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
-    #unity-canvas{display:block;width:100%;height:100%;min-width:0;min-height:0;outline:none;background:#0b1621;touch-action:none}
-    #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;background:#0b1621;padding:30px;text-align:center}
-    h1{font-size:36px;margin:0;color:#f5d17a}p{margin:0;line-height:1.7;color:#becedb}progress{width:min(320px,80vw);height:14px;accent-color:#e4bc72}
-    #error{display:none;white-space:pre-wrap;max-width:580px;color:#ffb6a5}button{padding:12px 22px;background:#a7752f;color:white;border:1px solid #e4bc72;border-radius:8px;font:inherit;cursor:pointer}
+    #unity-canvas{display:block;width:100%;height:100%;min-width:0;min-height:0;outline:none;background:#fff2d8;touch-action:none}
+    #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;background:#fff2d8;padding:30px;text-align:center}
+    h1{font-size:36px;margin:0}p{margin:0;line-height:1.7;color:#554638}progress{width:min(320px,80vw);height:14px;accent-color:#ad641e}
+    #error{display:none;white-space:pre-wrap;max-width:580px;color:#8e2b23}
   </style>
 </head>
 <body>
-  <main id="game"><canvas id="unity-canvas" width="720" height="1000" tabindex="0" aria-label="雙橋對決遊戲"></canvas></main>
-  <div id="loading" role="status"><h1>雙橋對決</h1><p id="status">載入戰場中…</p><progress id="progress" max="1" value="0"></progress><p>與朋友開啟同一網址，以房間碼加入對戰。<br>第一次載入需要下載遊戲，請稍候。</p><div id="error"></div></div>
+  <main id="game"><canvas id="unity-canvas" width="720" height="1000" tabindex="0" aria-label="雙塔對決遊戲"></canvas></main>
+  <div id="loading" role="status"><h1>雙塔對決</h1><p id="status">載入戰場中…</p><progress id="progress" max="1" value="0"></progress><div id="error"></div></div>
   <script src="Build/{{{ LOADER_FILENAME }}}"></script>
   <script>
     const canvas=document.getElementById('unity-canvas');

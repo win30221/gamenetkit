@@ -185,7 +185,7 @@ namespace TowerDuel.Editor
         }
         internal static string Validate(DuelRules rules)
         {
-            if(rules==null||rules.schema!=3||string.IsNullOrWhiteSpace(rules.id)||rules.duration!=180||rules.cards==null||rules.cards.Length!=8)return "共用規則格式不正確。";
+            if(rules==null||rules.schema!=3||string.IsNullOrWhiteSpace(rules.id)||rules.duration!=180||rules.cards==null||rules.cards.Length<DuelRules.DeckSize)return "共用規則格式不正確。";
             if(!DuelMap.Finite(rules.towerRange)||rules.towerRange<=0||!DuelMap.Finite(rules.keepRange)||rules.keepRange<=0)return "箭塔與主堡射程必須是大於零的有限數值。";
             if(rules.towerHP<=0||rules.keepHP<=0||rules.towerDamage<0||rules.towerCooldownTicks<1)return "塔的血量與攻擊間隔必須大於零，傷害不可為負。";
             var ids=new HashSet<string>();

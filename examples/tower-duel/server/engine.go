@@ -22,6 +22,7 @@ type helloMessage struct {
 	MapHash   string `json:"mapHash"`
 	RulesHash string `json:"rulesHash"`
 	Token     string `json:"token"`
+	Deck      []string `json:"deck,omitempty"`
 }
 type deployMessage struct {
 	Type   string  `json:"type"`
@@ -57,7 +58,20 @@ type room struct {
 	Tick   uint64
 }
 
-const reconnectTicks = 30 * tickRate
+type queuedPlayer struct {
+	Peer  *peer
+	Ctx   context.Context
+	Name  string
+	Deck  [deckSize]string
+	Ticks int
+}
+
+const (
+	reconnectTicks = 30 * tickRate
+	maxRooms       = 32
+)
+
+var queuedNotice = []byte(`{"type":"queued"}`)
 
 func newResumeToken() string {
 	var data [32]byte
@@ -87,6 +101,7 @@ type engine struct {
 	Rooms     map[string]*room
 	Seats     map[*peer]seatRef
 	nextMatch uint64
+	waiting   *queuedPlayer
 }
 
 func newEngine(parent context.Context, m mapDefinition, config rules) *engine {
@@ -141,10 +156,23 @@ func (e *engine) apply(c command) {
 			fail("rules_mismatch")
 			return
 		}
+		var deck [deckSize]string
+		if c.Hello.Mode != "resume" {
+			var valid bool
+			deck, valid = e.Rules.deck(c.Hello.Deck)
+			if !valid {
+				fail("invalid_deck")
+				return
+			}
+		}
+		if c.Hello.Mode == "quick" {
+			e.quickMatch(c, deck)
+			return
+		}
 		var r *room
 		seat := 0
 		if c.Hello.Mode == "create" {
-			if len(e.Rooms) >= 32 {
+			if len(e.Rooms) >= maxRooms {
 				fail("server_full")
 				return
 			}
@@ -214,6 +242,7 @@ func (e *engine) apply(c command) {
 				return
 			}
 			r.Game.Players[seat] = playerInfo{Seat: seat, Name: c.Hello.Name}
+			r.Game.setDeck(seat, deck)
 		}
 		r.Peers[seat] = c.Peer
 		r.Until[seat] = 0
@@ -222,6 +251,13 @@ func (e *engine) apply(c command) {
 		e.Seats[c.Peer] = seatRef{r, seat}
 		c.Peer.Joined <- joinResult{Welcome: e.welcome(r, seat)}
 	case "remove", "leave":
+		if e.waiting != nil && e.waiting.Peer == c.Peer {
+			e.waiting = nil
+			if c.Kind == "leave" && c.Peer.Cancel != nil {
+				c.Peer.Cancel()
+			}
+			return
+		}
 		ref, ok := e.Seats[c.Peer]
 		if !ok {
 			return
@@ -259,9 +295,15 @@ func (e *engine) apply(c command) {
 		if r.Peers[0] != nil && r.Peers[1] != nil && r.Game.Players[0].Rematch && r.Game.Players[1].Rematch {
 			e.nextMatch++
 			next := newMatch(fmt.Sprintf("%s-%x", r.Game.Room, e.nextMatch), r.Game.Room, e.Map, e.Rules)
+			next.Quick = r.Game.Quick
 			for i := range next.Players {
 				next.Players[i].Name = r.Game.Players[i].Name
 				next.Players[i].Connected = true
+				next.setDeck(i, r.Game.Decks[i])
+			}
+			if next.Quick {
+				next.ready(0)
+				next.ready(1)
 			}
 			r.Game = next
 			for i, p := range r.Peers {
@@ -291,7 +333,55 @@ func (e *engine) apply(c command) {
 		}
 	}
 }
+
+func (e *engine) quickMatch(c command, deck [deckSize]string) {
+	if len(e.Rooms) >= maxRooms {
+		c.Peer.Joined <- joinResult{Error: "server_full"}
+		return
+	}
+	player := &queuedPlayer{Peer: c.Peer, Ctx: c.Ctx, Name: c.Hello.Name, Deck: deck}
+	first := e.waiting
+	if first == nil || first.Ctx.Err() != nil {
+		e.waiting = player
+		c.Peer.Joined <- joinResult{Welcome: queuedNotice}
+		return
+	}
+
+	code := e.roomCode()
+	tokens := [2]string{newResumeToken(), newResumeToken()}
+	if code == "" || tokens[0] == "" || tokens[1] == "" {
+		c.Peer.Joined <- joinResult{Error: "room_creation_failed"}
+		return
+	}
+	e.nextMatch++
+	game := newMatch(fmt.Sprintf("%s-%x", code, e.nextMatch), code, e.Map, e.Rules)
+	game.Quick = true
+	r := &room{Game: game, Tokens: tokens}
+	for seat, queued := range [2]*queuedPlayer{first, player} {
+		game.Players[seat] = playerInfo{Seat: seat, Name: queued.Name, Connected: true}
+		game.setDeck(seat, queued.Deck)
+		r.Peers[seat] = queued.Peer
+		e.Seats[queued.Peer] = seatRef{Room: r, Seat: seat}
+	}
+	game.ready(0)
+	game.ready(1)
+	e.waiting = nil
+	e.Rooms[code] = r
+	first.Peer.Reliable <- e.welcome(r, 0)
+	player.Peer.Joined <- joinResult{Welcome: e.welcome(r, 1)}
+}
+
 func (e *engine) step() {
+	if player := e.waiting; player != nil {
+		if player.Ctx.Err() != nil {
+			e.waiting = nil
+		} else {
+			player.Ticks++
+			if player.Ticks%(2*tickRate) == 0 {
+				offerLatest(player.Peer.Snapshots, queuedNotice)
+			}
+		}
+	}
 	for _, r := range e.Rooms {
 		r.Tick++
 		expired := [2]bool{}

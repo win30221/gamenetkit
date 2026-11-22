@@ -4,7 +4,7 @@
     <ui:VisualElement name="healthLayer" class="full-layer" picking-mode="Ignore" />
     <ui:VisualElement name="topHud" class="top-hud" picking-mode="Ignore">
       <ui:VisualElement class="header-copy" picking-mode="Ignore">
-        <ui:Label text="雙橋對決" class="brand" picking-mode="Ignore" />
+        <ui:Label text="雙塔對決" class="brand" picking-mode="Ignore" />
         <ui:Label name="roomLabel" class="small" picking-mode="Ignore" />
       </ui:VisualElement>
       <ui:Label name="timerLabel" text="3:00" class="timer" picking-mode="Ignore" />
@@ -33,24 +33,59 @@
       <ui:Label name="dragName" class="card-name" picking-mode="Ignore" />
       <ui:Label name="dragCost" class="card-cost" picking-mode="Ignore" />
     </ui:VisualElement>
-    <ui:VisualElement name="lobbyLayer" class="overlay">
-      <ui:VisualElement class="lobby-panel">
-        <ui:Label text="雙橋對決" class="title" />
-        <ui:Label text="部隊放己方半場，法術可跨河。&#10;出牌後補下一張，保留能量反制。" class="subtitle" />
-        <ui:TextField name="nameField" label="你的名稱" max-length="20" />
-        <ui:TextField name="serverField" label="伺服器" />
-        <ui:Button name="createButton" text="建立雙人房間" class="primary-button" />
-        <ui:VisualElement class="divider" />
-        <ui:TextField name="roomField" label="房間碼" max-length="6" />
-        <ui:Button name="joinButton" text="加入朋友的房間" class="secondary-button" />
-        <ui:Label name="lobbyStatus" class="hint lobby-status" />
+    <ui:VisualElement name="lobbyLayer" class="menu-overlay">
+      <ui:VisualElement name="menuShell" class="menu-shell">
+        <ui:ScrollView name="battlePage" class="menu-page">
+          <ui:VisualElement class="menu-body">
+            <ui:Label text="雙塔對決" class="menu-title" />
+            <ui:VisualElement class="menu-hero" picking-mode="Ignore">
+              <ui:VisualElement name="menuBattlefield" class="menu-hero-art" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Button name="quickMatchButton" text="快速配對" class="menu-button menu-primary" />
+            <ui:Label name="lobbyStatus" class="menu-status" />
+            <ui:TextField name="nameField" label="暱稱" max-length="20" class="menu-field menu-name-field" />
+            <ui:VisualElement name="friendRoom" class="menu-panel">
+              <ui:Label text="好友房" class="menu-heading" />
+              <ui:TextField name="serverField" label="伺服器" class="menu-field" />
+              <ui:Button name="createButton" text="建立房間" class="menu-button menu-friend-button" />
+              <ui:VisualElement class="menu-room-row">
+                <ui:TextField name="roomField" label="房間碼" max-length="6" class="menu-field menu-code" />
+                <ui:Button name="joinButton" text="加入房間" class="menu-button menu-join" />
+              </ui:VisualElement>
+            </ui:VisualElement>
+          </ui:VisualElement>
+        </ui:ScrollView>
+        <ui:ScrollView name="deckPage" class="menu-page">
+          <ui:VisualElement class="menu-body">
+            <ui:Label text="上場牌組" class="menu-title" />
+            <ui:VisualElement class="menu-panel">
+              <ui:VisualElement class="menu-deck-header">
+                <ui:Label text="起手四張" class="menu-heading" />
+                <ui:Label name="deckCount" class="menu-deck-count" />
+              </ui:VisualElement>
+              <ui:VisualElement name="deckHand" class="menu-card-row" />
+              <ui:Label text="候補四張" class="menu-heading menu-reserve-heading" />
+              <ui:VisualElement name="deckReserve" class="menu-card-row" />
+              <ui:Button name="defaultDeckButton" text="恢復預設" class="menu-button menu-reset" />
+            </ui:VisualElement>
+            <ui:Label name="deckDetails" class="menu-details" />
+            <ui:Label text="所有卡牌" class="menu-title menu-catalog-title" />
+            <ui:VisualElement name="catalogCards" class="menu-catalog" />
+          </ui:VisualElement>
+        </ui:ScrollView>
+        <ui:VisualElement name="menuTabs" class="menu-tabs">
+          <ui:Button name="cardsTab" text="卡牌" class="menu-button menu-tab" />
+          <ui:Button name="battleTab" text="對戰" class="menu-button menu-tab" />
+        </ui:VisualElement>
       </ui:VisualElement>
     </ui:VisualElement>
     <ui:VisualElement name="waitingLayer" class="overlay waiting-overlay">
-      <ui:VisualElement class="lobby-panel waiting-panel">
-        <ui:Label text="邀請朋友來一場" class="section-title" />
-        <ui:Label name="inviteCode" class="invite-code" />
-        <ui:Button name="copyButton" text="複製房間碼" class="secondary-button" />
+      <ui:VisualElement class="lobby-panel">
+        <ui:Label name="waitingTitle" text="好友房" class="section-title" />
+        <ui:VisualElement name="invitePanel">
+          <ui:Label name="inviteCode" class="invite-code" />
+          <ui:Button name="copyButton" text="複製房間碼" class="secondary-button" />
+        </ui:VisualElement>
         <ui:Label name="playersLabel" class="players" />
         <ui:VisualElement class="waiting-actions">
           <ui:Button name="readyButton" text="準備對戰" class="primary-button" />
@@ -60,12 +95,12 @@
       </ui:VisualElement>
     </ui:VisualElement>
     <ui:VisualElement name="resultLayer" class="overlay waiting-overlay">
-      <ui:VisualElement class="lobby-panel result-panel">
+      <ui:VisualElement class="lobby-panel">
         <ui:Label name="resultTitle" class="title" />
         <ui:Label name="resultReason" class="subtitle" />
         <ui:Label name="scoreLabel" class="section-title" />
         <ui:Button name="rematchButton" text="同房再戰" class="primary-button" />
-        <ui:Button name="backButton" text="回到大廳" class="primary-button" />
+        <ui:Button name="backButton" text="回到大廳" class="secondary-button" />
       </ui:VisualElement>
     </ui:VisualElement>
   </ui:VisualElement>

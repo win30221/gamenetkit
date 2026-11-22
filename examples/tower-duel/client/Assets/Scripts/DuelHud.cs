@@ -14,8 +14,8 @@ namespace TowerDuel
         private readonly PanelSettings panel;
         private readonly VisualElement root,world,lobby,waiting,result,dock,health,dragPreview,energyRow;
         private readonly VisualElement dragFrame,nextFrame;
-        private readonly TextField nameField,serverField,roomField;
-        private readonly Button ready,create,join,copy;
+        private readonly DuelMenu menu;
+        private readonly Button ready,copy;
         private readonly Dictionary<string,Button> cards=new Dictionary<string,Button>();
         private readonly List<DuelCardDrag> cardDrags=new List<DuelCardDrag>();
         private Button draggingCard;
@@ -54,12 +54,8 @@ namespace TowerDuel
             dragPreview=root.Q("dragPreview");energyRow=root.Q("energyRow");
             dragFrame=CardFrame();dragPreview.Insert(1,dragFrame);Display(dragFrame,false);
             nextFrame=CardFrame(true);root.Q("nextCardArt").Add(nextFrame);Display(nextFrame,false);
-            nameField=root.Q<TextField>("nameField");serverField=root.Q<TextField>("serverField");roomField=root.Q<TextField>("roomField");
-            nameField.value="玩家"+UnityEngine.Random.Range(10,99);serverField.value=client.Server;
-#if UNITY_WEBGL && !UNITY_EDITOR
-            serverField.style.display=DisplayStyle.None;
-#endif
-            ready=root.Q<Button>("readyButton");create=root.Q<Button>("createButton");join=root.Q<Button>("joinButton");
+            menu=new DuelMenu(lobby,client,BlurInputs);
+            ready=root.Q<Button>("readyButton");
             foreach(var definition in client.Rules.cards)
             {
                 string id=definition.id;var button=new Button{name=id+"Card",tooltip=definition.name+" · "+definition.cost+" 能量\n"+definition.description};button.AddToClassList("unit-card");
@@ -81,8 +77,6 @@ namespace TowerDuel
                 root.Q("energyPips").Add(pip);pips.Add(fill);
             }
             client.Session.StateChanged+=ObserveEnergy;client.Session.ActionConfirmed+=ObserveActionEnergy;
-            create.clicked+=()=>{BlurInputs();client.Connect(serverField.value,"create","",nameField.value);};
-            join.clicked+=()=>{BlurInputs();client.Connect(serverField.value,"join",roomField.value,nameField.value);};
             root.Q<Button>("leaveButton").clicked+=client.Leave;
             root.Q<Button>("waitingLeaveButton").clicked+=client.Leave;
             root.Q<Button>("backButton").clicked+=client.Leave;
@@ -114,7 +108,8 @@ namespace TowerDuel
         }
         private void BlurInputs()
         {
-            foreach(var field in new[]{roomField,nameField,serverField}){var keyboard=field.touchScreenKeyboard;if(keyboard!=null)keyboard.active=false;field.Blur();}world.Focus();
+            menu.BlurInputs();
+            world.Focus();
 #if UNITY_WEBGL && !UNITY_EDITOR
             TD_CloseKeyboard();
 #endif
@@ -220,6 +215,7 @@ namespace TowerDuel
             if(float.IsNaN(width)||float.IsNaN(height))return;
             appliedSafeArea=Screen.safeArea;
             float unitsPerPixel=height/Mathf.Max(1,Screen.height);
+            menu?.Layout(appliedSafeArea,unitsPerPixel);
             float availableWidth=appliedSafeArea.width*unitsPerPixel-16;
             // One fixed portrait layout; scale the whole dock uniformly in every viewport.
             float scale=Mathf.Min(.9f,availableWidth/600,height*.18f/234);
@@ -248,6 +244,7 @@ namespace TowerDuel
             if(copyRoom!=""&&(state?.room!=copyRoom||(state.phase!="waiting"&&state.phase!="countdown")))ResetCopy();
             if(copyFeedbackUntil>0&&DuelSession.Now>=copyFeedbackUntil){copyFeedbackUntil=0;copy.text="複製房間碼";}
             Display(lobby,state==null);Display(waiting,state!=null&&(state.phase=="waiting"||state.phase=="countdown"));Display(result,state!=null&&state.phase=="ended");Display(dock,state!=null);Display(health,state!=null);
+            if(state==null)menu.Update();
             Display(root.Q("topHud"),state!=null);Display(root.Q("dockFrame"),state!=null);
             if(state!=null&&state.phase=="ended")
             {
@@ -259,7 +256,6 @@ namespace TowerDuel
             if(DuelSession.Now>=nextLabels)
             {
                 nextLabels=DuelSession.Now+.1;
-                create.SetEnabled(!client.Session.Connecting);join.SetEnabled(!client.Session.Connecting);Text("lobbyStatus",client.Session.Status);
                 root.Q<Button>("audioButton").text=client.Audio.Muted?"音效關":"音效開";
                 if(state!=null)
                 {
@@ -271,8 +267,12 @@ namespace TowerDuel
                     var next=root.Q("nextCardArt");next.style.backgroundImage=DuelSpriteLibrary.Card(state.nextCard);
                     bool nextB3=DuelSpriteLibrary.Converted(state.nextCard);next.EnableInClassList("b3-next",nextB3);Display(nextFrame,nextB3);
                     Text("inviteCode",state.room);
+                    bool waitingForPlayers=state.phase=="waiting";
+                    Text("waitingTitle",waitingForPlayers?"好友房":state.quick?"配對成功":"即將開始");
+                    Display(root.Q("invitePanel"),waitingForPlayers&&!state.quick);
+                    Display(ready,waitingForPlayers);
                     string names="";for(int i=0;i<2;i++)names+=(i==state.seat?"你：":"對手：")+(state.players[i].connected?state.players[i].name+(state.players[i].ready?"　已準備":"　尚未準備"):"等待加入")+(i==0?"\n":"");Text("playersLabel",names);
-                    ready.SetEnabled(client.Session.CanAct&&state.phase=="waiting"&&!state.players[state.seat].ready);
+                    ready.SetEnabled(client.Session.CanAct&&waitingForPlayers&&!state.players[state.seat].ready);
                     ready.text=state.players[state.seat].ready?"已準備":"準備對戰";
                     Text("waitingHint",state.phase=="countdown"?"即將開始　"+Mathf.CeilToInt(state.countdown):"將房間碼傳給朋友，雙方準備後開始。");
                     foreach(var definition in client.Rules.cards)

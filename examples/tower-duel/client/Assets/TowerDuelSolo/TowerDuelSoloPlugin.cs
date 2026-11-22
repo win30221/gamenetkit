@@ -34,7 +34,6 @@ namespace TowerDuel.Solo
         private VisualElement ui;
         private Button practice,sandbox,multiplayer,modeBack;
         private VisualElement menu;
-        private string originalSubtitle;
         private Label hint;
         private string api,room,mode,reportPath;
         private bool busy,hadState,wasOwned,recoveryTested,finished,multiplayerForm,previousState,keepMultiplayerForm;
@@ -82,22 +81,21 @@ namespace TowerDuel.Solo
             }
             if(client==null||client.Session==null){Debug.LogError("Solo plugin could not find the running client.");yield break;}
             ui=client.GetComponent<UIDocument>().rootVisualElement;
-            var create=ui.Q<Button>("createButton");
+            var friends=ui.Q("friendRoom");
             menu=new VisualElement{name="soloPluginMenu"};
             var actions=new VisualElement();actions.style.flexDirection=FlexDirection.Row;
             practice=new Button(()=>Begin("practice")){name="soloPracticeButton",text="單人練習"};
             sandbox=new Button(()=>Begin("sandbox")){name="soloSandboxButton",text="自由測試"};
-            practice.AddToClassList("primary-button");sandbox.AddToClassList("secondary-button");
+            practice.AddToClassList("menu-button");sandbox.AddToClassList("menu-button");
             foreach(var button in new[]{practice,sandbox}){button.style.flexGrow=1;button.style.flexBasis=0;button.style.minHeight=48;button.style.marginTop=12;actions.Add(button);}
             sandbox.style.marginLeft=12;menu.Add(actions);
             multiplayer=new Button(()=>ShowMultiplayer(true)){name="soloMultiplayerButton",text="雙人對戰"};
-            multiplayer.AddToClassList("secondary-button");multiplayer.style.minHeight=48;menu.Add(multiplayer);
-            hint=new Label("對戰電腦、自由測試，或邀請朋友雙人對戰。");hint.AddToClassList("hint");hint.style.marginTop=8;menu.Add(hint);
-            create.parent.Insert(create.parent.IndexOf(create),menu);
-            originalSubtitle=ui.Q("lobbyLayer").Q<Label>(className:"subtitle").text;
+            multiplayer.AddToClassList("menu-button");multiplayer.style.minHeight=48;menu.Add(multiplayer);
+            hint=new Label();hint.AddToClassList("menu-status");menu.Add(hint);
+            friends.parent.Insert(friends.parent.IndexOf(friends),menu);
             modeBack=new Button(()=>{keepMultiplayerForm=false;ShowMultiplayer(false);}){name="soloModeBackButton",text="← 模式選擇"};
-            modeBack.style.position=Position.Absolute;modeBack.style.top=4;modeBack.style.left=10;modeBack.style.height=24;
-            create.parent.Add(modeBack);ShowMultiplayer(false);
+            modeBack.AddToClassList("menu-button");modeBack.style.minHeight=48;
+            friends.parent.Add(modeBack);ShowMultiplayer(false);
             try
             {
                 var saved=JsonUtility.FromJson<SavedRoom>(PlayerPrefs.GetString(SavedKey,""));
@@ -125,22 +123,16 @@ namespace TowerDuel.Solo
         {
             if(busy)return;
             multiplayerForm=show;
-            foreach(string name in new[]{"createButton","joinButton","roomField"})ui.Q(name).style.display=show?DisplayStyle.Flex:DisplayStyle.None;
-#if UNITY_WEBGL && !UNITY_EDITOR
-            ui.Q("serverField").style.display=DisplayStyle.None;
-#else
-            ui.Q("serverField").style.display=show?DisplayStyle.Flex:DisplayStyle.None;
-#endif
-            ui.Q("lobbyLayer").Query<VisualElement>(className:"divider").ForEach(item=>item.style.display=show?DisplayStyle.Flex:DisplayStyle.None);
+            ui.Q("friendRoom").style.display=show?DisplayStyle.Flex:DisplayStyle.None;
+            ui.Q("quickMatchButton").style.display=show?DisplayStyle.Flex:DisplayStyle.None;
             menu.style.display=show?DisplayStyle.None:DisplayStyle.Flex;
             modeBack.style.display=show?DisplayStyle.Flex:DisplayStyle.None;
-            ui.Q("lobbyLayer").Q<Label>(className:"subtitle").text=show?originalSubtitle:"選擇單人練習、自由測試或雙人對戰。";
             ui.Q<TextField>("nameField").Blur();
         }
 
         private void Begin(string requested)
         {
-            if(busy||client.Session.State!=null||client.Session.Connecting||client.Session.Recovering)return;
+            if(busy||client.Session.State!=null||client.Session.Connecting||client.Session.Recovering||client.Session.Searching)return;
             StartCoroutine(CreateRoom(requested));
         }
 
@@ -216,12 +208,12 @@ namespace TowerDuel.Solo
             if(ui==null||client==null||finished)return;
             var state=client.Session.State;
             bool owned=state!=null&&state.room==room;
-            bool available=!busy&&!client.Session.Connecting&&!client.Session.Recovering;
+            bool available=!busy&&!client.Session.Connecting&&!client.Session.Recovering&&!client.Session.Searching;
             practice.SetEnabled(available);sandbox.SetEnabled(available);multiplayer.SetEnabled(available);modeBack.SetEnabled(available);
             if(state==null&&previousState&&!client.Session.Connecting&&!client.Session.Recovering)ShowMultiplayer(keepMultiplayerForm);
             previousState=state!=null;
 #if UNITY_WEBGL && !UNITY_EDITOR
-            if(state==null&&!multiplayerForm&&client.Session.Status=="建立房間，或輸入房間碼加入。")ui.Q<Label>("lobbyStatus").text="選擇模式即可開始。";
+            if(state==null&&!multiplayerForm&&string.IsNullOrEmpty(client.Session.Status))ui.Q<Label>("lobbyStatus").text="選擇模式即可開始。";
 #endif
             if(owned)
             {

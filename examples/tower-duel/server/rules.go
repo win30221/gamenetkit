@@ -10,6 +10,7 @@ import (
 )
 
 const protocolVersion = 3
+const deckSize = 8
 
 type cardDefinition struct {
 	ID               string  `json:"id"`
@@ -60,7 +61,7 @@ func loadRules(path string) (rules, error) {
 	if err = json.Unmarshal(data, &r); err != nil {
 		return r, err
 	}
-	if r.ID == "" || r.Schema != protocolVersion || len(r.Cards) != 8 || r.Duration != 180 || r.TowerHP <= 0 || r.KeepHP <= 0 || r.TowerDamage < 0 || r.TowerCooldownTicks < 1 {
+	if r.ID == "" || r.Schema != protocolVersion || len(r.Cards) < deckSize || r.Duration != 180 || r.TowerHP <= 0 || r.KeepHP <= 0 || r.TowerDamage < 0 || r.TowerCooldownTicks < 1 {
 		return r, errors.New("invalid rules")
 	}
 	if !finite(r.TowerRange) || r.TowerRange <= 0 || !finite(r.KeepRange) || r.KeepRange <= 0 {
@@ -96,6 +97,29 @@ func loadRules(path string) (rules, error) {
 	r.Hash = hex.EncodeToString(h[:])
 	return r, nil
 }
+
+func (r rules) deck(ids []string) ([deckSize]string, bool) {
+	var deck [deckSize]string
+	if ids == nil {
+		for i := range deck {
+			deck[i] = r.Cards[i].ID
+		}
+		return deck, true
+	}
+	if len(ids) != len(deck) {
+		return deck, false
+	}
+	seen := make(map[string]bool, deckSize)
+	for i, id := range ids {
+		if _, ok := r.ByID[id]; !ok || seen[id] {
+			return deck, false
+		}
+		seen[id] = true
+		deck[i] = id
+	}
+	return deck, true
+}
+
 func formation(seat int, x, z float64, count int) []point {
 	if count == 1 {
 		return []point{{x, z}}
