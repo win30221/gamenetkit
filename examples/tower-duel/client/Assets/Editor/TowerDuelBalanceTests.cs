@@ -32,6 +32,8 @@ namespace TowerDuel.Editor
                 Require(!root.Q<Button>("saveButton").enabledSelf&&root.Q<Label>("messageLabel").text.Contains("前搖"),"An invalid attack windup was not explained and blocked.");
                 windup.value=oldWindup;
                 Require(root.Q<Button>("saveButton").enabledSelf,"A corrected value did not re-enable saving.");
+                root.Q<FloatField>("towerRange").value=4.25f;
+                root.Q<FloatField>("keepRange").value=6.75f;
                 string priorDps=root.Q<Label>("guardDps").text;
                 int editedDamage=rules.Find("guard").damage+32;
                 root.Q<IntegerField>("guardDamage").value=editedDamage;
@@ -45,6 +47,7 @@ namespace TowerDuel.Editor
                 TowerDuelBalanceWindow.WriteRules(fixture,"before",serialized);
                 var restored=JsonUtility.FromJson<DuelRules>(File.ReadAllText(fixture));
                 Require(restored.Find("guard").deployTicks==editedTicks&&restored.Find("guard").damage==editedDamage&&restored.towerHP==rules.towerHP,"Saved shared rules lost a changed stat.");
+                Require(restored.towerRange==4.25f&&restored.keepRange==6.75f,"Building ranges did not round-trip independently.");
                 File.AppendAllText(fixture,"\n");bool conflict=false;
                 try{TowerDuelBalanceWindow.WriteRules(fixture,serialized,serialized);}
                 catch(InvalidOperationException){conflict=true;}
