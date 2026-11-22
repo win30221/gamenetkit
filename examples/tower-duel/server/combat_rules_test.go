@@ -142,3 +142,41 @@ func TestKeepSleepsAndWakesOnOwnFrontTowerOrDamage(t *testing.T) {
 		})
 	}
 }
+
+func TestIndependentBuildingRanges(t *testing.T) {
+	for _, kind := range []string{"tower", "keep"} {
+		t.Run(kind, func(t *testing.T) {
+			w := playingMatch(t)
+			w.Rules.TowerRange, w.Rules.KeepRange = 3, 6
+			building := w.Towers[1]
+			expected := 3.0
+			if kind == "keep" {
+				building = w.Towers[0]
+				expected = 6
+			}
+			building.Active = true
+			w.Towers = []entity{building}
+			enemy := testSoldier(201, 1, "archer", building.X, building.Z)
+			enemy.State.ReadyTick = w.Tick + 100
+			w.Units[201] = enemy
+			edge := building.Z + building.Radius + enemy.State.Radius + expected
+			enemy.State.Z = edge + 0.01
+			w.step()
+			if w.Towers[0].Target != 0 {
+				t.Fatal("acquired outside configured range")
+			}
+			enemy.State.Z = edge - 0.01
+			w.step()
+			if w.Towers[0].Target != enemy.State.ID || enemy.State.HP != enemy.State.MaxHP-w.Rules.TowerDamage {
+				t.Fatal("did not acquire and hit inside configured range")
+			}
+			enemy.State.Z = edge + 0.01
+			w.TowerCooldown[building.ID] = 0
+			lastAttack := w.Towers[0].AttackTick
+			w.step()
+			if w.Towers[0].AttackTick != lastAttack {
+				t.Fatal("fired on a locked target outside configured range")
+			}
+		})
+	}
+}
