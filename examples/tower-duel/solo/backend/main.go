@@ -55,7 +55,7 @@ func newCompanion(ctx context.Context, server string) (*companion, error) {
 	}
 	defer response.Body.Close()
 	var config gameConfig
-	if response.StatusCode != http.StatusOK || json.NewDecoder(io.LimitReader(response.Body, 64*1024)).Decode(&config) != nil || config.Protocol != 3 || config.MapHash == "" || config.RulesHash == "" || len(config.Cards) != 8 {
+	if response.StatusCode != http.StatusOK || json.NewDecoder(io.LimitReader(response.Body, 64*1024)).Decode(&config) != nil || config.Protocol != 3 || config.MapHash == "" || config.RulesHash == "" || len(config.Cards) < 8 {
 		return nil, errors.New("backend config is incompatible")
 	}
 	return &companion{ctx: ctx, server: server, config: config, rooms: make(map[string]*bot)}, nil

@@ -93,8 +93,6 @@ namespace TowerDuel.Editor
                 foreach(float z in new[]{-7.7f,-.5f,0,.5f,7.7f})
                     Require(Mathf.Abs(f.Map.TerrainMovementFactor(new Vector3(5,0,z))-.7f)<.0001f,"Mud has a gap through the gate");
                 Require(f.Map.TerrainMovementFactor(new Vector3(-5,0,0))==1&&f.Map.TerrainMovementFactor(new Vector3(6.71f,0,0))==1,"Dry lane or mud exit slowed");
-                foreach(var height in f.Map.unitSightHeights)
-                    Require(Mathf.Abs(DuelSpriteLibrary.Prefab(height.kind).GetComponent<DuelUnitArt>().Height-height.height)<.001f,"Server/client sight height differs: "+height.kind);
                 var root=new GameObject("Environment and mud regression");DuelPresentation presentation=null;
                 GameObject temporaryCamera=null;var camera=Camera.main;
                 if(!camera){temporaryCamera=new GameObject("Environment test camera");camera=temporaryCamera.AddComponent<Camera>();temporaryCamera.tag="MainCamera";}
@@ -103,6 +101,44 @@ namespace TowerDuel.Editor
                 {
                     presentation=new DuelPresentation(root.transform,f.Map,f.Rules);
                     Require(presentation.Environment!=null&&presentation.Environment.BuildingCount==6,"B3 buildings not active");
+                    int sideWalls=0;
+                    foreach(var wall in presentation.Environment.Root.GetComponentsInChildren<SpriteRenderer>())
+                    {
+                        if(wall.name!="Arena side wall")continue;
+                        sideWalls++;
+                        var bounds=wall.bounds;
+                        var innerEdge=bounds.center.x<0?bounds.max.x:bounds.min.x;
+                        Require(Mathf.Abs(Mathf.Abs(innerEdge)-f.Map.width/2)<.001f&&
+                                Mathf.Abs(bounds.size.z-f.Map.length)<.001f,
+                                "Side wall must span the outside edge without taking deployable space");
+                    }
+                    Require(sideWalls==2,"Expected a wall at each side of the arena");
+                    int wallFaces=0,wallTops=0,lintels=0;
+                    foreach(var wall in presentation.Environment.Root.GetComponentsInChildren<SpriteRenderer>())
+                    {
+                        if(wall.name=="Castle wall face")
+                        {
+                            wallFaces++;
+                            Require(Mathf.Abs(Mathf.Abs(wall.transform.localPosition.z)-f.Map.wallHalfWidth)<.001f,
+                                    "Wall face must stand at a solid wall edge");
+                        }
+                        else if(wall.name=="Castle wall top")
+                        {
+                            wallTops++;
+                            Require(Mathf.Abs(wall.bounds.size.z-f.Map.wallHalfWidth*2)<.001f,
+                                    "Wall top must span the full wall thickness");
+                            foreach(float gate in f.Map.bridges)
+                                Require(gate<=wall.bounds.min.x||gate>=wall.bounds.max.x,
+                                        "Solid wall top must not cover a gate");
+                        }
+                        else if(wall.name=="Gate lintel art")lintels++;
+                    }
+                    Require(wallFaces==6&&wallTops==3&&lintels==2,"Expected paired wall faces, three tops and two open gates");
+
+                    Require(presentation.Environment.Root.GetComponentsInChildren<MeshRenderer>().Length==0,
+                            "Battlefield walls must use B3 sprite art");
+
+
                     for(int seat=0;seat<2;seat++)
                     {
                         camera.transform.rotation=Quaternion.Euler(60,seat*180,0);
@@ -113,15 +149,6 @@ namespace TowerDuel.Editor
                     var state=f.State(100,"welcome");state.units[0].seat=1;state.units[0].x=5;state.units[0].z=-4;state.units[0].muddy=true;
                     f.Deliver(state);presentation.Update(f.Session);
                     Require(Mathf.Abs(f.Session.SampleTerrainFactor(state.units[0])-.7f)<.0001f,"Rendered muddy foot not recognized");
-                    var visuals=Field<IDictionary>(presentation,"units");
-                    var art=(DuelUnitArt)visuals[100L].GetType().GetField("Art").GetValue(visuals[100L]);
-                    var hidden=f.State(102);hidden.units=new[]{new EntityState{id=100,seat=1,concealed=true}};
-                    f.Deliver(hidden);presentation.Update(f.Session);
-                    Require(!art.gameObject.activeSelf,"Concealed enemy or its shadow remained visible");
-                    var revealed=f.State(104);revealed.units[0].seat=1;revealed.units[0].x=0;revealed.units[0].z=1.5f;
-                    f.Deliver(revealed);presentation.Update(f.Session);
-                    Require(art.gameObject.activeSelf&&Mathf.Abs(art.transform.position.z-1.5f)<.001f,"Reveal interpolated from redacted origin");
-                    Require(presentation.DeathCount==0,"Conceal/reveal produced a death effect");
                     Require(f.Session.SampleTerrainFactor(new EntityState{id=999,kind="guard",x=-5,z=-4})==1,"Mud persisted after leaving");
                 }
                 finally
@@ -446,16 +473,16 @@ namespace TowerDuel.Editor
                     state.units[0].slowed=slowed;f.Deliver(state);
                 }
                 bool Slowed()=>f.Session.SampleSlowed(f.Session.State.units[0]);
-                Deliver(100,3,true,"welcome");
+                Deliver(100,3.3f,true,"welcome");
                 Require(!Slowed(),"A soldier outside frost inherited a newer slowed flag or body padding.");
-                Deliver(104,2.6f,true);
-                Require(!Slowed(),"Frost started before the rendered foot center entered its circle.");
-                Deliver(106,2.4f,true);
-                Require(Mathf.Abs(f.Session.Sample(f.Session.State.units[0]).x-2.8f)<.001f&&Slowed(),"The frost circle boundary did not include the rendered foot center.");
+                Deliver(104,2.94f,true);
+                Require(!Slowed(),"Frost started before the rendered footprint entered its circle.");
+                Deliver(106,2.74f,true);
+                Require(Mathf.Abs(f.Session.Sample(f.Session.State.units[0]).x-3.12f)<.001f&&Slowed(),"The frost circle boundary did not include the rendered footprint.");
                 Deliver(110,3.4f,false);
-                Require(Slowed(),"A newer snapshot cleared frost before the rendered foot center left.");
+                Require(Slowed(),"A newer snapshot cleared frost before the rendered footprint left.");
                 Deliver(114,4,false);
-                Require(!Slowed(),"Frost remained after the rendered foot center left its circle.");
+                Require(!Slowed(),"Frost remained after the rendered footprint left its circle.");
                 Deliver(118,0,true);
                 Deliver(122,0,true);
                 Require(Slowed(),"A soldier could not reenter an active frost circle.");

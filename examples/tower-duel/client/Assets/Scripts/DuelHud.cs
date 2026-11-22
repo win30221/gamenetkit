@@ -317,7 +317,7 @@ namespace TowerDuel
             float healthScale=root.resolvedStyle.height/1000f;
             foreach(var group in new[]{state.towers,state.units})foreach(var e in group)
             {
-                if(e.hp<=0||e.concealed)continue;seen.Add(e.id);
+                if(e.hp<=0||e.hp>=e.maxHP)continue;seen.Add(e.id);
                 if(!bars.TryGetValue(e.id,out var bar))
                 {
                     bar=new VisualElement{pickingMode=PickingMode.Ignore};bar.AddToClassList("health-bar");if(client.Rules.Find(e.kind)!=null)bar.AddToClassList("unit-health");if(e.seat!=state.seat)bar.AddToClassList("enemy");
@@ -329,7 +329,7 @@ namespace TowerDuel
                 }
                 bar.EnableInClassList("enemy",e.seat!=state.seat);
                 bool unit=client.Rules.Find(e.kind)!=null;
-                healthLabels[e.id].text=unit?e.hp.ToString():e.hp+" / "+e.maxHP;
+                healthLabels[e.id].text=e.hp.ToString();
                 if(e.kind=="keep")bar.Q<Label>(className:"keep-status").text=e.active?"主堡啟動":"主堡待命";
                 else if(unit)
                 {
@@ -337,8 +337,10 @@ namespace TowerDuel
                     bool mud=client.Session.SampleTerrainFactor(e)<1;
                     bar.Q<Label>(className:"unit-status").text=e.IsDeploying(client.Session.RenderTick)?"部署 "+Mathf.CeilToInt(deployMilliseconds)+"ms":client.Session.SampleSlowed(e)?(mud?"冰霜・泥濘":"減速"):mud?"泥濘":e.charging?"衝鋒":"";
                 }
-                var worldPos=unit?client.Session.Sample(e):e.Position;worldPos.y=e.kind=="keep"?TowerDuelClient.KeepHealthHeight:e.kind=="tower"?(client.Map.HasWall?7.4f:3.9f):client.Presentation.UnitHeight(e.kind)+.22f;
-                var screen=client.Camera.WorldToScreenPoint(worldPos);bool visible=screen.z>0&&client.Camera.pixelRect.Contains(new Vector2(screen.x,screen.y));Display(bar,visible);
+                var worldPos=unit?client.Session.Sample(e):e.Position;
+                var bodyCenter=worldPos+Vector3.up*(unit?client.Presentation.UnitHeight(e.kind)*.5f:1f);
+                worldPos.y+=e.kind=="keep"?TowerDuelClient.KeepHealthHeight:e.kind=="tower"?(client.Map.HasWall?7.4f:3.9f):client.Presentation.UnitHeight(e.kind)+.22f;
+                var screen=client.Camera.WorldToScreenPoint(worldPos);bool visible=!client.Presentation.Environment.WallOccludes(client.Camera,bodyCenter)&&!client.Presentation.Environment.WallOccludes(client.Camera,worldPos)&&screen.z>0&&client.Camera.pixelRect.Contains(new Vector2(screen.x,screen.y));Display(bar,visible);
                 if(visible)
                 {
                     var p=RuntimePanelUtils.ScreenToPanel(root.panel,new Vector2(screen.x,Screen.height-screen.y));

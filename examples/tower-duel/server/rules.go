@@ -13,29 +13,39 @@ const protocolVersion = 3
 const deckSize = 8
 
 type cardDefinition struct {
-	ID               string  `json:"id"`
-	Name             string  `json:"name"`
-	Description      string  `json:"description"`
-	Cost             float64 `json:"cost"`
-	Count            int     `json:"count"`
-	HP               int     `json:"hp"`
-	Damage           int     `json:"damage"`
-	Cooldown         int     `json:"cooldown"`
-	WindupTicks      int     `json:"windupTicks"`
-	DeployTicks      int     `json:"deployTicks"`
-	Speed            float64 `json:"speed"`
-	Range            float64 `json:"range"`
-	Aggro            float64 `json:"aggro"`
-	Type             string  `json:"type"`
-	Target           string  `json:"target"`
-	Splash           float64 `json:"splash"`
-	ChargeDistance   float64 `json:"chargeDistance"`
-	ChargeMultiplier float64 `json:"chargeMultiplier"`
-	Radius           float64 `json:"radius"`
-	Slow             float64 `json:"slow"`
-	TowerScale       float64 `json:"towerScale"`
-	DelayTicks       int     `json:"delayTicks"`
-	DurationTicks    int     `json:"durationTicks"`
+	ID                  string  `json:"id"`
+	Name                string  `json:"name"`
+	Description         string  `json:"description"`
+	Cost                float64 `json:"cost"`
+	Count               int     `json:"count"`
+	HP                  int     `json:"hp"`
+	Damage              int     `json:"damage"`
+	Cooldown            int     `json:"cooldown"`
+	WindupTicks         int     `json:"windupTicks"`
+	DeployTicks         int     `json:"deployTicks"`
+	Speed               float64 `json:"speed"`
+	Range               float64 `json:"range"`
+	Aggro               float64 `json:"aggro"`
+	Type                string  `json:"type"`
+	Target              string  `json:"target"`
+	Splash              float64 `json:"splash"`
+	ChargeDistance      float64 `json:"chargeDistance"`
+	ChargeMultiplier    float64 `json:"chargeMultiplier"`
+	Radius              float64 `json:"radius"`
+	Slow                float64 `json:"slow"`
+	BodyRadius          float64 `json:"bodyRadius,omitempty"`
+	Weight              float64 `json:"weight,omitempty"`
+	HitAir              bool    `json:"hitAir,omitempty"`
+	InitialAir          bool    `json:"initialAir,omitempty"`
+	TransformAfterTicks int     `json:"transformAfterTicks,omitempty"`
+	HpMultiplier        int     `json:"hpMultiplier,omitempty"`
+	AuraRadius          float64 `json:"auraRadius,omitempty"`
+	MoveMultiplier      float64 `json:"moveMultiplier,omitempty"`
+	KnockbackDistance   float64 `json:"knockbackDistance,omitempty"`
+	WeightThreshold     float64 `json:"weightThreshold,omitempty"`
+	PauseTicks          int     `json:"pauseTicks,omitempty"`
+	DelayTicks          int     `json:"delayTicks"`
+	DurationTicks       int     `json:"durationTicks"`
 }
 type rules struct {
 	ID                 string                    `json:"id"`
@@ -74,6 +84,11 @@ func loadRules(path string) (rules, error) {
 			return r, errors.New("invalid card")
 		}
 		if c.Type == "troop" {
+			if !finite(c.BodyRadius) || c.BodyRadius < 0 || c.BodyRadius > 1 || !finite(c.Weight) || c.Weight < 0 ||
+				c.TransformAfterTicks < 0 || (c.TransformAfterTicks > 0 && (c.InitialAir || c.HpMultiplier < 1 || c.HpMultiplier > 10 || c.HP > int(^uint(0)>>1)/c.HpMultiplier)) ||
+				!finite(c.AuraRadius) || c.AuraRadius < 0 || !finite(c.MoveMultiplier) || (c.AuraRadius > 0 && c.MoveMultiplier < 1) {
+				return r, errors.New("invalid troop combat properties")
+			}
 			if c.DeployTicks < 0 || c.DeployTicks > 10*tickRate {
 				return r, errors.New("invalid troop deployment time")
 			}
@@ -81,7 +96,7 @@ func loadRules(path string) (rules, error) {
 				return r, errors.New("invalid troop")
 			}
 		} else if c.Type == "spell" {
-			if c.Count != 0 || !finite(c.Radius) || c.Radius <= 0 || c.Radius > 5 || c.Damage < 0 || !finite(c.TowerScale) || c.TowerScale < 0 || c.TowerScale > 1 || !finite(c.Slow) || c.Slow < 0 || c.Slow >= 1 || (c.Damage == 0 && c.Slow == 0) || c.DelayTicks < 0 || c.DelayTicks > 90 || c.DurationTicks < 1 || c.DurationTicks > 300 {
+			if !finite(c.KnockbackDistance) || c.KnockbackDistance < 0 || c.KnockbackDistance > 5 || !finite(c.WeightThreshold) || c.WeightThreshold < 0 || c.PauseTicks < 0 || c.PauseTicks > 300 || (c.KnockbackDistance > 0 && (c.PauseTicks == 0 || c.WeightThreshold == 0 || c.Damage == 0)) || c.Count != 0 || !finite(c.Radius) || c.Radius <= 0 || c.Radius > 5 || c.Damage < 0 || !finite(c.Slow) || c.Slow < 0 || c.Slow >= 1 || (c.Damage == 0 && c.Slow == 0) || c.DelayTicks < 0 || c.DelayTicks > 90 || c.DurationTicks < 1 || c.DurationTicks > 300 {
 				return r, errors.New("invalid spell")
 			}
 		} else {

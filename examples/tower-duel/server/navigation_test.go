@@ -33,7 +33,7 @@ func TestSwordSquadCrossesFromDeployment(t *testing.T) {
 					for range 20 * tickRate {
 						w.step()
 						for id, u := range w.Units {
-							if !w.walkable(position(u.State)) {
+							if !w.walkableFor(position(u.State), u.State.Radius, u.State.Airborne) {
 								t.Fatalf("unit %d entered an obstacle: %+v", id, u.State)
 							}
 							if (seat == 0 && u.State.Z > 2) || (seat == 1 && u.State.Z < -2) {

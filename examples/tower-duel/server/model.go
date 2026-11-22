@@ -20,43 +20,44 @@ type point struct {
 	Z float64 `json:"z"`
 }
 type entity struct {
-	ID           uint64  `json:"id"`
-	Seat         int     `json:"seat"`
-	Kind         string  `json:"kind"`
-	X            float64 `json:"x"`
-	Z            float64 `json:"z"`
-	Radius       float64 `json:"radius"`
-	HP           int     `json:"hp"`
-	MaxHP        int     `json:"maxHP"`
-	DX           float64 `json:"dx"`
-	DZ           float64 `json:"dz"`
-	AttackTick   uint64  `json:"attackTick"`
-	ReadyTick    uint64  `json:"readyTick,omitempty"`
-	HitTick      uint64  `json:"hitTick,omitempty"`
-	HitTarget    uint64  `json:"hitTarget,omitempty"`
-	Target       uint64  `json:"target"`
-	LockedTarget uint64  `json:"lockedTarget,omitempty"`
-	Active       bool    `json:"active"`
-	Slowed       bool    `json:"slowed"`
-	Muddy        bool    `json:"muddy,omitempty"`
-	Concealed    bool    `json:"concealed,omitempty"`
-	Charging     bool    `json:"charging"`
+	ID            uint64  `json:"id"`
+	Seat          int     `json:"seat"`
+	Kind          string  `json:"kind"`
+	X             float64 `json:"x"`
+	Z             float64 `json:"z"`
+	Radius        float64 `json:"radius"`
+	HP            int     `json:"hp"`
+	MaxHP         int     `json:"maxHP"`
+	DX            float64 `json:"dx"`
+	DZ            float64 `json:"dz"`
+	AttackTick    uint64  `json:"attackTick"`
+	ReadyTick     uint64  `json:"readyTick,omitempty"`
+	HitTick       uint64  `json:"hitTick,omitempty"`
+	HitTarget     uint64  `json:"hitTarget,omitempty"`
+	Target        uint64  `json:"target"`
+	LockedTarget  uint64  `json:"lockedTarget,omitempty"`
+	Active        bool    `json:"active"`
+	Slowed        bool    `json:"slowed"`
+	Muddy         bool    `json:"muddy,omitempty"`
+	Airborne      bool    `json:"airborne,omitempty"`
+	PausedUntil   uint64  `json:"pausedUntil,omitempty"`
+	TransformTick uint64  `json:"transformTick,omitempty"`
+	Charging      bool    `json:"charging"`
 }
 type mapDefinition struct {
-	ID                 string            `json:"id"`
-	Width              float64           `json:"width"`
-	Length             float64           `json:"length"`
-	RiverHalfWidth     float64           `json:"riverHalfWidth"`
-	WallHalfWidth      float64           `json:"wallHalfWidth,omitempty"`
-	WallHeight         float64           `json:"wallHeight,omitempty"`
-	BridgeHalfWidth    float64           `json:"bridgeHalfWidth"`
-	DeploymentCellSize float64           `json:"deploymentCellSize"`
-	PocketDepth        float64           `json:"pocketDepth"`
-	Bridges            []float64         `json:"bridges"`
-	Towers             []entity          `json:"towers"`
-	TerrainZones       []terrainZone     `json:"terrainZones,omitempty"`
-	UnitSightHeights   []unitSightHeight `json:"unitSightHeights,omitempty"`
-	Hash               string            `json:"-"`
+	ID                 string        `json:"id"`
+	Width              float64       `json:"width"`
+	Length             float64       `json:"length"`
+	RiverHalfWidth     float64       `json:"riverHalfWidth"`
+	WallHalfWidth      float64       `json:"wallHalfWidth,omitempty"`
+	WallHeight         float64       `json:"wallHeight,omitempty"`
+	BridgeHalfWidth    float64       `json:"bridgeHalfWidth"`
+	DeploymentCellSize float64       `json:"deploymentCellSize"`
+	PocketDepth        float64       `json:"pocketDepth"`
+	Bridges            []float64     `json:"bridges"`
+	Towers             []entity      `json:"towers"`
+	TerrainZones       []terrainZone `json:"terrainZones,omitempty"`
+	Hash               string        `json:"-"`
 }
 
 func loadMap(path string) (mapDefinition, error) {
@@ -83,6 +84,8 @@ func loadMap(path string) (mapDefinition, error) {
 }
 
 type unit struct {
+	Knockback        point
+	KnockbackSteps   int
 	State            entity
 	Cooldown         int
 	Path             []point
@@ -120,19 +123,19 @@ type actionResult struct {
 	Energy      float64   `json:"energy"`
 }
 type effectState struct {
-	ID         uint64  `json:"id"`
-	Kind       string  `json:"kind"`
-	Seat       int     `json:"seat"`
-	X          float64 `json:"x"`
-	Z          float64 `json:"z"`
-	Radius     float64 `json:"radius"`
-	Start      uint64  `json:"start"`
-	Impact     uint64  `json:"impact"`
-	End        uint64  `json:"end"`
-	Damage     int     `json:"-"`
-	TowerScale float64 `json:"-"`
-	Slow       float64 `json:"-"`
-	Applied    bool    `json:"-"`
+	ID         uint64         `json:"id"`
+	Kind       string         `json:"kind"`
+	Seat       int            `json:"seat"`
+	X          float64        `json:"x"`
+	Z          float64        `json:"z"`
+	Radius     float64        `json:"radius"`
+	Start      uint64         `json:"start"`
+	Impact     uint64         `json:"impact"`
+	End        uint64         `json:"end"`
+	Damage     int            `json:"-"`
+	Definition cardDefinition `json:"-"`
+	Slow       float64        `json:"-"`
+	Applied    bool           `json:"-"`
 }
 type stateMessage struct {
 	Type            string        `json:"type"`
@@ -247,7 +250,7 @@ func (w *match) deploy(seat int, matchID string, action uint64, card string, x, 
 		legal = legal && math.Abs(x) <= w.Map.Width/2 && math.Abs(z) <= w.Map.Length/2
 	} else {
 		for _, p := range spots {
-			if !w.deploymentPoint(seat, p) {
+			if !w.deploymentPointFor(seat, p, definition.bodyRadius()) {
 				legal = false
 			}
 		}
@@ -281,7 +284,7 @@ func (w *match) deploy(seat int, matchID string, action uint64, card string, x, 
 		}
 		if definition.Type == "spell" {
 			w.NextID++
-			w.Effects = append(w.Effects, effectState{ID: w.NextID, Kind: card, Seat: seat, X: x, Z: z, Radius: definition.Radius, Start: w.Tick, Impact: w.Tick + uint64(definition.DelayTicks) + 1, End: w.Tick + uint64(definition.DelayTicks+definition.DurationTicks) + 1, Damage: definition.Damage, TowerScale: definition.TowerScale, Slow: definition.Slow})
+			w.Effects = append(w.Effects, effectState{ID: w.NextID, Kind: card, Seat: seat, X: x, Z: z, Radius: definition.Radius, Start: w.Tick, Impact: w.Tick + uint64(definition.DelayTicks) + 1, End: w.Tick + uint64(definition.DelayTicks+definition.DurationTicks) + 1, Damage: definition.Damage, Definition: definition, Slow: definition.Slow})
 			r.UnitID = w.NextID
 		} else {
 			readyTick := uint64(0)
@@ -290,7 +293,7 @@ func (w *match) deploy(seat int, matchID string, action uint64, card string, x, 
 			}
 			for _, p := range spots {
 				w.NextID++
-				w.Units[w.NextID] = &unit{State: entity{ID: w.NextID, Seat: seat, Kind: card, X: p.X, Z: p.Z, Radius: guardRadius, HP: definition.HP, MaxHP: definition.HP, DZ: direction, ReadyTick: readyTick}, LaneX: w.nearestBridge(seat, x)}
+				w.Units[w.NextID] = &unit{State: entity{ID: w.NextID, Seat: seat, Kind: card, X: p.X, Z: p.Z, Radius: definition.bodyRadius(), Airborne: definition.InitialAir, TransformTick: definition.transformTick(w.Tick), HP: definition.HP, MaxHP: definition.HP, DZ: direction, ReadyTick: readyTick}, LaneX: w.nearestBridge(seat, x)}
 				if r.UnitID == 0 {
 					r.UnitID = w.NextID
 				}
@@ -326,9 +329,6 @@ func (w *match) snapshot(seat int, kind string) stateMessage {
 	for _, u := range w.sortedUnits() {
 		state := u.State
 		state.LockedTarget = u.LockedTarget
-		if w.concealedFor(seat, state) {
-			state = entity{ID: state.ID, Seat: state.Seat, Concealed: true}
-		}
 		units = append(units, state)
 	}
 	towers := append([]entity(nil), w.Towers...)

@@ -92,15 +92,16 @@ async function run(origin, output) {
       await until(() => trace.some(frame => frame.hitTick), peers);
       const firstHit = trace.find(frame => frame.hitTick);
       const aggro = config.cards.find(card => card.id === 'guard').aggro;
-      const approach = trace.find(frame => !frame.lockedTarget && frame.enemyDistance <= aggro);
-      assert(approach, 'Did not observe an unlocked target decision with an enemy inside aggro');
-      const want = scenario === 'behind' ? tower.id : defenderID;
-      assert(approach.target === want, `Approach target ${approach.target}, expected ${want}`);
+      const entered = trace.findIndex(frame => !frame.lockedTarget && frame.enemyDistance <= aggro);
+      assert(entered >= 0, 'Did not observe an unlocked target decision with an enemy inside aggro');
+      const want = defenderID;
+      // Snapshots publish post-movement positions. A unit first crossing the
+      // aggro boundary on this frame may switch on the next simulation step.
+      const approach = trace.slice(entered, entered + 2).find(frame => frame.target === want);
+      assert(approach, `Approach did not select defender ${want} within one snapshot`);
       assert(firstHit.hitTarget === want, `First hit ${firstHit.hitTarget}, expected ${want}`);
       if (scenario === 'behind') {
         assert(approach.towerEdgeDistance < approach.enemyEdgeDistance, 'Rear defender was not farther than the tower');
-        assert(firstHit.towerHP < tower.hp, 'First tower attack dealt no damage');
-        assert(trace.every(frame => Math.abs(frame.x - lane) < .65), 'Rear defender caused a tower detour');
       } else {
         assert(approach.enemyEdgeDistance < approach.towerEdgeDistance, 'Front defender was not the nearest target');
         assert(firstHit.towerHP === tower.hp, 'Front defender was skipped for a tower attack');

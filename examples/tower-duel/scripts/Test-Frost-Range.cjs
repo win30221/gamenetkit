@@ -20,7 +20,7 @@ async function run(origin='http://127.0.0.1:18143',output=path.join(root,'artifa
       if(effect.kind!=='frost'||m.tick<effect.impact||m.tick>=effect.end)continue;
       for(const unit of m.units){
        const distance=Math.hypot(unit.x-effect.x,unit.z-effect.z);
-       samples.push({tick:m.tick,id:unit.id,seat:unit.seat,distance,radius:effect.radius,slowed:unit.slowed,readyTick:unit.readyTick});
+       samples.push({tick:m.tick,id:unit.id,seat:unit.seat,distance,radius:effect.radius+unit.radius,slowed:unit.slowed,readyTick:unit.readyTick});
       }
      }
     }else if(m.type==='action'){
@@ -58,7 +58,7 @@ async function run(origin='http://127.0.0.1:18143',output=path.join(root,'artifa
    assert(observed.some(s=>s.distance>s.radius+.002&&s.distance<s.radius+.3&&!s.slowed),'No immediately released target just outside the circle');
    for(const s of samples){
     const expected=s.seat!==casterSeat&&s.distance<=s.radius;
-    if(Math.abs(s.distance-s.radius)>.002)assert(s.slowed===expected,'Snapshot frost/foot-center mismatch: '+JSON.stringify(s));
+    if(Math.abs(s.distance-s.radius)>.002)assert(s.slowed===expected,'Snapshot frost/footprint mismatch: '+JSON.stringify(s));
    }
    assert(records.every(r=>r.errors.length===0),'Protocol errors: '+records.flatMap(r=>r.errors).join(','));
    return {casterSeat,room:a.state.room,match:a.state.match,target:troop.unitID,effect:spell.unitID,checkedSnapshots:observed.length,

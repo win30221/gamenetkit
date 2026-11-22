@@ -113,7 +113,6 @@ namespace TowerDuel
                     report.ownBuildingsAway&=environment.BuildingFrame(tower.id)%2==(tower.seat==state.seat?0:1);
                 foreach(var unit in state.units)
                 {
-                    if(unit.concealed)continue;
                     bool mud=client.Map.TerrainMovementFactor(unit.Position)<1;
                     if(mud!=unit.muddy)report.mudSyncErrors++;
                     report.mudObserved|=mud&&unit.muddy;

@@ -71,23 +71,70 @@ namespace TowerDuel
     {
         private static readonly Dictionary<string, GameObject> Prefabs = new Dictionary<string, GameObject>();
         private static readonly Dictionary<string, Texture2D> Cards = new Dictionary<string, Texture2D>();
+        private static GameObject singlePoseTemplates;
+        private static readonly Dictionary<string, Sprite> SinglePoses = new Dictionary<string, Sprite>();
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        public static void ClearCache() { Prefabs.Clear(); Cards.Clear(); }
+        public static void ClearCache()
+        {
+            if(singlePoseTemplates) Release(singlePoseTemplates);
+            foreach(var sprite in SinglePoses.Values)Release(sprite);
+            SinglePoses.Clear();
+            singlePoseTemplates=null;
+            Prefabs.Clear();
+            Cards.Clear();
+        }
+        private static void Release(UnityEngine.Object item)
+        {
+            if(!item)return;
+            if(Application.isPlaying)UnityEngine.Object.Destroy(item);
+            else UnityEngine.Object.DestroyImmediate(item);
+        }
+        private static GameObject CreateSinglePoseTemplate(string kind)
+        {
+            float height=kind switch { "falcon"=>.95f, "spearman"=>1.6f, "griffin"=>1.4f, "standard"=>1.65f, _=>0 };
+            if(height==0)return null;
+            var sprite=SinglePose(kind,height);
+            if(!sprite)return null;
+            if(!singlePoseTemplates)
+            {
+                singlePoseTemplates=new GameObject("Battle sprite templates"){hideFlags=HideFlags.HideAndDontSave};
+                singlePoseTemplates.SetActive(false);
+            }
+            var prefab=new GameObject(kind){hideFlags=HideFlags.HideAndDontSave};
+            prefab.transform.SetParent(singlePoseTemplates.transform,false);
+            prefab.AddComponent<DuelUnitArt>().Height=height;
+            var renderer=new GameObject("Facing").AddComponent<SpriteRenderer>();
+            renderer.transform.SetParent(prefab.transform,false);
+            renderer.sprite=sprite;
+            renderer.sharedMaterial=Resources.Load<Material>("TowerDuel/B3/Sprite");
+            renderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
+            return prefab;
+        }
+        internal static Sprite SinglePose(string kind,float height)
+        {
+            if(SinglePoses.TryGetValue(kind,out var sprite)&&sprite)return sprite;
+            var texture=Resources.Load<Texture2D>("TowerDuel/B3/Cards/"+kind);
+            if(!texture)return null;
+            sprite=Sprite.Create(texture,new Rect(0,0,texture.width,texture.height),new Vector2(.5f,0),texture.height/height,0,SpriteMeshType.FullRect);
+            SinglePoses[kind]=sprite;
+            return sprite;
+        }
         public static GameObject Prefab(string kind)
         {
             if (!Prefabs.TryGetValue(kind, out var prefab))
             {
                 prefab = Resources.Load<GameObject>("TowerDuel/B3/Prefabs/" + kind);
+                if(!prefab)prefab=CreateSinglePoseTemplate(kind);
                 Prefabs.Add(kind, prefab);
             }
             return prefab;
         }
-        public static bool Converted(string kind) => Prefab(kind) != null;
+        public static bool Converted(string kind) => Prefab(kind) && Prefab(kind).GetComponent<DuelUnitArt>().Sprites;
         public static Texture2D Card(string kind)
         {
             if (!Cards.TryGetValue(kind, out var texture))
             {
-                if (Converted(kind)) texture = Resources.Load<Texture2D>("TowerDuel/B3/Cards/" + kind);
+                texture = Resources.Load<Texture2D>("TowerDuel/B3/Cards/" + kind);
                 if (!texture) texture = Resources.Load<Texture2D>("TowerDuel/Cards/" + kind);
                 Cards.Add(kind, texture);
             }

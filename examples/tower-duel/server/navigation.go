@@ -6,13 +6,19 @@ import (
 )
 
 func (w *match) walkable(p point) bool {
-	if math.Abs(p.X) > w.Map.Width/2-guardRadius || math.Abs(p.Z) > w.Map.Length/2-guardRadius {
+	return w.walkableFor(p, guardRadius, false)
+}
+func (w *match) walkableFor(p point, radius float64, airborne bool) bool {
+	if math.Abs(p.X) > w.Map.Width/2-radius || math.Abs(p.Z) > w.Map.Length/2-radius {
 		return false
 	}
-	if math.Abs(p.Z) < w.Map.barrierHalfWidth()+guardRadius {
+	if airborne {
+		return true
+	}
+	if math.Abs(p.Z) < w.Map.barrierHalfWidth()+radius {
 		bridge := false
 		for _, x := range w.Map.Bridges {
-			if math.Abs(p.X-x) <= w.Map.BridgeHalfWidth-guardRadius {
+			if math.Abs(p.X-x) <= w.Map.BridgeHalfWidth-radius {
 				bridge = true
 			}
 		}
@@ -21,13 +27,16 @@ func (w *match) walkable(p point) bool {
 		}
 	}
 	for _, t := range w.Towers {
-		if t.HP > 0 && distance(p, position(t)) < t.Radius+guardRadius+.04 {
+		if t.HP > 0 && distance(p, position(t)) < t.Radius+radius+.04 {
 			return false
 		}
 	}
 	return true
 }
 func (w *match) deploymentPoint(seat int, p point) bool {
+	return w.deploymentPointFor(seat, p, guardRadius)
+}
+func (w *match) deploymentPointFor(seat int, p point, radius float64) bool {
 	if !finite(p.X) || !finite(p.Z) || seat < 0 || seat > 1 {
 		return false
 	}
@@ -36,9 +45,9 @@ func (w *match) deploymentPoint(seat int, p point) bool {
 		forward = -1
 	}
 	depth := p.Z * forward
-	bank := w.Map.barrierHalfWidth() + guardRadius + .08
+	bank := w.Map.barrierHalfWidth() + radius + .08
 	if depth <= -bank {
-		return w.walkable(p)
+		return w.walkableFor(p, radius, false)
 	}
 	if depth < bank || depth > w.Map.barrierHalfWidth()+w.Map.PocketDepth {
 		return false
@@ -46,7 +55,7 @@ func (w *match) deploymentPoint(seat int, p point) bool {
 	for _, tower := range w.Towers {
 		if tower.Seat != seat && tower.Kind == "tower" && tower.HP == 0 &&
 			((tower.X < 0 && p.X <= 0) || (tower.X > 0 && p.X >= 0)) {
-			return w.walkable(p)
+			return w.walkableFor(p, radius, false)
 		}
 	}
 	return false
@@ -83,11 +92,14 @@ func (h *routeHeap) Pop() any     { old := *h; x := old[len(old)-1]; *h = old[:l
 // Server-owned half-metre grid. River crossings and living tower footprints
 // are evaluated from the same canonical map used by the client preview.
 func (w *match) route(from, to point, stopDistance, laneX float64, mover *unit, units []*unit) []point {
+	radius := mover.State.Radius
+	goal := w.Units[mover.Goal]
+	airTarget := goal != nil && goal.State.Airborne
 	// A soldier pulled onto another bridge during combat must be able to
 	// finish that crossing before returning to its deployment lane's objective.
-	if math.Abs(from.Z) < w.Map.barrierHalfWidth()+guardRadius {
+	if math.Abs(from.Z) < w.Map.barrierHalfWidth()+radius {
 		for _, bridge := range w.Map.Bridges {
-			if math.Abs(from.X-bridge) <= w.Map.BridgeHalfWidth-guardRadius {
+			if math.Abs(from.X-bridge) <= w.Map.BridgeHalfWidth-radius {
 				laneX = bridge
 				break
 			}
@@ -105,7 +117,7 @@ func (w *match) route(from, to point, stopDistance, laneX float64, mover *unit, 
 	coord := func(id int) point { return point{float64(id%cols)*.5 - 10, float64(id/cols)*.5 - 15} }
 	var occupied [cols * rows]bool
 	for _, other := range units {
-		if other == mover || other.State.HP <= 0 || other.State.Seat == mover.State.Seat {
+		if other == mover || other.State.Airborne != mover.State.Airborne || other.State.HP <= 0 || other.State.Seat == mover.State.Seat {
 			continue
 		}
 		centre := index(position(other.State))
@@ -114,16 +126,16 @@ func (w *match) route(from, to point, stopDistance, laneX float64, mover *unit, 
 				x, z := centre%cols+dx, centre/cols+dz
 				if x >= 0 && x < cols && z >= 0 && z < rows {
 					id := z*cols + x
-					occupied[id] = occupied[id] || distance(coord(id), position(other.State)) < guardRadius*2-.015
+					occupied[id] = occupied[id] || distance(coord(id), position(other.State)) < radius+other.State.Radius-.015
 				}
 			}
 		}
 	}
 	allowed := func(p point) bool {
-		if occupied[index(p)] || (laneX != 0 && math.Abs(p.Z) < w.Map.barrierHalfWidth()+guardRadius && math.Abs(p.X-laneX) > w.Map.BridgeHalfWidth-guardRadius) {
+		if occupied[index(p)] || (laneX != 0 && math.Abs(p.Z) < w.Map.barrierHalfWidth()+radius && math.Abs(p.X-laneX) > w.Map.BridgeHalfWidth-radius) {
 			return false
 		}
-		return w.walkable(p)
+		return w.walkableFor(p, radius, false)
 	}
 	start := index(from)
 	if !allowed(coord(start)) || !w.clearSegment(from, coord(start), mover, units) {
@@ -162,7 +174,7 @@ func (w *match) route(from, to point, stopDistance, laneX float64, mover *unit, 
 		}
 		closed[id] = true
 		p := coord(id)
-		if distance(p, to) <= stopDistance && w.wallClear(p, to) {
+		if distance(p, to) <= stopDistance && (airTarget || w.wallClear(p, to)) {
 			path := []point{p}
 			for id != start {
 				id = came[id]
@@ -203,17 +215,15 @@ func (w *match) route(from, to point, stopDistance, laneX float64, mover *unit, 
 }
 
 func clearUnits(from, to point, mover *unit, units []*unit) bool {
-	const gap = guardRadius*2 - .015
 	dx, dz := to.X-from.X, to.Z-from.Z
 	length := dx*dx + dz*dz
-	minX, maxX := math.Min(from.X, to.X)-gap, math.Max(from.X, to.X)+gap
-	minZ, maxZ := math.Min(from.Z, to.Z)-gap, math.Max(from.Z, to.Z)+gap
 	for _, other := range units {
-		if other == mover || other.State.HP <= 0 || other.State.Seat == mover.State.Seat {
+		if other == mover || other.State.Airborne != mover.State.Airborne || other.State.HP <= 0 || other.State.Seat == mover.State.Seat {
 			continue
 		}
 		p := position(other.State)
-		if p.X < minX || p.X > maxX || p.Z < minZ || p.Z > maxZ {
+		gap := mover.State.Radius + other.State.Radius - .015
+		if p.X < math.Min(from.X, to.X)-gap || p.X > math.Max(from.X, to.X)+gap || p.Z < math.Min(from.Z, to.Z)-gap || p.Z > math.Max(from.Z, to.Z)+gap {
 			continue
 		}
 		scale := 0.0
@@ -235,7 +245,7 @@ func (w *match) clearSegment(from, to point, mover *unit, units []*unit) bool {
 	}
 	for travel := .1; travel < d+.1; travel += .1 {
 		scale := math.Min(travel, d) / d
-		if !w.walkable(point{from.X + (to.X-from.X)*scale, from.Z + (to.Z-from.Z)*scale}) {
+		if !w.walkableFor(point{from.X + (to.X-from.X)*scale, from.Z + (to.Z-from.Z)*scale}, mover.State.Radius, mover.State.Airborne) {
 			return false
 		}
 	}
@@ -245,20 +255,35 @@ func (w *match) clearSegment(from, to point, mover *unit, units []*unit) bool {
 func (w *match) move(u *unit, goal entity, units []*unit) {
 	definition := w.Rules.ByID[u.State.Kind]
 	stop := u.State.Radius + goal.Radius + definition.Range - .05
+	remaining := definition.Speed * w.movementFactor(u, units) / tickRate
+	if u.State.Charging {
+		remaining *= 1.45
+	}
+	if u.State.Airborne {
+		from, to := position(u.State), position(goal)
+		d := distance(from, to)
+		step := math.Min(remaining, d-stop)
+		if step > 0 {
+			x, z := (to.X-from.X)/d, (to.Z-from.Z)/d
+			next := point{from.X + x*step, from.Z + z*step}
+			if w.walkableFor(next, u.State.Radius, true) {
+				u.State.X, u.State.Z = next.X, next.Z
+				u.State.DX, u.State.DZ = x, z
+				u.Travelled += step
+			}
+		}
+		return
+	}
 	lane := 0.0
 	if goal.Kind == "tower" || goal.Kind == "keep" {
 		lane = u.LaneX
 	}
 	changed := u.Goal != goal.ID || (w.Tick >= u.NextRoute && distance(position(goal), u.GoalPoint) > .6)
 	if changed || (len(u.Path) == 0 && w.Tick >= u.NextRoute) {
-		u.Path = w.route(position(u.State), position(goal), stop, lane, u, units)
 		u.Goal = goal.ID
+		u.Path = w.route(position(u.State), position(goal), stop, lane, u, units)
 		u.GoalPoint = position(goal)
 		u.NextRoute = w.Tick + 20
-	}
-	remaining := definition.Speed * w.speedFactor(u) * w.Map.terrainFactor(position(u.State)) / tickRate
-	if u.State.Charging {
-		remaining *= 1.45
 	}
 	for len(u.Path) > 0 && remaining > 0 {
 		p := position(u.State)
@@ -269,7 +294,7 @@ func (w *match) move(u *unit, goal entity, units []*unit) {
 			scale = math.Max(0, distanceToGoal-stop) / distanceToGoal
 		}
 		perimeter := point{p.X + (goal.X-p.X)*scale, p.Z + (goal.Z-p.Z)*scale}
-		if distanceToGoal <= stop+guardRadius*3 && w.wallClear(p, position(goal)) && w.clearSegment(p, perimeter, u, units) {
+		if distanceToGoal <= stop+u.State.Radius*3 && w.attackLine(u.State, goal, p, position(goal)) && w.clearSegment(p, perimeter, u, units) {
 			// Spread around the target's perimeter instead of waiting for an
 			// ally to vacate one final grid point. Static obstacles still apply.
 			q = position(goal)
@@ -291,11 +316,11 @@ func (w *match) move(u *unit, goal entity, units []*unit) {
 		dx, dz := (q.X-p.X)/d, (q.Z-p.Z)/d
 		candidate := point{p.X + dx*step, p.Z + dz*step}
 		clear := func(v point) bool {
-			if !w.walkable(v) {
+			if !w.walkableFor(v, u.State.Radius, false) {
 				return false
 			}
 			for _, other := range units {
-				if other != u && other.State.Seat != u.State.Seat && other.State.HP > 0 && distance(v, position(other.State)) < guardRadius*2-.015 {
+				if other != u && !other.State.Airborne && other.State.Seat != u.State.Seat && other.State.HP > 0 && distance(v, position(other.State)) < u.State.Radius+other.State.Radius-.015 {
 					return false
 				}
 			}

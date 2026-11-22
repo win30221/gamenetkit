@@ -5,7 +5,6 @@ import "math"
 // Resolve soldier circles in stable ID order. Terrain and living buildings
 // stay immovable; allies can push each other instead of blocking deployment.
 func (w *match) resolvePush(units []*unit) {
-	const gap = guardRadius * 2
 	for range 16 {
 		changed := false
 		for i, a := range units {
@@ -13,7 +12,11 @@ func (w *match) resolvePush(units []*unit) {
 				continue
 			}
 			for _, b := range units[i+1:] {
-				if b.State.HP <= 0 {
+				if b.State.HP <= 0 || a.State.Airborne != b.State.Airborne {
+					continue
+				}
+				gap := a.State.Radius + b.State.Radius
+				if gap <= 0 {
 					continue
 				}
 				dx, dz := b.State.X-a.State.X, b.State.Z-a.State.Z
@@ -28,23 +31,25 @@ func (w *match) resolvePush(units []*unit) {
 				} else {
 					dx, dz = dx/d, dz/d
 				}
-				push := math.Min(.2, (gap-d)/2+.00001)
-				pa, pb := point{a.State.X - dx*push, a.State.Z - dz*push}, point{b.State.X + dx*push, b.State.Z + dz*push}
-				canA, canB := w.walkable(pa), w.walkable(pb)
+				push := math.Min(.4, gap-d+.00002)
+				aw, bw := w.Rules.ByID[a.State.Kind].weight(), w.Rules.ByID[b.State.Kind].weight()
+				ap, bp := push*bw/(aw+bw), push*aw/(aw+bw)
+				pa, pb := point{a.State.X - dx*ap, a.State.Z - dz*ap}, point{b.State.X + dx*bp, b.State.Z + dz*bp}
+				canA, canB := w.walkableFor(pa, a.State.Radius, a.State.Airborne), w.walkableFor(pb, b.State.Radius, b.State.Airborne)
 				if canA && canB {
 					a.State.X, a.State.Z = pa.X, pa.Z
 					b.State.X, b.State.Z = pb.X, pb.Z
 					changed = true
 				} else if canA {
-					full := point{a.State.X - dx*push*2, a.State.Z - dz*push*2}
-					if w.walkable(full) {
+					full := point{a.State.X - dx*push, a.State.Z - dz*push}
+					if w.walkableFor(full, a.State.Radius, a.State.Airborne) {
 						pa = full
 					}
 					a.State.X, a.State.Z = pa.X, pa.Z
 					changed = true
 				} else if canB {
-					full := point{b.State.X + dx*push*2, b.State.Z + dz*push*2}
-					if w.walkable(full) {
+					full := point{b.State.X + dx*push, b.State.Z + dz*push}
+					if w.walkableFor(full, b.State.Radius, b.State.Airborne) {
 						pb = full
 					}
 					b.State.X, b.State.Z = pb.X, pb.Z

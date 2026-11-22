@@ -58,54 +58,28 @@ func (w *match) buildingObjective(u *unit) entity {
 
 func (w *match) target(u *unit, units []*unit) (entity, bool) {
 	definition := w.Rules.ByID[u.State.Kind]
-	if u.LockedTarget != 0 {
-		for _, enemy := range units {
-			// A troop lock lasts only while that enemy remains inside aggro.
-			// Escaping enemies fall through to ordinary nearest-target selection.
-			if enemy.State.ID == u.LockedTarget && enemy.State.HP > 0 && enemy.State.Seat != u.State.Seat && !w.concealedFor(u.State.Seat, enemy.State) && distance(position(u.State), position(enemy.State)) <= definition.Aggro {
-				return enemy.State, true
-			}
+	for _, tower := range w.Towers {
+		if tower.ID == u.LockedTarget && definition.canTarget(u.State, tower) {
+			return tower, true
 		}
-		for _, tower := range w.Towers {
-			if tower.ID == u.LockedTarget && tower.HP > 0 && tower.Seat != u.State.Seat {
-				return tower, true
-			}
-		}
-		u.LockedTarget = 0
 	}
-	chosen := w.buildingObjective(u)
-	if definition.Target == "buildings" {
-		return chosen, chosen.ID != 0
-	}
-	detectedEnemy := false
+	var nearest entity
 	for _, enemy := range units {
-		if enemy.State.Seat == u.State.Seat || enemy.State.HP <= 0 || w.concealedFor(u.State.Seat, enemy.State) {
+		state := enemy.State
+		if !definition.canTarget(u.State, state) || distance(position(u.State), position(state)) > definition.Aggro {
 			continue
 		}
-		if distance(position(u.State), position(enemy.State)) > definition.Aggro {
-			continue
+		if state.ID == u.LockedTarget {
+			return state, true
 		}
-		// Across the river, melee units engage through a bridge, not over water.
-		if definition.Range < 2 && u.State.Z*enemy.State.Z < 0 && math.Abs(u.State.Z) < 2 && math.Abs(enemy.State.Z) < 2 {
-			if !w.walkable(point{(u.State.X + enemy.State.X) / 2, 0}) {
-				continue
-			}
-		}
-		detectedEnemy = true
-		if nearerTarget(u.State, enemy.State, chosen) {
-			chosen = enemy.State
+		if nearerTarget(u.State, state, nearest) {
+			nearest = state
 		}
 	}
-	if detectedEnemy {
-		// Include nearby buildings in the same distance comparison. A defender
-		// behind a nearer living tower must not lure an unlocked unit around it,
-		// even after a fight on the other lane. Ordinary lane routing is unchanged
-		// when there are no eligible enemies nearby.
-		for _, tower := range w.Towers {
-			if tower.Seat != u.State.Seat && tower.HP > 0 && nearerTarget(u.State, tower, chosen) {
-				chosen = tower
-			}
-		}
+	u.LockedTarget = 0
+	if nearest.ID != 0 {
+		return nearest, true
 	}
-	return chosen, chosen.ID != 0
+	building := w.buildingObjective(u)
+	return building, building.ID != 0
 }

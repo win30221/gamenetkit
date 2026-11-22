@@ -107,8 +107,7 @@ namespace TowerDuel
                 if(e.kind=="fireball")
                 {
                     float t=Mathf.Clamp01((float)(renderTick-e.start)/Mathf.Max(1,e.impact-e.start));
-                    Vector3 from=new Vector3(0,5,e.seat==0?-11:11);
-                    Vector3 Flight(float progress)=>Vector3.Lerp(from,target,progress)+Vector3.up*Mathf.Sin(progress*Mathf.PI)*3;
+                    Vector3 Flight(float progress)=>target+Vector3.up*(9f*(1-progress*progress));
                     if(impact)visual.Particles.Clear();
                     else
                     {

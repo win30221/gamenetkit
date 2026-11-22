@@ -29,11 +29,11 @@ func TestOverlappingDeploymentsPushApart(t *testing.T) {
 				w.resolvePush(units)
 			}
 			for i, a := range units {
-				if !finite(a.State.X) || !finite(a.State.Z) || !w.walkable(position(a.State)) {
+				if !finite(a.State.X) || !finite(a.State.Z) || !w.walkableFor(position(a.State), a.State.Radius, a.State.Airborne) {
 					t.Fatal("push entered terrain", a.State)
 				}
 				for _, b := range units[i+1:] {
-					if d := distance(position(a.State), position(b.State)); d < guardRadius*2-.002 {
+					if d := distance(position(a.State), position(b.State)); d < a.State.Radius+b.State.Radius-.002 {
 						t.Fatalf("unresolved overlap %d/%d: %g", a.State.ID, b.State.ID, d)
 					}
 				}
@@ -54,7 +54,7 @@ func TestWalkingSoldierPushesAlly(t *testing.T) {
 	if b.State.Z <= -3.9 || a.State.Z <= -4.5 {
 		t.Fatal("walking soldier could not push its ally", a.State, b.State)
 	}
-	if distance(position(a.State), position(b.State)) < guardRadius*2-.002 {
+	if distance(position(a.State), position(b.State)) < a.State.Radius+b.State.Radius-.002 {
 		t.Fatal("pushed soldiers overlapped")
 	}
 }
@@ -63,7 +63,7 @@ func TestOpposingSoldiersAlsoSeparate(t *testing.T) {
 	w := playingMatch(t)
 	a, b := testSoldier(101, 0, "guard", 5, 0), testSoldier(201, 1, "guard", 5, .1)
 	w.resolvePush([]*unit{a, b})
-	if distance(position(a.State), position(b.State)) < guardRadius*2-.002 || !w.walkable(position(a.State)) || !w.walkable(position(b.State)) {
+	if distance(position(a.State), position(b.State)) < a.State.Radius+b.State.Radius-.002 || !w.walkableFor(position(a.State), a.State.Radius, a.State.Airborne) || !w.walkable(position(b.State)) {
 		t.Fatal("opponents did not collide", a.State, b.State)
 	}
 }

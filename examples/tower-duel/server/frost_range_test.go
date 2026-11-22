@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestFrostUsesSoldierFootCenter(t *testing.T) {
+func TestFrostOverlapsSoldierFootprint(t *testing.T) {
 	cases := []struct {
 		name   string
 		x, z   float64
@@ -14,12 +14,12 @@ func TestFrostUsesSoldierFootCenter(t *testing.T) {
 		slowed bool
 	}{
 		{"inside", 2.799, 0, guardRadius, true},
-		{"on_circle", 2.8, 0, guardRadius, true},
-		{"outside", 2.801, 0, guardRadius, false},
-		{"old_body_padding", 3, 0, guardRadius, false},
-		{"large_body_outside", 3, 0, 1.5, false},
+		{"on_circle", 3.12, 0, guardRadius, true},
+		{"outside", 3.121, 0, guardRadius, false},
+		{"body_overlap", 3, 0, guardRadius, true},
+		{"large_body_outside", 4.31, 0, 1.5, false},
 		{"diagonal_inside", 1.97, 1.97, guardRadius, true},
-		{"diagonal_outside", 2, 2, guardRadius, false},
+		{"diagonal_outside", 2.21, 2.21, guardRadius, false},
 	}
 	for _, seat := range []int{0, 1} {
 		for _, card := range defaultRules().Cards {
@@ -61,14 +61,14 @@ func TestFrostCrossingUpdatesAfterMovement(t *testing.T) {
 				u := testSoldier(200, seat, "guard", -5.5, -4*direction)
 				u.LaneX = -5.5
 				w.Units[200] = u
-				center := point{u.State.X, u.State.Z - direction*2.799}
+				center := point{u.State.X, u.State.Z - direction*3.119}
 				if entering {
-					center.Z = u.State.Z + direction*2.801
+					center.Z = u.State.Z + direction*3.121
 				}
 				c := w.Rules.ByID["frost"]
 				w.Effects = []effectState{{ID: 900, Kind: "frost", Seat: 1 - seat, X: center.X, Z: center.Z, Radius: c.Radius, Impact: 1, End: 121, Slow: c.Slow}}
 				w.step()
-				inside := distance(center, position(u.State)) <= c.Radius
+				inside := distance(center, position(u.State)) <= c.Radius+u.State.Radius
 				if inside != entering || u.State.Slowed != inside || (w.speedFactor(u) < 1) != inside {
 					t.Fatalf("post-movement center distance=%v inside=%v slowed=%v factor=%v", distance(center, position(u.State)), inside, u.State.Slowed, w.speedFactor(u))
 				}
@@ -95,8 +95,8 @@ func TestFrostClearsImmediatelyAndReevaluatesOverlaps(t *testing.T) {
 		}
 	}
 	check(.5, .25)
-	check(3, .7) // Leaving the stronger circle must not keep its old factor.
-	check(5, 1)  // Even within the same simulation tick, leaving clears the status.
+	check(3.2, .7) // Leaving the stronger circle must not keep its old factor.
+	check(5.2, 1)  // Even within the same simulation tick, leaving clears the status.
 	check(.5, .25)
 	w.Tick = 100
 	check(.5, .7)
@@ -115,14 +115,14 @@ func TestFrostCrossingUpdatesAfterCollisionPush(t *testing.T) {
 				pusher := testSoldier(201, seat, "guard", u.State.X, u.State.Z-.3*direction)
 				u.State.ReadyTick, pusher.State.ReadyTick = 1000, 1000
 				w.Units[200], w.Units[201] = u, pusher
-				center := point{u.State.X, u.State.Z - direction*2.799}
+				center := point{u.State.X, u.State.Z - direction*3.119}
 				if entering {
-					center.Z = u.State.Z + direction*2.801
+					center.Z = u.State.Z + direction*3.121
 				}
 				c := w.Rules.ByID["frost"]
 				w.Effects = []effectState{{ID: 900, Kind: "frost", Seat: 1 - seat, X: center.X, Z: center.Z, Radius: c.Radius, Impact: 1, End: 121, Slow: c.Slow}}
 				w.step()
-				inside := distance(center, position(u.State)) <= c.Radius
+				inside := distance(center, position(u.State)) <= c.Radius+u.State.Radius
 				if inside != entering || u.State.Slowed != inside || (w.speedFactor(u) < 1) != inside || u.State.ReadyTick != 1000 {
 					t.Fatalf("collision crossing distance=%v inside=%v slowed=%v factor=%v readyTick=%v", distance(center, position(u.State)), inside, u.State.Slowed, w.speedFactor(u), u.State.ReadyTick)
 				}

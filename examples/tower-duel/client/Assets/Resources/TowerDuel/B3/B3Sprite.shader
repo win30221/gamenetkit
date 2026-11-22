@@ -7,6 +7,7 @@ Shader "TowerDuel/B3Sprite"
         _Opacity("Opacity", Range(0,1)) = 1
         _Enemy("Red team", Float) = 0
         _TeamMaskTop("Team recolor upper limit", Float) = 2
+        _AimOutline("Spell aim outline", Color) = (0,0,0,0)
         _Hit("Red damage flash", Range(0,1)) = 0
         _Baked("Use authored fixed lighting",Float)=0
         _SpriteVolume("Body radius, center and height", Vector) = (.25,.38,.46,0)
@@ -32,7 +33,8 @@ Shader "TowerDuel/B3Sprite"
                 float3 positionWS:TEXCOORD1; float2 localXY:TEXCOORD2; float localY:TEXCOORD3; };
             TEXTURE2D(_MainTex); SAMPLER(sampler_MainTex);
             CBUFFER_START(UnityPerMaterial)
-                half4 _BaseColor;
+                half4 _BaseColor, _AimOutline;
+                float4 _MainTex_TexelSize;
                 float4 _SpriteVolume;
                 half _Opacity, _Enemy, _Cutoff, _Hit, _TeamMaskTop, _Baked;
             CBUFFER_END
@@ -56,7 +58,17 @@ Shader "TowerDuel/B3Sprite"
                 // retain the darkest ink rather than multiplying it into black.
                 color.rgb=lerp(color.rgb,half3(1,.10h,.08h)*max(.4h,value),_Hit*.8h*smoothstep(.07h,.18h,value));
                 color*=input.color*_BaseColor; color.a*=_Opacity;
+                if(color.a<_Cutoff && _AimOutline.a>.5h)
+                {
+                    float2 stepUV=_MainTex_TexelSize.xy*2;
+                    half edge=max(max(SAMPLE_TEXTURE2D(_MainTex,sampler_MainTex,input.uv+float2(stepUV.x,0)).a,
+                                      SAMPLE_TEXTURE2D(_MainTex,sampler_MainTex,input.uv-float2(stepUV.x,0)).a),
+                                  max(SAMPLE_TEXTURE2D(_MainTex,sampler_MainTex,input.uv+float2(0,stepUV.y)).a,
+                                      SAMPLE_TEXTURE2D(_MainTex,sampler_MainTex,input.uv-float2(0,stepUV.y)).a));
+                    if(edge>_Cutoff)return _AimOutline;
+                }
                 clip(color.a-_Cutoff);
+                color.rgb=lerp(color.rgb,_AimOutline.rgb,_AimOutline.a*.12h);
                 if(_Baked>.5h)
                 {
                     // Self-lighting is in the atlas. Only actual environmental

@@ -60,12 +60,19 @@ namespace TowerDuel.Editor
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             foreach(var card in DuelRules.Load().cards)
             {
-                string path="Assets/Resources/TowerDuel/Cards/"+card.id+".png";
-                var importer=AssetImporter.GetAtPath(path) as TextureImporter;
-                if(!importer)throw new InvalidOperationException("Missing illustrated card art: "+card.id);
-                importer.textureType=TextureImporterType.Default;importer.sRGBTexture=true;importer.alphaSource=TextureImporterAlphaSource.None;
-                importer.mipmapEnabled=false;importer.isReadable=false;importer.wrapMode=TextureWrapMode.Clamp;importer.filterMode=FilterMode.Bilinear;
-                importer.npotScale=TextureImporterNPOTScale.ToNearest;importer.maxTextureSize=512;importer.textureCompression=TextureImporterCompression.CompressedHQ;importer.SaveAndReimport();
+                const string root = "Assets/Resources/TowerDuel/";
+                string path = root + "B3/Cards/" + card.id + ".png";
+                var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+                if (!importer)
+                {
+                    path = root + "Cards/" + card.id + ".png";
+                    importer = AssetImporter.GetAtPath(path) as TextureImporter;
+                    if (!importer) throw new InvalidOperationException("Missing illustrated card art: " + card.id);
+
+                    importer.textureType=TextureImporterType.Default;importer.sRGBTexture=true;importer.alphaSource=TextureImporterAlphaSource.None;
+                    importer.mipmapEnabled=false;importer.isReadable=false;importer.wrapMode=TextureWrapMode.Clamp;importer.filterMode=FilterMode.Bilinear;
+                    importer.npotScale=TextureImporterNPOTScale.ToNearest;importer.maxTextureSize=512;importer.textureCompression=TextureImporterCompression.CompressedHQ;importer.SaveAndReimport();
+                }
                 var image=AssetDatabase.LoadAssetAtPath<Texture2D>(path);
                 if(!image||image.width<256||image.height<256)throw new InvalidOperationException("Card art is still a prototype thumbnail: "+card.id);
             }

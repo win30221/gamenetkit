@@ -133,7 +133,7 @@ namespace TowerDuel
             var card=Rules.Find(SelectedCard);
             bool valid = CanDeploy(point);
             presentation.DeploymentGrid.Highlight(point,visible);
-            presentation.Preview(point,visible,valid,SelectedCard,state?.seat??0,DuelRules.Formation(state?.seat??0,point,card),card!=null&&card.IsSpell?card.radius:.42f);
+            presentation.Preview(point,visible,valid,SelectedCard,state?.seat??0,DuelRules.Formation(state?.seat??0,point,card),card!=null?(card.IsSpell?card.radius:card.BodyRadius):.32f, state);
         }
         public void HidePreview()
         {

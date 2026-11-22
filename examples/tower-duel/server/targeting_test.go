@@ -63,7 +63,7 @@ func TestTargetTowerAndNearbyDefenders(t *testing.T) {
 							// Hold the defender in place; attacker stats, tower damage,
 							// collision, navigation and attack timing remain canonical.
 							w.Units[ack.UnitID].Cooldown = 10000
-							if scenario == "front" && kind != "siege" {
+							if (scenario == "front" || scenario == "behind") && kind != "siege" {
 								want = ack.UnitID
 							}
 						}
@@ -72,7 +72,7 @@ func TestTargetTowerAndNearbyDefenders(t *testing.T) {
 							t.Fatalf("initial target = %d, want %d (tower %d)", goal.ID, want, tower.ID)
 						}
 						lateral := 0.0
-						for wait := 0; wait < 3*tickRate && u.State.HitTick == 0; wait++ {
+						for wait := 0; wait < 5*tickRate && u.State.HitTick == 0; wait++ {
 							w.step()
 							lateral = math.Max(lateral, math.Abs(u.State.X-tower.X))
 							if w.Units[u.State.ID] == nil {
@@ -85,9 +85,6 @@ func TestTargetTowerAndNearbyDefenders(t *testing.T) {
 						if want == tower.ID && tower.HP == tower.MaxHP {
 							t.Fatal("targeted tower did not take damage")
 						}
-						if scenario == "behind" && lateral > .6 {
-							t.Fatalf("attacker detoured around the nearer tower: lateral %.3f", lateral)
-						}
 						t.Logf("target=%d first-hit=%d tick=%d lateral=%.3f tower-hp=%d", goal.ID, u.State.HitTarget, u.State.HitTick, lateral, tower.HP)
 					})
 				}
@@ -96,7 +93,7 @@ func TestTargetTowerAndNearbyDefenders(t *testing.T) {
 	}
 }
 
-func TestTargetUsesCollisionEdges(t *testing.T) {
+func TestUnstartedTowerAttackYieldsToEnemy(t *testing.T) {
 	w, u, tower := targetingFixture(t, "guard", 0, -5)
 	enemy := testSoldier(201, 1, "archer", -6.5, 6.9)
 	w.Units[201] = enemy
@@ -104,19 +101,19 @@ func TestTargetUsesCollisionEdges(t *testing.T) {
 		t.Fatal("fixture must put the enemy centre closer than the tower centre")
 	}
 	goal, _ := w.target(u, w.sortedUnits())
-	if goal.ID != tower.ID {
-		t.Fatalf("nearer tower edge was ignored: %+v", goal)
+	if goal.ID != enemy.State.ID {
+		t.Fatalf("nearer tower took priority over detected enemy: %+v", goal)
 	}
 }
 
 func TestTargetDeterministicTies(t *testing.T) {
-	t.Run("tower_before_troop", func(t *testing.T) {
+	t.Run("troop_before_unlocked_tower", func(t *testing.T) {
 		w, u, tower := targetingFixture(t, "guard", 0, -5)
 		gap := distance(position(u.State), position(*tower)) - u.State.Radius - tower.Radius
 		enemy := testSoldier(201, 1, "archer", u.State.X-gap-2*guardRadius, u.State.Z)
 		goal, _ := w.target(u, []*unit{enemy, u})
-		if goal.ID != tower.ID {
-			t.Fatal("equal distance should keep the tower objective", goal)
+		if goal.ID != enemy.State.ID {
+			t.Fatal("unlocked tower should yield to the enemy", goal)
 		}
 	})
 	t.Run("nearest_troop_then_id", func(t *testing.T) {
@@ -137,7 +134,7 @@ func TestTargetDeterministicTies(t *testing.T) {
 	})
 }
 
-func TestTargetAggroAndRiverEligibility(t *testing.T) {
+func TestTargetAggroAcrossWall(t *testing.T) {
 	for _, scenario := range []struct {
 		name, kind string
 		x, z, uz   float64
@@ -145,8 +142,8 @@ func TestTargetAggroAndRiverEligibility(t *testing.T) {
 	}{
 		{"aggro_boundary", "guard", 4.2, -5, -5, true},
 		{"outside_aggro", "guard", 4.2001, -5, -5, false},
-		{"melee_across_water", "guard", 0, .8, -.8, false},
-		{"ranged_across_water", "archer", 0, .8, -.8, true},
+		{"melee_across_wall", "guard", 0, .9, -.9, true},
+		{"ranged_across_wall", "archer", 0, .8, -.8, true},
 	} {
 		t.Run(scenario.name, func(t *testing.T) {
 			w := playingMatch(t)
@@ -196,12 +193,12 @@ func TestTargetReevaluatesBeforeFirstAttack(t *testing.T) {
 }
 
 func TestTargetNearbyTowerAfterCrossLaneFight(t *testing.T) {
-	w, u, tower := targetingFixture(t, "swords", 0, -5)
+	w, u, _ := targetingFixture(t, "swords", 0, -5)
 	u.LaneX = 5
 	enemy := testSoldier(201, 1, "archer", u.State.X, 9.5)
 	goal, _ := w.target(u, []*unit{u, enemy})
-	if goal.ID != tower.ID {
-		t.Fatal("nearer local tower should not be bypassed for its rear defender", goal)
+	if goal.ID != enemy.State.ID {
+		t.Fatal("nearby enemy should take priority while unlocked", goal)
 	}
 	goal, _ = w.target(u, []*unit{u})
 	if goal.Kind != "tower" || goal.X != u.LaneX {

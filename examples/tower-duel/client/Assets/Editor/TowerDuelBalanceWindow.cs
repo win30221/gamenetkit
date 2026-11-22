@@ -102,7 +102,21 @@ namespace TowerDuel.Editor
                     Number(fields,"衝鋒累積距離",card.id+"ChargeDistance",card.chargeDistance,v=>card.chargeDistance=v);
                     Number(fields,"衝鋒傷害倍率",card.id+"ChargeMultiplier",card.chargeMultiplier,v=>card.chargeMultiplier=v);
                 }
+                Number(fields,"碰撞半徑（格）",card.id+"BodyRadius",card.bodyRadius,v=>card.bodyRadius=v);
+                Number(fields,"重量",card.id+"Weight",card.weight,v=>card.weight=v);
+                var air=new Toggle("可攻擊空中"){value=card.hitAir};
+                air.RegisterValueChangedCallback(e=>Change(()=>card.hitAir=e.newValue));fields.Add(air);
                 fields.Add(new Label("目標："+(card.target=="buildings"?"僅建築":"部隊與建築")));
+                if(card.transformAfterTicks>0)
+                {
+                    Milliseconds(fields,"升空時間（ms）",card.id+"Transform",()=>card.transformAfterTicks,v=>card.transformAfterTicks=v);
+                    Integer(fields,"升空生命倍率",card.id+"HealthMultiplier",card.hpMultiplier,v=>card.hpMultiplier=v);
+                }
+                if(card.auraRadius>0)
+                {
+                    Number(fields,"光環半徑（格）",card.id+"AuraRadius",card.auraRadius,v=>card.auraRadius=v);
+                    Number(fields,"光環移速倍率",card.id+"MoveMultiplier",card.moveMultiplier,v=>card.moveMultiplier=v);
+                }
             }
             table.Add(new Label("* 每秒傷害為單體持續攻擊的估算；小隊顯示全員總和，不含衝鋒倍率或範圍多目標。"));
             RefreshState();
@@ -118,7 +132,9 @@ namespace TowerDuel.Editor
             if(card.id=="fireball")
             {
                 Integer(fields,"傷害",card.id+"Damage",card.damage,v=>card.damage=v);
-                Number(fields,"對塔傷害比例（%）",card.id+"TowerScale",card.towerScale*100,v=>card.towerScale=v/100);
+                Number(fields,"擊退距離（格）",card.id+"Knockback",card.knockbackDistance,v=>card.knockbackDistance=v);
+                Number(fields,"擊退重量門檻",card.id+"Threshold",card.weightThreshold,v=>card.weightThreshold=v);
+                Milliseconds(fields,"擊退暫停（ms）",card.id+"Pause",()=>card.pauseTicks,v=>card.pauseTicks=v);
             }
             else Number(fields,"剩餘移速／攻速（%）",card.id+"Slow",card.slow*100,v=>card.slow=v/100);
         }
@@ -196,11 +212,13 @@ namespace TowerDuel.Editor
                 if(!DuelMap.Finite(c.cost)||c.cost<=0||c.cost>10)return prefix+"費用需大於 0 且不超過 10。";
                 if(c.IsSpell)
                 {
-                    if(!DuelMap.Finite(c.radius)||c.radius<=0||c.radius>5||c.damage<0||!DuelMap.Finite(c.slow)||c.slow<0||c.slow>=1||!DuelMap.Finite(c.towerScale)||c.towerScale<0||c.towerScale>1||(c.damage==0&&c.slow==0))return prefix+"請檢查半徑、傷害及比例。";
+                    if(!DuelMap.Finite(c.radius)||c.radius<=0||c.radius>5||c.damage<0||!DuelMap.Finite(c.slow)||c.slow<0||c.slow>=1||(c.damage==0&&c.slow==0))return prefix+"請檢查半徑、傷害及比例。";
+                    if(!DuelMap.Finite(c.knockbackDistance)||c.knockbackDistance<0||c.knockbackDistance>5||!DuelMap.Finite(c.weightThreshold)||c.weightThreshold<0||c.pauseTicks<0||c.pauseTicks>300||(c.knockbackDistance>0&&(c.pauseTicks==0||c.weightThreshold==0||c.damage==0)))return prefix+"請檢查擊退設定。";
                     if(c.delayTicks<0||c.delayTicks>90||c.durationTicks<1||c.durationTicks>300)return prefix+"施放延遲需為 0～3000 ms，持續時間需大於 0 且不超過 10000 ms。";
                 }
                 else
                 {
+                    if(!DuelMap.Finite(c.bodyRadius)||c.bodyRadius<0||c.bodyRadius>1||!DuelMap.Finite(c.weight)||c.weight<0||c.transformAfterTicks<0||(c.transformAfterTicks>0&&(c.initialAir||c.hpMultiplier<1||c.hpMultiplier>10||c.hp>int.MaxValue/c.hpMultiplier))||!DuelMap.Finite(c.auraRadius)||c.auraRadius<0||!DuelMap.Finite(c.moveMultiplier)||(c.auraRadius>0&&c.moveMultiplier<1))return prefix+"請檢查體型、重量、形態與光環。";
                     if(c.count!=1&&c.count!=3)return prefix+"每次出兵數量需為 1 或 3。";
                     if(c.hp<=0||c.damage<=0||c.cooldown<1)return prefix+"血量、傷害及攻擊間隔需大於零。";
                     if(c.windupTicks<1||c.windupTicks>=c.cooldown)return prefix+"前搖需大於零，且短於攻擊間隔。";

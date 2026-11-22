@@ -31,9 +31,13 @@ func (w *match) step() {
 		w.Energy[i] = math.Min(10, w.Energy[i]+regen)
 	}
 	units := w.sortedUnits()
-	w.resolvePush(units)
+	for _, u := range units {
+		w.transform(u)
+	}
 	damage := make(map[uint64]int)
 	w.stepEffects(units, damage)
+	w.resolvePush(units)
+	w.refreshUnitSlows(units)
 	type movement struct {
 		unit   *unit
 		target entity
@@ -45,7 +49,7 @@ func (w *match) step() {
 		u.State.Slowed = factor < 1
 		// Deployment uses the authoritative match clock, independent of slows.
 		// Bodies can still be pushed and damaged, but cannot act or build charge.
-		if w.Tick < u.State.ReadyTick {
+		if w.Tick < u.State.ReadyTick || w.Tick < u.State.PausedUntil {
 			continue
 		}
 		u.State.Charging = definition.ChargeDistance > 0 && u.Travelled >= definition.ChargeDistance
@@ -57,7 +61,7 @@ func (w *match) step() {
 			}
 		}
 		target, ok := w.target(u, units)
-		inRange := ok && distance(position(u.State), position(target)) <= u.State.Radius+target.Radius+definition.Range && w.wallClear(position(u.State), position(target))
+		inRange := ok && distance(position(u.State), position(target)) <= u.State.Radius+target.Radius+definition.Range && w.attackLine(u.State, target, position(u.State), position(target))
 		if u.WindupTarget != 0 && (!inRange || target.ID != u.WindupTarget) {
 			// A cancelled swing cannot carry its progress over to another target.
 			u.WindupTarget = 0
@@ -79,7 +83,7 @@ func (w *match) step() {
 					hit = int(math.Round(float64(hit) * definition.ChargeMultiplier))
 				}
 				if definition.Splash > 0 {
-					w.areaDamage(u.State.Seat, position(target), definition.Splash, hit, 1, units, damage)
+					w.areaDamage(u.State.Seat, position(target), definition.Splash, hit, definition, u.State.Airborne, units, damage)
 				} else {
 					damage[target.ID] += hit
 				}
@@ -137,10 +141,7 @@ func (w *match) step() {
 			continue
 		}
 		if w.TowerCooldown[t.ID] > 0 {
-			factor := 1.0
-			if t.Slowed {
-				factor = .55
-			}
+			factor := w.towerSlow(*t)
 			w.TowerProgress[t.ID] += factor
 			for w.TowerProgress[t.ID] >= 1 && w.TowerCooldown[t.ID] > 0 {
 				w.TowerCooldown[t.ID]--
@@ -154,11 +155,11 @@ func (w *match) step() {
 		if t.Kind == "keep" {
 			attackRange = w.Rules.KeepRange
 		}
-		reach := attackRange + t.Radius + guardRadius
+		reach := attackRange + t.Radius
 		best := math.Inf(1)
 		var target *unit
 		for _, u := range units {
-			if u.State.ID == t.Target && u.State.HP > 0 && u.State.Seat != t.Seat && !w.concealedFor(t.Seat, u.State) {
+			if u.State.ID == t.Target && u.State.HP > 0 && u.State.Seat != t.Seat {
 				target = u
 				break
 			}
@@ -166,17 +167,17 @@ func (w *match) step() {
 		if target == nil {
 			t.Target = 0
 			for _, u := range units {
-				if u.State.Seat == t.Seat || w.concealedFor(t.Seat, u.State) {
+				if u.State.Seat == t.Seat || u.State.HP <= 0 {
 					continue
 				}
 				d := distance(position(*t), position(u.State))
-				if d <= reach && d < best {
+				if d <= reach+u.State.Radius && d < best {
 					best = d
 					target = u
 				}
 			}
 		}
-		if target != nil && distance(position(*t), position(target.State)) <= reach {
+		if target != nil && distance(position(*t), position(target.State)) <= reach+target.State.Radius {
 			damage[target.State.ID] += w.Rules.TowerDamage
 			w.TowerCooldown[t.ID] = w.Rules.TowerCooldownTicks
 			w.TowerProgress[t.ID] = 0
@@ -260,13 +261,12 @@ func (w *match) refreshUnitSlows(units []*unit) {
 		u.SlowUntil = 0
 		u.SlowFactor = 0
 		u.State.Slowed = false
-		u.State.Muddy = w.Map.terrainFactor(position(u.State)) < 1
+		u.State.Muddy = !u.State.Airborne && w.Map.terrainFactor(position(u.State)) < 1
 		for _, e := range w.Effects {
-			if e.Slow <= 0 || w.Tick < e.Impact || w.Tick >= e.End || u.State.Seat == e.Seat {
+			if e.Slow <= 0 || w.Tick < e.Impact || w.Tick >= e.End || u.State.Seat == e.Seat || (u.State.Airborne && !e.Definition.HitAir) {
 				continue
 			}
-			// The drawn circle is the boundary for a soldier's foot center.
-			if distance(point{e.X, e.Z}, position(u.State)) > e.Radius {
+			if distance(point{e.X, e.Z}, position(u.State)) > e.Radius+u.State.Radius+1e-9 {
 				continue
 			}
 			if u.SlowFactor == 0 || e.Slow < u.SlowFactor {
@@ -277,43 +277,51 @@ func (w *match) refreshUnitSlows(units []*unit) {
 		}
 	}
 }
-func (w *match) areaDamage(seat int, center point, radius float64, amount int, towerScale float64, units []*unit, damage map[uint64]int) {
+func (w *match) areaDamage(seat int, center point, radius float64, amount int, card cardDefinition, airborne bool, units []*unit, damage map[uint64]int) {
 	for _, u := range units {
-		if u.State.Seat != seat && distance(center, position(u.State)) <= radius+u.State.Radius {
+		if card.canTarget(entity{Seat: seat, Airborne: airborne}, u.State) && distance(center, position(u.State)) <= radius+u.State.Radius+1e-9 {
 			damage[u.State.ID] += amount
 		}
 	}
 	for _, t := range w.Towers {
-		if t.Seat != seat && t.HP > 0 && distance(center, position(t)) <= radius+t.Radius {
-			damage[t.ID] += int(math.Round(float64(amount) * towerScale))
+		if t.Seat != seat && t.HP > 0 && distance(center, position(t)) <= radius+t.Radius+1e-9 {
+			damage[t.ID] += amount
 		}
 	}
 }
-func (w *match) stepEffects(units []*unit, damage map[uint64]int) {
-	for i := range w.Towers {
-		w.Towers[i].Slowed = false
+func (w *match) towerSlow(t entity) float64 {
+	factor := 1.0
+	for _, e := range w.Effects {
+		if e.Slow > 0 && t.Seat != e.Seat && w.Tick >= e.Impact && w.Tick < e.End && distance(point{e.X, e.Z}, position(t)) <= e.Radius+t.Radius+1e-9 {
+			factor = min(factor, e.Slow)
+		}
 	}
+	return factor
+}
+func (w *match) stepEffects(units []*unit, damage map[uint64]int) {
 	live := w.Effects[:0]
 	for _, e := range w.Effects {
 		if w.Tick >= e.End {
 			continue
 		}
-		if w.Tick >= e.Impact {
-			if !e.Applied && e.Damage > 0 {
-				w.areaDamage(e.Seat, point{e.X, e.Z}, e.Radius, e.Damage, e.TowerScale, units, damage)
-				e.Applied = true
-			}
-			if e.Slow > 0 {
-				for i := range w.Towers {
-					t := &w.Towers[i]
-					if t.Seat != e.Seat && t.HP > 0 && distance(point{e.X, e.Z}, position(*t)) <= e.Radius+t.Radius {
-						t.Slowed = true
-					}
+		if w.Tick >= e.Impact && !e.Applied && e.Damage > 0 {
+			center := point{e.X, e.Z}
+			w.areaDamage(e.Seat, center, e.Radius, e.Damage, e.Definition, false, units, damage)
+			for _, u := range units {
+				if e.Definition.canTarget(entity{Seat: e.Seat}, u.State) && distance(center, position(u.State)) <= e.Radius+u.State.Radius+1e-9 {
+					w.startKnockback(u, center, e.Definition)
 				}
 			}
+			e.Applied = true
 		}
 		live = append(live, e)
 	}
 	w.Effects = live
+	for _, u := range units {
+		w.advanceKnockback(u)
+	}
+	for i := range w.Towers {
+		w.Towers[i].Slowed = w.towerSlow(w.Towers[i]) < 1
+	}
 	w.refreshUnitSlows(units)
 }

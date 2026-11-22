@@ -7,13 +7,13 @@ namespace TowerDuel
 {
     [Serializable] public sealed class EntityState
     {
-        public long id, attackTick, hitTick, hitTarget, target, readyTick;
+        public long id, attackTick, hitTick, hitTarget, target, readyTick, pausedUntil, transformTick;
         public int seat, hp, maxHP;
         public string kind;
         public float x,z,radius,dx,dz;
-        public bool active,slowed,charging,muddy,concealed;
+        public bool active,slowed,charging,muddy,airborne;
         public bool IsDeploying(double tick)=>readyTick>0&&tick<readyTick;
-        public Vector3 Position => new Vector3(x,DuelMap.GroundHeight(z),z);
+        public Vector3 Position => new Vector3(x,DuelMap.GroundHeight(z)+(airborne?2.35f:0),z);
     }
     [Serializable] public sealed class PlayerState { public int seat; public string name; public bool ready,connected,rematch; public float reconnectRemaining; }
     [Serializable] public sealed class EffectState { public long id,start,impact,end; public string kind; public int seat; public float x,z,radius; }
@@ -50,7 +50,6 @@ namespace TowerDuel
         public string id;public float width,length,riverHalfWidth,wallHalfWidth,wallHeight,bridgeHalfWidth,deploymentCellSize,pocketDepth;
         public float[] bridges; public EntityState[] towers;
         public TerrainZone[] terrainZones;
-        public UnitSightHeight[] unitSightHeights;
         public bool HasWall=>wallHalfWidth>0;
         public float BarrierHalfWidth=>HasWall?wallHalfWidth:riverHalfWidth;
         private static bool flatGround;
@@ -77,13 +76,13 @@ namespace TowerDuel
         {
             if(state==null||seat<0||seat>1)return false;
             if(card!=null&&card.IsSpell)return Finite(point.x)&&Finite(point.z)&&Mathf.Abs(point.x)<=width/2&&Mathf.Abs(point.z)<=length/2;
-            foreach(var p in DuelRules.Formation(seat,point,card))if(!CanDeployPoint(seat,p,state))return false;
+            foreach(var p in DuelRules.Formation(seat,point,card))if(!CanDeployPoint(seat,p,state,card?.BodyRadius??.32f))return false;
             return true;
         }
-        private bool CanDeployPoint(int seat,Vector3 point,DuelMessage state)
+        private bool CanDeployPoint(int seat,Vector3 point,DuelMessage state,float radius)
         {
-            if (!Finite(point.x)||!Finite(point.z)||Mathf.Abs(point.x)>width/2-.32f||Mathf.Abs(point.z)>length/2-.32f) return false;
-            float depth=point.z*(seat==0?1:-1),bank=BarrierHalfWidth+.40f;
+            if (!Finite(point.x)||!Finite(point.z)||Mathf.Abs(point.x)>width/2-radius||Mathf.Abs(point.z)>length/2-radius) return false;
+            float depth=point.z*(seat==0?1:-1),bank=BarrierHalfWidth+radius+.08f;
             if(depth>-bank)
             {
                 if(depth<bank||depth>BarrierHalfWidth+pocketDepth)return false;
@@ -93,7 +92,7 @@ namespace TowerDuel
                 if(!annexed)return false;
             }
             foreach (var tower in state.towers)
-                if (tower.hp>0&&Vector2.Distance(new Vector2(point.x,point.z),new Vector2(tower.x,tower.z))<tower.radius+.36f) return false;
+                if (tower.hp>0&&Vector2.Distance(new Vector2(point.x,point.z),new Vector2(tower.x,tower.z))<tower.radius+radius+.04f) return false;
             return true;
         }
         public Vector3 SnapDeployment(Vector3 point,CardDefinition card)
@@ -133,12 +132,14 @@ namespace TowerDuel
         public string id,kind;
         public float x,z,halfWidth,halfLength,moveFactor;
     }
-    [Serializable] public sealed class UnitSightHeight {public string kind;public float height;}
     [Serializable] public sealed class CardDefinition
     {
         public string id,name,description,type,target;
         public int count,hp,damage,cooldown,windupTicks,deployTicks,delayTicks,durationTicks;
-        public float cost,speed,range,aggro,splash,chargeDistance,chargeMultiplier,radius,slow,towerScale;
+        public float cost,speed,range,aggro,splash,chargeDistance,chargeMultiplier,radius,slow,bodyRadius,weight,auraRadius,moveMultiplier,knockbackDistance,weightThreshold;
+        public bool initialAir,hitAir;
+        public int transformAfterTicks,hpMultiplier,pauseTicks;
+        public float BodyRadius=>bodyRadius>0?bodyRadius:.32f;
         public bool IsSpell=>type=="spell";
     }
     [Serializable] public sealed class DuelRules

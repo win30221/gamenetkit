@@ -55,9 +55,9 @@ namespace TowerDuel
             for(int i=0;i<count;i++)
             {
                 var ghost=UnityEngine.Object.Instantiate(prefabs[card],root,false);ghost.name=card+" translucent placement "+i;
-                var art=ghost.GetComponent<DuelUnitArt>();art.TeamMarker.gameObject.SetActive(false);
+                var art=ghost.GetComponent<DuelUnitArt>();if(art.TeamMarker)art.TeamMarker.gameObject.SetActive(false);
                 if(art.Sprites)art.Sprites.PresentPreview(0,true);
-                else{art.Animator.Rebind();art.Animator.Update(0);art.Animator.enabled=false;}
+                else if(art.Animator){art.Animator.Rebind();art.Animator.Update(0);art.Animator.enabled=false;}
                 foreach(var collider in ghost.GetComponentsInChildren<Collider>(true))collider.enabled=false;
                 foreach(var renderer in ghost.GetComponentsInChildren<Renderer>(true))
                 {
@@ -80,7 +80,7 @@ namespace TowerDuel
                 ghosts.Add(ghost);
             }
         }
-        public void Show(string card,int seat,Vector3 point,bool visible,bool valid,Vector3[] formation,float radius,bool spell)
+        public void Show(string card,int seat,Vector3 point,bool visible,bool valid,Vector3[] formation,float radius,bool spell,bool airborne=false)
         {
             if(!visible){Hide();return;}
             ActiveKind=card;ActiveRadius=spell?radius:0;
@@ -92,15 +92,25 @@ namespace TowerDuel
             for(int i=0;i<ghosts.Count;i++)
             {
                 var ghost=ghosts[i];ghost.SetActive(!spell&&i<formation.Length);
-                if(!ghost.activeSelf)continue;ghost.transform.position=formation[i];ghost.transform.rotation=Quaternion.Euler(0,seat==0?0:180,0);
-                var art=ghost.GetComponent<DuelUnitArt>();if(art.Sprites)art.Sprites.PresentPreview(seat,valid);
+                if(!ghost.activeSelf)continue;ghost.transform.position=formation[i]+(airborne?Vector3.up*2.35f:Vector3.zero);ghost.transform.rotation=Quaternion.Euler(0,seat==0?0:180,0);
+                var art=ghost.GetComponent<DuelUnitArt>();
+                if(art.Sprites)art.Sprites.PresentPreview(seat,valid);
+                else if(!art.Animator&&Camera.main)
+                {
+                    var body=art.transform.Find("Facing");
+                    if(body)
+                    {
+                        body.rotation=Quaternion.LookRotation(Vector3.ProjectOnPlane(Camera.main.transform.forward,Vector3.up));
+                        body.localScale=new Vector3(1,1/Mathf.Max(.15f,Camera.main.transform.up.y),1);
+                    }
+                }
             }
             area.gameObject.SetActive(spell);
             if(spell){area.position=new Vector3(point.x,.24f,point.z);area.localScale=new Vector3(radius,1,radius);color.a=.17f;areaMaterial.SetColor("_BaseColor",color);}
             for(int n=0;n<rings.Length;n++)
             {
                 var line=rings[n];line.enabled=n<(spell?1:formation.Length);if(!line.enabled)continue;
-                var centre=spell?point:formation[n];float r=spell?radius:.37f;
+                var centre=spell?point:formation[n];float r=radius;
                 for(int i=0;i<Segments;i++){float angle=i*Mathf.PI*2/Segments;line.SetPosition(i,new Vector3(centre.x+Mathf.Cos(angle)*r,.25f,centre.z+Mathf.Sin(angle)*r));}
             }
         }

@@ -8,7 +8,7 @@ GameNetKit transport and interpolation. Animation and projectiles do not calcula
 - Simulation 30 Hz; complete recipient-specific snapshots 15 Hz.
 - At most 32 two-seat rooms, 64 connections, 80 living soldiers and 16 effects per room.
 - `client/Assets/Resources/TowerDuel/map.json` and `rules.json` are canonical; SHA-256 of their raw bytes becomes
-  `mapHash` and `rulesHash`. Rules schema 3, revision `eight-cards-3`.
+  `mapHash` and `rulesHash`. Rules schema 3, revision `air-combat-1`.
 - Each recipient receives only their own energy, four-card hand, next card,
   hand version and action watermark. Opponent hands and queues are never projected.
 
@@ -63,16 +63,20 @@ the current hand and queue.
 | ID | Cost | Count | Role |
 | --- | --- | --- | --- |
 | guard | 3 | 1 | Durable melee |
-| archer | 3 | 1 | Ranged single target |
+| archer | 3 | 1 | Ranged single target, ground and air |
 | swords | 3 | 3 | Fragile melee squad |
-| bomber | 4 | 1 | 1.5 m splash around the attack target |
+| bomber | 4 | 1 | 1.5 m ground splash around the attack target |
 | charger | 4 | 1 | 2× hit after 2.5 m of movement |
 | siege | 5 | 1 | Attacks buildings only |
-| fireball | 4 | 0 | 2.2 m radius, 110 damage, 45% tower damage |
-| frost | 2 | 0 | 2.8 m radius, 55% movement/attack slow, 120 ticks |
+| fireball | 4 | 0 | Meteor, 2.2 grid-unit radius, 110 damage on all targets |
+| frost | 2 | 0 | 2.8 grid-unit radius, 55% movement/attack progress, 120 ticks |
+| falcon | 3 | 1 | Flying assault unit |
+| spearman | 3 | 1 | Extended-reach ground melee |
+| griffin | 4 | 1 | Flies after 300 ticks and doubles current and maximum HP |
+| standard | 4 | 1 | Nearby allies and self gain movement speed, strongest aura applies |
 
 All numerical parameters are in `rules.json`; art does not determine gameplay.
-Troops have a 0.32 m radius. Swords use an oriented three-member formation. Every
+Each troop defines its collision radius and weight. Swords use an oriented three-member formation. Every
 member must fit the player's bank, avoid living buildings and fit the unit cap.
 Soldier overlap is allowed at deployment; authoritative circle collision separates
 and pushes bodies afterwards. River, buildings and boundaries remain obstacles.
@@ -99,12 +103,13 @@ They affect enemies only. Effect snapshots include `id`, `kind`, `seat`, `x`, `z
 tick, after a 34-tick delay from the next simulation step; the visual remains for
 18 ticks. Frost repeatedly applies the slow within its active area to troops and
 towers; overlapping slows use the strongest value rather than multiplying.
-Soldiers are affected only while their foot center is inside or on the frost
-circle; their body radius does not expand it. Slow status is recomputed after
-movement and collision pushes, so a departing soldier's outgoing snapshot is
-already clear. The client uses the same rendered foot position and effect
-timeline for its slow label and animation speed. Towers retain body-overlap
-targeting for frost.
+Spells use horizontal circle overlap for ground troops, flying troops and buildings.
+The meteor drops vertically at its selected destination. At impact, units strictly below
+the configured weight threshold are pushed outward up to one grid unit and suspend
+movement and attacks for nine ticks. Terrain can stop displacement while the pause continues.
+Resistance to knockback leaves damage and current action progress intact.
+Frost recalculates after movement and pushes. The client samples the same footprint
+rule along its render timeline.
 Active effects stop on match end and are cleared for rematches.
 
 Deployment, energy deduction, effect/unit creation, cycling and the cached action
@@ -125,21 +130,16 @@ determine the winner; ties enter sixty seconds of sudden death. Simultaneous kee
 destruction, or simultaneous tower destruction during overtime, draws.
 
 The deployment centre chooses the nearest bridge for the formation. Building
-objectives follow that lane's front tower, then the keep. Before the first attack,
-eligible enemy troops within the card's centre-based `aggro` radius compete with
-that objective and nearby enemy buildings by collision-edge distance, rather than
-automatically taking priority. A nearer tower therefore wins over its rear defender.
-Equal distances favour a building; troop ties use the lower entity ID. Without
-eligible troops, normal deployment-lane routing remains in effect, with an enemy
-building already in attack range also eligible. Units approach the selected target
-until it is within attack range, re-evaluating while approaching. Starting an attack
-windup locks the living target. A troop lock remains only while the enemy's centre
-is within the attacker's `aggro` radius (inclusive). If the enemy escapes or dies,
-the same tick clears the lock, cancels any unfinished windup and runs normal
-nearest-target selection again; without eligible troops the unit resumes its
-building objective. A newly selected target cannot inherit the cancelled windup,
-and the existing attack cooldown continues. Building locks last until destruction.
-Siege ignores troop targets.
+objectives follow that lane's front tower, then the keep. Troops select the nearest
+eligible enemy soldier inside their centre-based aggro radius, measured by collision
+edge distance. If no soldier is eligible, they advance toward a building. Attack
+windup starts a lock. Troop locks last while the target is alive, in aggro range
+and attackable. Building locks last until the building falls. Siege targets buildings.
+Real wall segments block ground attack lines and movement, while ground-air combat can
+cross the wall. Both towers target air and ground troops in range across the wall.
+The map has a one-grid-thick, two-grid-high central wall with two three-grid gates.
+Side walls follow the exterior map boundary. Wall concealment is visual; the server
+publishes all units. Unit snapshots include optional airborne, transformTick and pausedUntil.
 Towers also retain living targets outside
 range and wait for their return. `target` is current intent; optional `lockedTarget`
 is the attack lock. For troops, `attackTick` starts the attack animation and
@@ -158,13 +158,7 @@ and cooldown progress. Cooldown runs from attack start and includes windup,
 preserving the configured interval between attacks. Ranged projectiles launch
 only after an authoritative `hitTick`, rather than at animation start.
 
-Revision `eight-cards-2` reduces all troop movement speeds to 80% of revision 1
-and lengthens attack cooldowns and windups by approximately 40%, rounded to whole
-ticks. Tower shots use `towerCooldownTicks` (38 ticks, about 1.27 seconds), keeping
-their cadence in step with the slower troops. Costs, hit damage, health, range,
-charge distance and multipliers are unchanged. Fireball has a longer warning
-window (34 ticks); frost keeps its four-second duration and 55% speed factor.
-
+Tower shots use `towerCooldownTicks` (38 ticks, about 1.27 seconds).
 Front towers start `active`; keeps activate permanently after taking damage or
 losing either friendly front tower. `slowed` reports status at the published foot
 position; frost presentation samples the render-time position. `charging` drives

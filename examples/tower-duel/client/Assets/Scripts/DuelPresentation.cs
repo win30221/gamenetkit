@@ -23,7 +23,6 @@ namespace TowerDuel
             public Transform Pivot;
             public Vector3 PivotPosition;
             public Sprite SpriteFrame;
-            public bool Hidden;
             public float SpriteOpacity = 1;
         }
         private sealed class Bolt { public LineRenderer Line; public double Until; }
@@ -101,9 +100,37 @@ namespace TowerDuel
             if(!material)throw new InvalidOperationException("Missing battle material "+name);
             return material;
         }
+        private DuelMessage previewState;
+        private Vector3 spellPoint;
+        private CardDefinition previewSpell;
+        private bool outlineVisible;
+        private readonly MaterialPropertyBlock spellOutline = new();
+        private void UpdateSpellOutline(DuelMessage state)
+        {
+            if(previewSpell==null&&!outlineVisible)return;
+            foreach(var e in state.units)
+                if(units.TryGetValue(e.id,out var unit)) SetOutline(e,unit.Art.transform.position,unit.Renderers,state.seat);
+            foreach(var e in state.towers)
+                SetOutline(e,e.Position,towers[e.id].GetComponentsInChildren<SpriteRenderer>(),state.seat);
+            outlineVisible=previewSpell!=null;
+        }
+        private void SetOutline(EntityState entity,Vector3 renderedPosition,Renderer[] renderers,int seat)
+        {
+            float reach=(previewSpell?.radius??0)+entity.radius;
+            float x=spellPoint.x-renderedPosition.x,z=spellPoint.z-renderedPosition.z;
+            bool hit=previewSpell!=null&&entity.seat!=seat&&entity.hp>0&&(!entity.airborne||previewSpell.hitAir)&&x*x+z*z<=reach*reach+1e-5f;
+            var tint=previewSpell?.id=="fireball"?new Color(1f,.56f,.15f,1):new Color(.25f,.85f,1f,1);
+            foreach(var renderer in renderers)
+            {
+                if(!(renderer is SpriteRenderer)||!renderer.sharedMaterial.HasProperty("_AimOutline"))continue;
+                renderer.GetPropertyBlock(spellOutline);
+                spellOutline.SetColor("_AimOutline",hit?tint:Color.clear);
+                renderer.SetPropertyBlock(spellOutline);
+            }
+        }
         private UnitVisual Create(EntityState e)
         {
-            var go=UnityEngine.Object.Instantiate(prefabs[e.kind],root,false);go.name=e.kind+" "+e.id;go.transform.position=e.Position;
+            var go=UnityEngine.Object.Instantiate(prefabs[e.kind],root,false);go.name=e.kind+" "+e.id;go.transform.position=e.Position;go.SetActive(true);
             var art=go.GetComponent<DuelUnitArt>();
             var contact=DuelContactShadow.Attach(art);
             if(art.Sprites)
@@ -122,31 +149,45 @@ namespace TowerDuel
             foreach(var e in state.units)
             {
                 live.Add(e.id);
-                if(e.concealed)
-                {
-                    if(units.TryGetValue(e.id,out var hidden)){hidden.Hidden=true;hidden.Art.gameObject.SetActive(false);}
-                    continue;
-                }
                 if(!units.TryGetValue(e.id,out var v)){v=Create(e);units.Add(e.id,v);}
-                bool justRevealed=false;
-                if(v.Hidden)
-                {
-                    v.Hidden=false;v.Art.gameObject.SetActive(true);v.Previous=e.Position;
-                    v.Health=e.hp;v.Hit=e.hitTick;v.Attack=e.attackTick;
-                    justRevealed=true;
-                }
                 var definition=rules.Find(e.kind);
                 bool deploying=e.IsDeploying(session.RenderTick);
-                Vector3 position=justRevealed?e.Position:session.Sample(e);
+                bool paused=session.RenderTick<e.pausedUntil;
+                Vector3 position=session.Sample(e);
                 float travel=Vector3.Distance(position,v.Previous);
-                v.Art.transform.position=position;v.Previous=position;
                 var direction=new Vector3(e.dx,0,e.dz);
-                if(!v.Art.Sprites&&direction.sqrMagnitude>.001f)v.Art.transform.rotation=Quaternion.Slerp(v.Art.transform.rotation,Quaternion.LookRotation(direction),15*Time.unscaledDeltaTime);
+                v.Art.transform.position=position;v.Previous=position;
+                if(!v.Art.Sprites&&!v.Art.Animator)
+                {
+                    var body=v.Art.transform.Find("Facing");
+                    if(body&&Camera.main)
+                    {
+                        var forward=Vector3.ProjectOnPlane(Camera.main.transform.forward,Vector3.up);
+                        body.rotation=Quaternion.LookRotation(forward);
+                        body.localScale=new Vector3(1,1/Mathf.Max(.15f,Camera.main.transform.up.y),1);
+                        float bob=paused?0:Mathf.Sin((float)session.RenderTick*.35f)*Mathf.Clamp01(travel*20)*.10f;
+                        body.localPosition=Vector3.up*bob;
+                        var renderer=body.GetComponent<SpriteRenderer>();
+                        bool flyingGriffin=e.airborne&&e.kind=="griffin";
+                        renderer.sprite=(flyingGriffin?DuelSpriteLibrary.SinglePose("griffin-air",v.Art.Height):null)
+                            ??DuelSpriteLibrary.SinglePose(e.kind,v.Art.Height);
+                        renderer.flipX=e.dx*Camera.main.transform.right.x+e.dz*Camera.main.transform.right.z<-.05f;
+                        renderer.color=e.seat==state.seat?Color.white:new Color(1,.75f,.72f);
+                        if(!paused&&e.attackTick>0&&session.RenderTick>=e.attackTick&&session.RenderTick<e.attackTick+definition.windupTicks)
+                        {
+                            float phase=(float)(session.RenderTick-e.attackTick)/definition.windupTicks;
+                            body.localPosition+=direction*Mathf.Sin(phase*Mathf.PI)*.18f;
+                        }
+                        v.Contact.SetOpacity(e.airborne?.55f:1f);
+                    }
+                }
+                if(v.Contact.Renderer)v.Contact.Renderer.transform.position=new Vector3(position.x,DuelMap.GroundHeight(position.z)+.003f,position.z);
+                if(v.Art.Animator&&!v.Art.Sprites&&direction.sqrMagnitude>.001f)v.Art.transform.rotation=Quaternion.Slerp(v.Art.transform.rotation,Quaternion.LookRotation(direction),15*Time.unscaledDeltaTime);
                 float speed=travel/Mathf.Max(.001f,Time.unscaledDeltaTime)/definition.speed;
                 float slow=session.SampleSlowed(e)?rules.Find("frost").slow:1;
-                if(!v.Art.Sprites)
+                if(v.Art.Animator&&!v.Art.Sprites)
                 {
-                    v.Art.Animator.speed=slow;
+                    v.Art.Animator.speed=session.RenderTick<e.pausedUntil?0:slow;
                     v.Art.Animator.SetFloat(SpeedHash,deploying?0:Mathf.Clamp01(speed),.08f,Time.unscaledDeltaTime);
                 }
                 if(e.hp<v.Health)v.DamageTick=session.RenderTick;
@@ -164,13 +205,13 @@ namespace TowerDuel
                         v.ReleaseHit=e.hitTick;
                         v.ReleaseTick=e.hitTick-RangedFlightDuration(position+Vector3.up*v.Art.Height*.72f,hitPoint)*30;
                     }
-                    v.Art.Sprites.Present(e,definition,session.RenderTick,speed,deploying,slow,reaction,
+                    v.Art.Sprites.Present(e,definition,paused?e.pausedUntil-rules.Find("fireball").pauseTicks:session.RenderTick,paused?0:speed,deploying,slow,reaction,
                         v.ReleaseHit==e.hitTick&&!double.IsNaN(v.ReleaseTick)?v.ReleaseTick:(double?)null);
                 }
                 if(v.Art.Sprites&&v.Art.Sprites.ShadowMatchesFrame)SpriteShadowKinds|=CardBit(e.kind);
                 if(!deploying&&e.attackTick>v.Attack)
                 {
-                    v.Attack=e.attackTick;if(!v.Art.Sprites)v.Art.Animator.SetTrigger(StrikeHash);
+                    v.Attack=e.attackTick;if(v.Art.Animator&&!v.Art.Sprites)v.Art.Animator.SetTrigger(StrikeHash);
                 }
                 if(!deploying&&e.hitTick>v.Hit)
                 {
@@ -207,7 +248,7 @@ namespace TowerDuel
                     if(frame!=v.SpriteFrame&&v.Art.Sprites.Clip==DuelSpriteClip.Attack){AttackPoseSamples++;AttackKinds|=kindBit;}
                     v.SpriteFrame=frame;
                 }
-                else
+                else if(v.Art.Animator)
                 {
                     int animation=v.Art.Animator.isInitialized?v.Art.Animator.GetCurrentAnimatorStateInfo(0).shortNameHash:0;
                     if(animation==MoveState&&travel>.001f&&Quaternion.Angle(v.Leg,v.Art.WalkProbe.localRotation)>.15f){WalkPoseSamples++;WalkKinds|=kindBit;}
@@ -219,11 +260,10 @@ namespace TowerDuel
             foreach(long id in removed)
             {
                 var v=units[id];units.Remove(id);
-                if(v.Hidden){UnityEngine.Object.Destroy(v.Art.gameObject);continue;}
                 if(v.Art.Sprites)v.Art.Sprites.BeginDeath(DuelSession.Now);
-                else{v.Art.Animator.ResetTrigger(StrikeHash);v.Art.Animator.SetBool(DeadHash,true);v.Art.Animator.SetFloat(SpeedHash,0);v.Art.Animator.speed=1;}
+                else if(v.Art.Animator){v.Art.Animator.ResetTrigger(StrikeHash);v.Art.Animator.SetBool(DeadHash,true);v.Art.Animator.SetFloat(SpeedHash,0);v.Art.Animator.speed=1;}
                 effects.Death(v.Art.transform.position);
-                v.Art.TeamMarker.enabled=false;v.Until=DuelSession.Now+1.15;corpses.Add(v);DeathCount++;
+                if(v.Art.TeamMarker)v.Art.TeamMarker.enabled=false;v.Until=DuelSession.Now+1.15;corpses.Add(v);DeathCount++;
             }
             for(int i=corpses.Count-1;i>=0;i--)
             {
@@ -235,11 +275,16 @@ namespace TowerDuel
                     v.SpriteOpacity=v.Art.Sprites.Opacity;
                     v.Contact.SetOpacity(v.SpriteOpacity);
                 }
-                else
+                else if(v.Art.Animator)
                 {
                     if(v.Art.Animator.isInitialized&&v.Art.Animator.GetCurrentAnimatorStateInfo(0).shortNameHash==DeathState&&Quaternion.Angle(v.Hip,v.Art.DeathProbe.localRotation)>.15f)DeathPoseSamples++;
                     v.Hip=v.Art.DeathProbe.localRotation;
                     v.Contact.SetOpacity(Mathf.Clamp01((float)(v.Until-DuelSession.Now)/.4f));
+                }
+                if(!v.Art.Sprites&&!v.Art.Animator)
+                {
+                    var body=v.Art.transform.Find("Facing");
+                    if(body)body.localScale=Vector3.one*Mathf.Clamp01((float)(v.Until-DuelSession.Now)/.35f);
                 }
                 if(DuelSession.Now>v.Until){UnityEngine.Object.Destroy(v.Art.gameObject);corpses.RemoveAt(i);}
             }
@@ -279,9 +324,9 @@ namespace TowerDuel
         private static float RangedFlightDuration(Vector3 from,Vector3 target)=>Mathf.Clamp(Vector3.Distance(from,target)/24,.08f,.24f);
         private bool TryTarget(DuelMessage state,long id,out Vector3 point)
         {
-            foreach(var e in state.units)if(e.id==id&&!e.concealed){point=e.Position;return true;}
+            foreach(var e in state.units)if(e.id==id){point=e.Position;return true;}
             foreach(var e in state.towers)if(e.id==id){point=e.Position;return true;}
-            if(units.TryGetValue(id,out var v)&&!v.Hidden){point=v.Art.transform.position;return true;}
+            if(units.TryGetValue(id,out var v)){point=v.Art.transform.position;return true;}
             point=Vector3.zero;return false;
         }
         private LineRenderer NewLine(string name,Material material,float width)
@@ -291,14 +336,19 @@ namespace TowerDuel
             line.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;line.receiveShadows=false;line.numCapVertices=2;return line;
         }
         private int CardBit(string kind){for(int i=0;i<rules.cards.Length;i++)if(rules.cards[i].id==kind)return 1<<i;return 0;}
-        public void Preview(Vector3 point,bool visible,bool valid,string card="guard",int seat=0,Vector3[] formation=null,float radius=.42f)
+        public void Preview(Vector3 point,bool visible,bool valid,string card="guard",int seat=0,Vector3[] formation=null,float radius=.32f,DuelMessage state=null)
         {
             if(formation==null)formation=new[]{point};
-            DeploymentPreview.Show(card,seat,point,visible,valid,formation,radius,rules.Find(card).IsSpell);
+            var definition=rules.Find(card);
+            DeploymentPreview.Show(card,seat,point,visible,valid,formation,radius,definition.IsSpell,definition.initialAir);
+            spellPoint=point;
+            previewSpell=visible&&valid&&definition.IsSpell?definition:null;
+            var current=state??previewState;
+            if(current!=null)UpdateSpellOutline(current);
         }
         public void Reset()
         {
-            effects.Reset();
+            effects.Reset();previewSpell=null;previewState=null;
             foreach(var v in units.Values)UnityEngine.Object.Destroy(v.Art.gameObject);units.Clear();
             foreach(var v in corpses)UnityEngine.Object.Destroy(v.Art.gameObject);corpses.Clear();
             foreach(var a in arrows)UnityEngine.Object.Destroy(a.Root.gameObject);arrows.Clear();
