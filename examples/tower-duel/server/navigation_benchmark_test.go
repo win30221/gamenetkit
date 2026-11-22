@@ -9,7 +9,7 @@ func BenchmarkCrowdedNavigation(b *testing.B) {
 	var slowest time.Duration
 	for range b.N {
 		b.StopTimer()
-		m, err := loadMap("../protocol/map.json")
+		m, err := loadMap("../client/Assets/Resources/TowerDuel/map.json")
 		if err != nil {
 			b.Fatal(err)
 		}

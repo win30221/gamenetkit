@@ -12,7 +12,7 @@
       <ui:VisualElement class="balance-content">
         <ui:Label text="雙橋對決 · 數值調整" class="balance-title" />
         <ui:Label name="revisionLabel" class="balance-note" />
-        <ui:Label text="時間以毫秒（ms）輸入；30 Hz 模擬的每 tick 約 33.33 ms，工具會換算並對齊最近的 tick。儲存會同步 Go 共用規則與 Unity 設定；本機後端重啟後套用到新對局。" class="balance-note" />
+        <ui:Label text="時間以毫秒（ms）輸入；30 Hz 模擬的每 tick 約 33.33 ms，工具會換算並對齊最近的 tick。Go 後端與 Unity 共用此規則檔；本機後端重啟後套用到新對局。" class="balance-note" />
         <ui:Label name="serverLabel" class="balance-note" />
         <ui:Label name="messageLabel" class="balance-message" />
         <ui:Label text="塔" class="balance-section" />

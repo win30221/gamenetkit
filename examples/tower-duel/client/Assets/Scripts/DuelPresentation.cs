@@ -81,7 +81,6 @@ namespace TowerDuel
             {
                 if(card.IsSpell)continue;
                 var prefab=DuelSpriteLibrary.Prefab(card.id);
-                if(!prefab)prefab=Resources.Load<GameObject>("TowerDuel/Units/"+card.id);
                 if(!prefab||!prefab.GetComponent<DuelUnitArt>())throw new InvalidOperationException("Missing equipped unit "+card.id);
                 prefabs.Add(card.id,prefab);
             }
@@ -90,16 +89,9 @@ namespace TowerDuel
             bombPrefab=Resources.Load<GameObject>("TowerDuel/Units/bomb");
             effects=new DuelEffects(root,cue=>parent.GetComponent<TowerDuelClient>()?.Audio.Play(cue));
             trailMaterial=Resources.Load<Material>("TowerDuel/BattleFX/Trail");
-            if(map.HasWall)Environment=new DuelEnvironment(root,map);
-            var all=UnityEngine.Object.FindObjectsByType<Transform>();
-            foreach(var e in map.towers)
-            {
-                if(Environment!=null){towers[e.id]=Environment.Building(e.id);continue;}
-                string color=e.seat==0?"blue":"red";
-                string name="SM_"+color+(e.kind=="keep"?"_MainCastle":"_Tower_"+(e.x<0?"-5":"5"));
-                foreach(var t in all)if(t.name==name){towers[e.id]=t.gameObject;break;}
-                if(!towers.ContainsKey(e.id))throw new InvalidOperationException("Missing arena tower "+name);
-            }
+            Environment = new DuelEnvironment(root, map);
+            foreach (var tower in map.towers)
+                towers.Add(tower.id, Environment.Building(tower.id));
             DeploymentPreview=new DuelDeploymentPreview(root,prefabs);
             DeploymentGrid=new DuelDeploymentGrid(root,map);
         }

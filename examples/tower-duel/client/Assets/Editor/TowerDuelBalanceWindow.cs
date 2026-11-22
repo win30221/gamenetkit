@@ -8,6 +8,7 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 using Debug = UnityEngine.Debug;
 
@@ -16,10 +17,11 @@ namespace TowerDuel.Editor
     public sealed class TowerDuelBalanceWindow : EditorWindow
     {
         [SerializeField] private DuelRules draft;
-        [SerializeField] private string originalCanonical, originalClient, originalDraft;
+        [SerializeField, FormerlySerializedAs("originalClient")] private string originalJson;
+        [SerializeField] private string originalDraft;
         internal static string ExampleRoot => Path.GetFullPath(Path.Combine(Application.dataPath,"../.."));
-        internal static string CanonicalPath => Path.Combine(ExampleRoot,"protocol/rules.json");
-        internal static string ClientPath => Path.Combine(Application.dataPath,"Resources/TowerDuel/rules.json");
+        internal static string CanonicalPath => Path.Combine(Application.dataPath,"Resources/TowerDuel/rules.json");
+        internal static string ClientPath => CanonicalPath;
         private const string LayoutPath="Assets/Editor/TowerDuelBalance.uxml";
 
         [MenuItem("Tower Duel/Balance settings · 數值調整")]
@@ -45,9 +47,8 @@ namespace TowerDuel.Editor
         }
         private void LoadDraft()
         {
-            originalCanonical=File.ReadAllText(CanonicalPath);
-            originalClient=File.ReadAllText(ClientPath);
-            draft=JsonUtility.FromJson<DuelRules>(originalCanonical);
+            originalJson=File.ReadAllText(CanonicalPath);
+            draft=JsonUtility.FromJson<DuelRules>(originalJson);
             originalDraft=Serialize(draft);
             hasUnsavedChanges=false;
         }
@@ -166,29 +167,19 @@ namespace TowerDuel.Editor
         {
             string error=Validate(draft);if(error!=null)throw new InvalidOperationException(error);
             string json=Serialize(draft);
-            WritePair(CanonicalPath,ClientPath,originalCanonical,originalClient,json);
-            originalCanonical=originalClient=json;originalDraft=json;
+            WriteRules(CanonicalPath,originalJson,json);
+            originalJson=json;originalDraft=json;
             AssetDatabase.ImportAsset("Assets/Resources/TowerDuel/rules.json",ImportAssetOptions.ForceSynchronousImport|ImportAssetOptions.ForceUpdate);
-            foreach(var card in draft.cards)
-            {
-                if(card.IsSpell)continue;
-                var controller=AssetDatabase.LoadAssetAtPath<AnimatorController>("Assets/Resources/TowerDuel/Units/"+card.id+".controller");
-                if(!controller)continue;
-                foreach(var child in controller.layers[0].stateMachine.states)if(child.state.name=="Attack"&&child.state.motion is AnimationClip clip)
-                {child.state.speed=clip.length/(card.cooldown/30f);EditorUtility.SetDirty(child.state);}
-            }
-            AssetDatabase.SaveAssets();RefreshState();ShowMessage("已同步共用規則與 Unity；本機後端重啟後套用新數值。");
+            AssetDatabase.SaveAssets();RefreshState();ShowMessage("共用規則已儲存；Go 後端與 Unity 共用此檔，本機後端重啟後套用新數值。");
         }
         public override void SaveChanges(){SaveDraft();base.SaveChanges();}
         internal static string Serialize(DuelRules rules)=>JsonUtility.ToJson(rules,true)+"\n";
-        internal static void WritePair(string canonical,string client,string expectedCanonical,string expectedClient,string json)
+        internal static void WriteRules(string path,string expectedJson,string json)
         {
-            if(File.ReadAllText(canonical)!=expectedCanonical||File.ReadAllText(client)!=expectedClient)
+            if(File.ReadAllText(path)!=expectedJson)
                 throw new InvalidOperationException("設定檔已由其他地方修改；請先重新載入，避免覆蓋新內容。");
             var encoding=new UTF8Encoding(false);
-            File.WriteAllText(canonical,json,encoding);
-            try{File.WriteAllText(client,json,encoding);}
-            catch{if(File.ReadAllText(canonical)==json)File.WriteAllText(canonical,expectedCanonical,encoding);throw;}
+            File.WriteAllText(path,json,encoding);
         }
         internal static string Validate(DuelRules rules)
         {

@@ -16,7 +16,7 @@ $server=$null
 function Quote-WebArgument([string]$value){'"'+$value.Replace('"','\"')+'"'}
 try {
     $server=Start-Process -FilePath (Join-Path $output 'tower-duel-api.exe') -WindowStyle Hidden -PassThru -ArgumentList @('-http',"127.0.0.1:$port",
-        '-map',(Quote-WebArgument (Join-Path $example 'protocol/map.json')),'-rules',(Quote-WebArgument (Join-Path $example 'protocol/rules.json')),
+        '-map',(Quote-WebArgument (Join-Path $example 'client/Assets/Resources/TowerDuel/map.json')),'-rules',(Quote-WebArgument (Join-Path $example 'client/Assets/Resources/TowerDuel/rules.json')),
         '-transport-runtime',(Quote-WebArgument (Join-Path $repo 'packages/unity/transport/Browser/transport.js')))
     $ready=$false
     for($i=0;$i -lt 30;$i++){

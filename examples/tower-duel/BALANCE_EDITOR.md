@@ -20,11 +20,11 @@
 
 ## 後端如何取得數值
 
-Unity 視窗編輯的是同一份共用規則：
+Unity 視窗編輯的是單一來源規則檔：
 
-`Unity 視窗 → protocol/rules.json → Go 啟動時載入`
+`Unity 視窗 → client/Assets/Resources/TowerDuel/rules.json ← Go 啟動時載入`
 
-儲存也會同步 `client/Assets/Resources/TowerDuel/rules.json`，兩份內容完全相同。
+Go 後端與 Unity 共用此檔，無須額外同步步驟。
 客戶端與後端依 raw SHA-256 規則雜湊握手；版本不同會被拒絕。
 儲存攻擊間隔時也會更新既有攻擊動畫的播放速度。
 
@@ -38,7 +38,7 @@ Unity 視窗編輯的是同一份共用規則：
 
 ## 驗證
 
-- `scripts/Test-Client.ps1` 包含數值表控制項、毫秒換算、輸入驗證、DPS 更新、雙檔儲存及外部修改保護。
+- `scripts/Test-Client.ps1` 包含數值表控制項、毫秒換算、輸入驗證、DPS 更新、單檔儲存及外部修改保護。
 - 使用獨立測試檔驗證儲存；保留目前正式規則中的數值。
 - `TowerDuelBalanceTests.RunManagedBackend()` 驗證真實 Go 建置、啟動、規則雜湊一致、重啟與停止。
 - 測試產物位於 `artifacts/tower-duel/balance/`。

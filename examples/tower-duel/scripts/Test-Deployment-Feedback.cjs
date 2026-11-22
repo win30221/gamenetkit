@@ -11,8 +11,8 @@ async function until(predicate){for(let i=0;i<250;i++){if(predicate())return;awa
 async function run(origin='http://127.0.0.1:18116',output=path.join(root,'artifacts/tower-duel/deployment/feedback')){
  fs.mkdirSync(output,{recursive:true});
  const config=await(await fetch(origin+'/api/config')).json();
- const map=JSON.parse(fs.readFileSync(path.join(root,'examples/tower-duel/protocol/map.json'),'utf8'));
- const rules=JSON.parse(fs.readFileSync(path.join(root,'examples/tower-duel/protocol/rules.json'),'utf8'));
+ const map=JSON.parse(fs.readFileSync(path.join(root,'examples/tower-duel/client/Assets/Resources/TowerDuel/map.json'),'utf8'));
+ const rules=JSON.parse(fs.readFileSync(path.join(root,'examples/tower-duel/client/Assets/Resources/TowerDuel/rules.json'),'utf8'));
  const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--enable-unsafe-swiftshader','--disable-background-timer-throttling','--disable-renderer-backgrounding']});
  const reports=[];
  try{

@@ -74,6 +74,7 @@ namespace TowerDuel.Editor
                 var camera = Camera.main;
                 camera.orthographic = true; camera.orthographicSize = 5.2f;
                 camera.transform.rotation = Quaternion.Euler(60, 0, 0);
+                UnityEngine.Object.FindAnyObjectByType<DuelBattlefieldPreview>().Environment.SetView(camera, 0);
                 DuelLighting.Apply(camera);
                 camera.transform.position = new Vector3(-4, 0, -1)-camera.transform.forward*40;
                 var headings = new[] { Vector3.back, new Vector3(-1,0,-1), Vector3.left, new Vector3(-1,0,1),
@@ -120,6 +121,7 @@ namespace TowerDuel.Editor
             {
                 var camera=Camera.main;camera.orthographic=true;camera.orthographicSize=4.4f;
                 camera.transform.rotation=Quaternion.Euler(60,0,0);
+                UnityEngine.Object.FindAnyObjectByType<DuelBattlefieldPreview>().Environment.SetView(camera, 0);
                 camera.transform.position=new Vector3(0,1.6f,-3.5f)-camera.transform.forward*40;
                 DuelLighting.Apply(camera);
                 string[] kinds={"guard","archer","swords","bomber","charger","siege"};
@@ -230,7 +232,7 @@ namespace TowerDuel.Editor
         private static GameObject Spawn(Transform parent, Camera camera, string kind, Vector3 position, Vector3 heading, int seat, long tick)
         {
             var prefab = DuelSpriteLibrary.Prefab(kind);
-            if (!prefab) prefab = Resources.Load<GameObject>("TowerDuel/Units/"+kind);
+            if (!prefab) throw new InvalidOperationException("Missing B3 unit: "+kind);
             var model = UnityEngine.Object.Instantiate(prefab, parent, false);
             model.transform.SetPositionAndRotation(position, Quaternion.LookRotation(heading));
             var art = model.GetComponent<DuelUnitArt>();

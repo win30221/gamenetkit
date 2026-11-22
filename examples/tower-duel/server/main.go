@@ -100,8 +100,8 @@ func run(ctx context.Context, address, mapPath, rulesPath, runtimePath, webRoot 
 }
 func main() {
 	address := flag.String("http", "127.0.0.1:18110", "HTTP and WebSocket address")
-	mapPath := flag.String("map", "../protocol/map.json", "canonical map")
-	rulesPath := flag.String("rules", "../protocol/rules.json", "canonical card rules")
+	mapPath := flag.String("map", "../client/Assets/Resources/TowerDuel/map.json", "canonical map")
+	rulesPath := flag.String("rules", "../client/Assets/Resources/TowerDuel/rules.json", "canonical card rules")
 	runtimePath := flag.String("transport-runtime", "../../../packages/unity/transport/Browser/transport.js", "SDK browser transport")
 	webRoot := flag.String("web", "", "optional built Unity WebGL directory")
 	flag.Parse()

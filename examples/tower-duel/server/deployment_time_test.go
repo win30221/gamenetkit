@@ -146,7 +146,7 @@ func TestDeployingTroopsRemainVulnerableAndFrostDoesNotDelayReadiness(t *testing
 }
 
 func TestDeploymentRulesRejectInvalidTimesAndLeaveSpellsIndependent(t *testing.T) {
-	data, err := os.ReadFile("../protocol/rules.json")
+	data, err := os.ReadFile("../client/Assets/Resources/TowerDuel/rules.json")
 	if err != nil {
 		t.Fatal(err)
 	}

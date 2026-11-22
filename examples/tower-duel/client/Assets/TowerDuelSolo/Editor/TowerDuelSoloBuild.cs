@@ -36,7 +36,8 @@ namespace TowerDuel.Solo.Editor
             if(PlayerSettings.GetScriptingBackend(NamedBuildTarget.WebGL)!=ScriptingImplementation.IL2CPP||PlayerSettings.WebGL.compressionFormat!=WebGLCompressionFormat.Gzip)
                 throw new InvalidOperationException("Use the project's existing Web release settings before building.");
             UnityEditor.WebGL.UserBuildSettings.codeOptimization=UnityEditor.WebGL.WasmCodeOptimization.DiskSize;
-            string output=Path.GetFullPath("../Builds/SoloWeb/WebGL");Directory.CreateDirectory(output);
+            string output=Path.GetFullPath("../Builds/SoloWeb/WebGL");
+            var content = TowerDuel.Editor.TowerDuelWebContent.BeginBuild(output, out var rules);
             var result=BuildPipeline.BuildPlayer(new BuildPlayerOptions{
                 scenes=new[]{"Assets/Scenes/TowerDuel.unity"},locationPathName=output,target=BuildTarget.WebGL,
                 options=BuildOptions.None,extraScriptingDefines=new[]{"TOWER_DUEL_SOLO"}
@@ -48,8 +49,8 @@ namespace TowerDuel.Solo.Editor
             string html=File.ReadAllText(index).Replace("與朋友開啟同一網址，以房間碼加入對戰。","單人練習、自由測試，或邀請朋友雙人對戰。")
                 .Replace("</head>","<meta name=\"tower-duel-mode\" content=\"solo-plugin\"></head>");
             File.WriteAllText(index,html);
-            var rules=DuelRules.Load();
             File.WriteAllText(Path.Combine(output,"solo-build.txt"),$"TowerDuel Solo protocol {rules.schema} / {rules.id}\n");
+            content.Publish(output);
             Debug.Log("Optional solo WebGL built separately from the multiplayer Player: "+output);
         }
 

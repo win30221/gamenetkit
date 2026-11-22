@@ -46,12 +46,6 @@ namespace TowerDuel
 
         public DuelEnvironment(Transform parent,DuelMap map)
         {
-            // Leave the legacy scene and all its GUIDs intact. Its visual meshes
-            // and colliders are superseded by this map only for this play session.
-            foreach(var old in UnityEngine.Object.FindObjectsByType<MeshRenderer>())
-                if(!old.transform.IsChildOf(parent))old.enabled=false;
-            foreach(var old in UnityEngine.Object.FindObjectsByType<Collider>())
-                if(!old.transform.IsChildOf(parent))old.enabled=false;
             root=new GameObject("B3 wall gates battlefield").transform;root.SetParent(parent,false);
             bodyMaterial=new Material(Resources.Load<Material>("TowerDuel/B3/Sprite"));
             bodyMaterial.SetFloat("_Baked",1);bodyMaterial.SetFloat("_Enemy",0);
@@ -186,9 +180,16 @@ namespace TowerDuel
         }
         public void Dispose()
         {
-            foreach(var sprite in owned)if(sprite)UnityEngine.Object.Destroy(sprite);
-            if(bodyMaterial)UnityEngine.Object.Destroy(bodyMaterial);
-            if(root)UnityEngine.Object.Destroy(root.gameObject);
+            foreach(var sprite in owned) Release(sprite);
+            Release(bodyMaterial);
+            if(root) Release(root.gameObject);
+        }
+
+        private static void Release(UnityEngine.Object item)
+        {
+            if (!item) return;
+            if (Application.isPlaying) UnityEngine.Object.Destroy(item);
+            else UnityEngine.Object.DestroyImmediate(item);
         }
         public void Reset()
         {

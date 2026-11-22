@@ -18,7 +18,7 @@ import (
 
 func catalog(t *testing.T) gameConfig {
 	t.Helper()
-	data, err := os.ReadFile("../../protocol/rules.json")
+	data, err := os.ReadFile("../../client/Assets/Resources/TowerDuel/rules.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -80,8 +80,8 @@ func startBackend(t *testing.T, fast bool) string {
 	if binary == "" {
 		t.Skip("Run solo/Test.ps1 for real-backend integration tests")
 	}
-	mapPath, _ := filepath.Abs("../../protocol/map.json")
-	rulesPath, _ := filepath.Abs("../../protocol/rules.json")
+	mapPath, _ := filepath.Abs("../../client/Assets/Resources/TowerDuel/map.json")
+	rulesPath, _ := filepath.Abs("../../client/Assets/Resources/TowerDuel/rules.json")
 	if fast {
 		data, err := os.ReadFile(rulesPath)
 		if err != nil {
