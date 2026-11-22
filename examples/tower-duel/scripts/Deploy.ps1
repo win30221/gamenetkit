@@ -1,4 +1,4 @@
-<# Deploy the WebGL player and independent API beside the existing Rumblebound site. #>
+<# Deploy multiplayer-only WebGL/API and remove legacy Solo modes in one run. #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][ValidatePattern('^[a-zA-Z0-9][a-zA-Z0-9.-]+$')][string]$VmHost,
@@ -67,6 +67,11 @@ for($i=0;$i -lt 24;$i++){
     Start-Sleep -Seconds 3
 }
 if(-not $ready){throw "HTTPS not ready. Inspect docker logs rumblebound-web. URL: $url"}
+# Refuse to report success while any optional mode service or legacy route survives.
+$verifyModes = 'set -eu; test ! -e /opt/rumblebound/tower-duel/tower-duel-solo.caddy; for unit in tower-duel-modes tower-duel-solo-api tower-duel-solo-web; do if systemctl is-active --quiet "$unit.service" || systemctl is-enabled --quiet "$unit.service"; then echo "Optional service still enabled or active: $unit" >&2; exit 1; fi; done'
+& ssh @options $target $verifyModes
+if($LASTEXITCODE -ne 0){throw 'Multiplayer deployed, but optional mode cleanup verification failed. Inspect services and Caddy on the VM.'}
 $manifest | ConvertTo-Json -Depth 6 | Set-Content (Join-Path $out 'deployed.json') -Encoding utf8
 Write-Output "Playable URL: $url/"
 Write-Output "Release: $release"
+Write-Output "Optional modes: disabled; legacy route removed"
