@@ -32,6 +32,8 @@ namespace TowerDuel
         }
         private readonly Transform root;
         private readonly Material bodyMaterial,shadowMaterial;
+        private readonly Dictionary<Texture2D,Material> bodyTextures=new();
+        private readonly Dictionary<Texture2D,Material> shadowTextures=new();
         private readonly Dictionary<string,DuelEnvironmentAtlas> atlases=new();
         private readonly Dictionary<long,Item> buildings=new();
         private readonly List<Item> items=new();
@@ -47,8 +49,7 @@ namespace TowerDuel
         public DuelEnvironment(Transform parent,DuelMap map)
         {
             root=new GameObject("B3 wall gates battlefield").transform;root.SetParent(parent,false);
-            bodyMaterial=new Material(Resources.Load<Material>("TowerDuel/B3/Sprite"));
-            bodyMaterial.SetFloat("_Baked",1);bodyMaterial.SetFloat("_Enemy",0);
+            bodyMaterial=Resources.Load<Material>("TowerDuel/B3/Sprite");
             shadowMaterial=Resources.Load<Material>("TowerDuel/B3/BakedShadow");
             var asset=Resources.Load<TextAsset>("TowerDuel/B3/Environment/definition");
             if(!asset)throw new InvalidOperationException("Prepare B3 environment content before playing");
@@ -70,8 +71,7 @@ namespace TowerDuel
                 var meadowSprite=Sprite.Create(meadowTex,new Rect(0,0,meadowTex.width,meadowTex.height),new Vector2(.5f,.5f),meadowTex.width/4f,0,SpriteMeshType.FullRect);
                 owned.Add(meadowSprite);
                 meadow=Renderer(root,"Meadow Backdrop",meadowSprite,bodyMaterial);
-                meadow.drawMode=SpriteDrawMode.Tiled;
-                meadow.size=new Vector2(90,90);
+                meadow.transform.localScale=new Vector3(22.5f,22.5f,1);
                 meadow.transform.localPosition=new Vector3(0,-.005f,0);
             }
             for(int i=0;i<2;i++)
@@ -185,12 +185,17 @@ namespace TowerDuel
         }
         private void PlaceWallTop(string name,Sprite sprite,Vector3 at,float width,float length,Vector3 along)
         {
-            var renderer=Renderer(root,name,sprite,bodyMaterial);
-            renderer.drawMode=SpriteDrawMode.Tiled;
-            renderer.size=new Vector2(1,length);
-            renderer.transform.localPosition=at;
-            renderer.transform.localRotation=Quaternion.LookRotation(Vector3.down,along);
-            renderer.transform.localScale=new Vector3(width,1,1);
+            // Each strip draws one sprite rectangle with its own bound texture.
+            int count=Mathf.Max(1,Mathf.CeilToInt(length/sprite.bounds.size.y));
+            float stripLength=length/count;
+            var rotation=Quaternion.LookRotation(Vector3.down,along);
+            for(int i=0;i<count;i++)
+            {
+                var renderer=Renderer(root,name,sprite,bodyMaterial);
+                renderer.transform.localPosition=at+along*(stripLength*(i+.5f)-length/2);
+                renderer.transform.localRotation=rotation;
+                renderer.transform.localScale=new Vector3(width/sprite.bounds.size.x,stripLength/sprite.bounds.size.y,1);
+            }
         }
         private void PlaceWallMasonry(string name,Sprite sprite,Vector3 at,float width,float height,float yaw)
         {
@@ -214,18 +219,37 @@ namespace TowerDuel
             var sprite=Sprite.Create(texture,new Rect(col*atlas.width,texture.height-(row+1)*atlas.height,atlas.width,atlas.height),pivot,atlas.width,0,SpriteMeshType.FullRect);
             owned.Add(sprite);return sprite;
         }
-        private static SpriteRenderer Renderer(Transform parent,string name,Sprite sprite,Material material)
+        private Material BoundMaterial(Texture2D texture,Material template)
+        {
+            bool body=template==bodyMaterial;
+            var cache=body?bodyTextures:shadowTextures;
+            if(cache.TryGetValue(texture,out var material))return material;
+            material=new Material(template){name=template.name+" / "+texture.name};
+            if(body)
+            {
+                // Environment atlases must not depend on SpriteRenderer's shared
+                // _MainTex state. Keep the atlas binding on this material.
+                material.SetTexture("_B3EnvironmentTex",texture);
+                material.SetFloat("_B3UseEnvironmentTex",1);
+                material.SetFloat("_Baked",1);
+                material.SetFloat("_Enemy",0);
+            }
+            else material.SetTexture("_MainTex",texture);
+            cache.Add(texture,material);
+            return material;
+        }
+        private SpriteRenderer Renderer(Transform parent,string name,Sprite sprite,Material material)
         {
             var go=new GameObject(name);go.transform.SetParent(parent,false);
-            var renderer=go.AddComponent<SpriteRenderer>();renderer.sprite=sprite;renderer.sharedMaterial=material;
+            var renderer=go.AddComponent<SpriteRenderer>();renderer.sprite=sprite;renderer.sharedMaterial=BoundMaterial(sprite.texture,material);
             renderer.shadowCastingMode=ShadowCastingMode.Off;return renderer;
         }
         private Item Place(string atlasID,int frame,Vector3 position,float width,string name)
         {
             var item=new Item{Root=new GameObject(name).transform,Atlas=atlases[atlasID],Width=width};
             item.Root.SetParent(root,false);item.Root.position=position;
-            item.Body=Renderer(item.Root,"Body",null,bodyMaterial);
-            item.Shadow=Renderer(item.Root,"Paired ground shadow",null,shadowMaterial);
+            item.Body=Renderer(item.Root,"Body",item.Atlas.body[frame],bodyMaterial);
+            item.Shadow=Renderer(item.Root,"Paired ground shadow",item.Atlas.shadow[frame],shadowMaterial);
             SetFrame(item,frame);items.Add(item);return item;
         }
         private static void SetFrame(Item item,int frame)
@@ -246,6 +270,7 @@ namespace TowerDuel
             if(seat!=viewSeat)
             {
                 seat=viewSeat;ground.sprite=groundViews[seat];
+                ground.sharedMaterial=BoundMaterial(ground.sprite.texture,bodyMaterial);
                 foreach(var item in buildings.Values)SetFrame(item,item.Building.seat*2+(item.Building.seat==seat?0:1));
             }
             var forward=Vector3.ProjectOnPlane(camera.transform.forward,Vector3.up).normalized;
@@ -272,7 +297,8 @@ namespace TowerDuel
         public void Dispose()
         {
             foreach(var sprite in owned) Release(sprite);
-            Release(bodyMaterial);
+            foreach(var material in bodyTextures.Values)Release(material);
+            foreach(var material in shadowTextures.Values)Release(material);
             if(root) Release(root.gameObject);
         }
 

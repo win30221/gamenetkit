@@ -101,18 +101,33 @@ namespace TowerDuel.Editor
                 {
                     presentation=new DuelPresentation(root.transform,f.Map,f.Rules);
                     Require(presentation.Environment!=null&&presentation.Environment.BuildingCount==6,"B3 buildings not active");
-                    int sideWalls=0;
-                    foreach(var wall in presentation.Environment.Root.GetComponentsInChildren<SpriteRenderer>())
+                    var sideWallBounds=new Bounds?[2];
+                    foreach(var sprite in presentation.Environment.Root.GetComponentsInChildren<SpriteRenderer>())
                     {
-                        if(wall.name!="Arena side wall")continue;
-                        sideWalls++;
-                        var bounds=wall.bounds;
-                        var innerEdge=bounds.center.x<0?bounds.max.x:bounds.min.x;
+                        if(sprite.name!="Paired ground shadow")
+                            Require(sprite.sharedMaterial.GetTexture("_B3EnvironmentTex")==sprite.sprite.texture,
+                                    "Each environment sprite must sample its own atlas");
+                        Require(sprite.drawMode==SpriteDrawMode.Simple,"Battlefield art must use single sprite strips");
+                        if(sprite.name!="Arena side wall")continue;
+                        var bounds=sprite.bounds;
+                        int side=bounds.center.x<0?0:1;
+                        if(sideWallBounds[side].HasValue)
+                        {
+                            var total=sideWallBounds[side].Value;
+                            total.Encapsulate(bounds);
+                            sideWallBounds[side]=total;
+                        }
+                        else sideWallBounds[side]=bounds;
+                    }
+                    for(int side=0;side<2;side++)
+                    {
+                        Require(sideWallBounds[side].HasValue,"Expected a wall at each side of the arena");
+                        var bounds=sideWallBounds[side].Value;
+                        var innerEdge=side==0?bounds.max.x:bounds.min.x;
                         Require(Mathf.Abs(Mathf.Abs(innerEdge)-f.Map.width/2)<.001f&&
                                 Mathf.Abs(bounds.size.z-f.Map.length)<.001f,
                                 "Side wall must span the outside edge without taking deployable space");
                     }
-                    Require(sideWalls==2,"Expected a wall at each side of the arena");
                     int wallFaces=0,wallTops=0,lintels=0;
                     foreach(var wall in presentation.Environment.Root.GetComponentsInChildren<SpriteRenderer>())
                     {
@@ -143,6 +158,9 @@ namespace TowerDuel.Editor
                     {
                         camera.transform.rotation=Quaternion.Euler(60,seat*180,0);
                         presentation.Environment.SetView(camera,seat);
+                        var ground=presentation.Environment.Root.Find("Ground").GetComponent<SpriteRenderer>();
+                        Require(ground.sharedMaterial.GetTexture("_B3EnvironmentTex")==ground.sprite.texture,
+                                "Changing seats must bind the new ground atlas");
                         foreach(var tower in f.Map.towers)
                             Require(presentation.Environment.BuildingFrame(tower.id)%2==(tower.seat==seat?0:1),"Building did not face opponent");
                     }

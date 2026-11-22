@@ -3,6 +3,8 @@ Shader "TowerDuel/B3Sprite"
     Properties
     {
         [PerRendererData] _MainTex("Sprite", 2D) = "white" {}
+        _B3EnvironmentTex("Environment atlas", 2D) = "white" {}
+        [HideInInspector] _B3UseEnvironmentTex("Bind environment atlas", Float) = 0
         _BaseColor("Tint", Color) = (1,1,1,1)
         _Opacity("Opacity", Range(0,1)) = 1
         _Enemy("Red team", Float) = 0
@@ -32,11 +34,12 @@ Shader "TowerDuel/B3Sprite"
             struct Varyings { float4 positionCS:SV_POSITION; float2 uv:TEXCOORD0; half4 color:COLOR;
                 float3 positionWS:TEXCOORD1; float2 localXY:TEXCOORD2; float localY:TEXCOORD3; };
             TEXTURE2D(_MainTex); SAMPLER(sampler_MainTex);
+            TEXTURE2D(_B3EnvironmentTex); SAMPLER(sampler_B3EnvironmentTex);
             CBUFFER_START(UnityPerMaterial)
                 half4 _BaseColor, _AimOutline;
-                float4 _MainTex_TexelSize;
+                float4 _MainTex_TexelSize, _B3EnvironmentTex_TexelSize;
                 float4 _SpriteVolume;
-                half _Opacity, _Enemy, _Cutoff, _Hit, _TeamMaskTop, _Baked;
+                half _Opacity, _Enemy, _Cutoff, _Hit, _TeamMaskTop, _Baked, _B3UseEnvironmentTex;
             CBUFFER_END
             Varyings Vert(Attributes input)
             {
@@ -48,9 +51,14 @@ Shader "TowerDuel/B3Sprite"
                 output.uv=input.uv; output.color=input.color;
                 return output;
             }
+            half4 SampleSprite(float2 uv)
+            {
+                if(_B3UseEnvironmentTex>.5h)return SAMPLE_TEXTURE2D(_B3EnvironmentTex,sampler_B3EnvironmentTex,uv);
+                return SAMPLE_TEXTURE2D(_MainTex,sampler_MainTex,uv);
+            }
             half4 Frag(Varyings input):SV_Target
             {
-                half4 color=SAMPLE_TEXTURE2D(_MainTex,sampler_MainTex,input.uv);
+                half4 color=SampleSprite(input.uv);
                 half blue=step(.28h,color.b)*step(.10h,color.b-color.r)*step(.04h,color.b-color.g)*step(color.r*.9h,color.g);
                 half value=max(color.r,max(color.g,color.b));
                 color.rgb=lerp(color.rgb,value*half3(1,.22h,.15h),blue*_Enemy*step(input.localY,_TeamMaskTop));
@@ -60,11 +68,11 @@ Shader "TowerDuel/B3Sprite"
                 color*=input.color*_BaseColor; color.a*=_Opacity;
                 if(color.a<_Cutoff && _AimOutline.a>.5h)
                 {
-                    float2 stepUV=_MainTex_TexelSize.xy*2;
-                    half edge=max(max(SAMPLE_TEXTURE2D(_MainTex,sampler_MainTex,input.uv+float2(stepUV.x,0)).a,
-                                      SAMPLE_TEXTURE2D(_MainTex,sampler_MainTex,input.uv-float2(stepUV.x,0)).a),
-                                  max(SAMPLE_TEXTURE2D(_MainTex,sampler_MainTex,input.uv+float2(0,stepUV.y)).a,
-                                      SAMPLE_TEXTURE2D(_MainTex,sampler_MainTex,input.uv-float2(0,stepUV.y)).a));
+                    float2 stepUV=(_B3UseEnvironmentTex>.5h?_B3EnvironmentTex_TexelSize.xy:_MainTex_TexelSize.xy)*2;
+                    half edge=max(max(SampleSprite(input.uv+float2(stepUV.x,0)).a,
+                                      SampleSprite(input.uv-float2(stepUV.x,0)).a),
+                                  max(SampleSprite(input.uv+float2(0,stepUV.y)).a,
+                                      SampleSprite(input.uv-float2(0,stepUV.y)).a));
                     if(edge>_Cutoff)return _AimOutline;
                 }
                 clip(color.a-_Cutoff);
@@ -115,11 +123,13 @@ Shader "TowerDuel/B3Sprite"
             struct ShadowAttributes { float4 positionOS:POSITION; float2 uv:TEXCOORD0; };
             struct ShadowVaryings { float4 positionCS:SV_POSITION; float2 uv:TEXCOORD0; };
             TEXTURE2D(_MainTex); SAMPLER(sampler_MainTex);
+            TEXTURE2D(_B3EnvironmentTex); SAMPLER(sampler_B3EnvironmentTex);
             float3 _LightDirection, _LightPosition;
             CBUFFER_START(UnityPerMaterial)
-                half4 _BaseColor;
+                half4 _BaseColor, _AimOutline;
+                float4 _MainTex_TexelSize, _B3EnvironmentTex_TexelSize;
                 float4 _SpriteVolume;
-                half _Opacity, _Enemy, _Cutoff, _Hit, _TeamMaskTop, _Baked;
+                half _Opacity, _Enemy, _Cutoff, _Hit, _TeamMaskTop, _Baked, _B3UseEnvironmentTex;
             CBUFFER_END
             ShadowVaryings ShadowVert(ShadowAttributes input)
             {
@@ -132,7 +142,10 @@ Shader "TowerDuel/B3Sprite"
             }
             half4 ShadowFrag(ShadowVaryings input):SV_Target
             {
-                half alpha=SAMPLE_TEXTURE2D(_MainTex,sampler_MainTex,input.uv).a*_BaseColor.a;
+                half opacity=_B3UseEnvironmentTex>.5h?
+                    SAMPLE_TEXTURE2D(_B3EnvironmentTex,sampler_B3EnvironmentTex,input.uv).a:
+                    SAMPLE_TEXTURE2D(_MainTex,sampler_MainTex,input.uv).a;
+                half alpha=opacity*_BaseColor.a;
                 clip(alpha-_Cutoff);
                 if(_Opacity<.999h)
                 {
