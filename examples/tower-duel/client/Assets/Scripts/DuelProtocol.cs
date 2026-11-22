@@ -139,6 +139,7 @@ namespace TowerDuel
     }
     [Serializable] public sealed class DuelRules
     {
+        public float towerRange,keepRange;
         public string id;public int schema,towerHP,keepHP,towerDamage,towerCooldownTicks,duration;
         public CardDefinition[] cards;
         public string Hash {get;private set;}
