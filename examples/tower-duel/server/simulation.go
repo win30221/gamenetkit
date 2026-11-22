@@ -150,6 +150,11 @@ func (w *match) step() {
 		if w.TowerCooldown[t.ID] > 0 {
 			continue
 		}
+		attackRange := w.Rules.TowerRange
+		if t.Kind == "keep" {
+			attackRange = w.Rules.KeepRange
+		}
+		reach := attackRange + t.Radius + guardRadius
 		best := math.Inf(1)
 		var target *unit
 		for _, u := range units {
@@ -165,13 +170,13 @@ func (w *match) step() {
 					continue
 				}
 				d := distance(position(*t), position(u.State))
-				if d <= 5+t.Radius+guardRadius && d < best {
+				if d <= reach && d < best {
 					best = d
 					target = u
 				}
 			}
 		}
-		if target != nil && distance(position(*t), position(target.State)) <= 5+t.Radius+guardRadius {
+		if target != nil && distance(position(*t), position(target.State)) <= reach {
 			damage[target.State.ID] += w.Rules.TowerDamage
 			w.TowerCooldown[t.ID] = w.Rules.TowerCooldownTicks
 			w.TowerProgress[t.ID] = 0
