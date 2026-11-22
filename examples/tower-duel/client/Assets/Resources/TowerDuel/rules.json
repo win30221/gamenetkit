@@ -3,6 +3,8 @@
   "schema": 3,
   "towerHP": 380,
   "keepHP": 650,
+  "towerRange": 6.23,
+  "keepRange": 5.0,
   "towerDamage": 18,
   "towerCooldownTicks": 38,
   "duration": 180,
