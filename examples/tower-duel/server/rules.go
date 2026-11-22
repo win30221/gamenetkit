@@ -41,6 +41,8 @@ type rules struct {
 	Schema             int                       `json:"schema"`
 	TowerHP            int                       `json:"towerHP"`
 	KeepHP             int                       `json:"keepHP"`
+	TowerRange         float64                   `json:"towerRange"`
+	KeepRange          float64                   `json:"keepRange"`
 	TowerDamage        int                       `json:"towerDamage"`
 	TowerCooldownTicks int                       `json:"towerCooldownTicks"`
 	Duration           int                       `json:"duration"`
@@ -60,6 +62,9 @@ func loadRules(path string) (rules, error) {
 	}
 	if r.ID == "" || r.Schema != protocolVersion || len(r.Cards) != 8 || r.Duration != 180 || r.TowerHP <= 0 || r.KeepHP <= 0 || r.TowerDamage < 0 || r.TowerCooldownTicks < 1 {
 		return r, errors.New("invalid rules")
+	}
+	if !finite(r.TowerRange) || r.TowerRange <= 0 || !finite(r.KeepRange) || r.KeepRange <= 0 {
+		return r, errors.New("towerRange and keepRange must be positive finite distances")
 	}
 	r.ByID = make(map[string]cardDefinition)
 	validID := regexp.MustCompile(`^[a-z][a-z0-9_]{0,23}$`)
