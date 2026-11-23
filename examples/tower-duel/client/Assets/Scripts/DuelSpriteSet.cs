@@ -93,7 +93,6 @@ namespace TowerDuel
             {
                 texture = Resources.Load<Texture2D>("TowerDuel/B3/Cards/" + kind);
                 if (!texture) texture = Resources.Load<Texture2D>("TowerDuel/Cards/" + kind);
-                if (texture) texture = DuelCartoonSkin.CardArtWithBackdrop(texture);
                 Cards.Add(kind, texture);
             }
             return texture;

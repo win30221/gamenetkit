@@ -467,8 +467,12 @@ Button:disabled { opacity: 0.63; }
 .unit-card.unaffordable { -unity-background-image-tint-color: #87818b; }
 .drag-card.invalid { -unity-background-image-tint-color: #f0918c; }
 .b3-card-frame {
+    /* Border-only overlay. An opaque center would hide ALL B3 card portraits. */
     background-color: transparent;
     background-image: none;
+    border-width: 2px;
+    border-color: #e8b261;
+    border-radius: 12px;
     -unity-background-image-tint-color: #ffffff;
     -unity-slice-scale: 0.65px;
 }

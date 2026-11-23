@@ -13,7 +13,7 @@ namespace TowerDuel
         private enum Surface
         {
             Wallpaper, Parchment, Scroll, Button, GreenButton, BlueButton,
-            DarkPanel, CardFrame, CardBackdrop, CoinBadge
+            DarkPanel, CardFrame, CoinBadge
         }
 
         private static readonly Dictionary<Surface, Texture2D> Textures =
@@ -42,7 +42,8 @@ namespace TowerDuel
             Paint(root, "dock", Surface.DarkPanel);
             Paint(root, "unit-card", Surface.CardFrame);
             Paint(root, "drag-card", Surface.CardFrame);
-            Paint(root, "b3-card-frame", Surface.CardFrame);
+            // b3-card-frame overlays the portrait: NEVER paint an opaque texture on it.
+            // Its border is transparent in the middle (Duel.uss), keeping artwork visible.
             Paint(root, "card-cost", Surface.CoinBadge);
             Paint(root, "menu-card-cost", Surface.CoinBadge);
             Paint(root, "menu-card", Surface.CardFrame);
@@ -50,97 +51,6 @@ namespace TowerDuel
             Paint(root, "small-button", Surface.Button);
             Paint(root, "primary-button", Surface.GreenButton);
             Paint(root, "secondary-button", Surface.Button);
-        }
-
-        // Called once per card ID by DuelSpriteLibrary's existing texture cache.
-        // The resulting texture is fully opaque, so it works in every UI location.
-        public static Texture2D CardArtWithBackdrop(Texture2D source)
-        {
-            if (!source) return null;
-            try
-            {
-                return ComposeCardArt(source);
-            }
-            catch (System.Exception error)
-            {
-                Debug.LogWarning("Card background compose failed for " +
-                    source.name + ": " + error.Message);
-                return source;
-            }
-        }
-
-        private static Texture2D ComposeCardArt(Texture2D source)
-        {
-            Color32[] foreground = ReadCardPixels(source);
-            bool transparent = false;
-            for (int i = 0; i < foreground.Length; i++)
-                if (foreground[i].a < 255) { transparent = true; break; }
-            if (!transparent) return source; // Keep pre-illustrated cards unchanged.
-
-            int width = source.width, height = source.height;
-            Color32[] result = new Color32[foreground.Length];
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    int index = y * width + x;
-                    Color32 hero = foreground[index];
-                    if (hero.a == 255) { result[index] = hero; continue; }
-                    Color32 bg = Pixel(Surface.CardBackdrop, x, y, width, height);
-                    if (hero.a == 0) { result[index] = bg; continue; }
-                    int a = hero.a, b = 255 - a;
-                    result[index] = new Color32(
-                        (byte)((hero.r * a + bg.r * b + 127) / 255),
-                        (byte)((hero.g * a + bg.g * b + 127) / 255),
-                        (byte)((hero.b * a + bg.b * b + 127) / 255),
-                        255);
-                }
-            }
-
-            var composed = new Texture2D(width, height, TextureFormat.RGBA32, false)
-            {
-                name = source.name + "_WithBackdrop",
-                filterMode = source.filterMode,
-                wrapMode = TextureWrapMode.Clamp,
-                hideFlags = HideFlags.DontSave
-            };
-            composed.SetPixels32(result);
-            composed.Apply(false, true);
-            return composed;
-        }
-
-        private static Color32[] ReadCardPixels(Texture2D source)
-        {
-            if (source.isReadable) return source.GetPixels32();
-
-            // B3 cards use Read/Write-disabled imports; copy once through the GPU
-            // instead of enabling permanent extra CPU-side texture memory.
-            var target = RenderTexture.GetTemporary(
-                source.width, source.height, 0,
-                RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
-            RenderTexture oldTarget = RenderTexture.active;
-            Texture2D readback = null;
-            try
-            {
-                Graphics.Blit(source, target);
-                RenderTexture.active = target;
-                readback = new Texture2D(source.width, source.height,
-                    TextureFormat.RGBA32, false);
-                readback.ReadPixels(new Rect(0, 0, source.width, source.height),
-                    0, 0, false);
-                readback.Apply(false, false);
-                return readback.GetPixels32();
-            }
-            finally
-            {
-                RenderTexture.active = oldTarget;
-                RenderTexture.ReleaseTemporary(target);
-                if (readback)
-                {
-                    if (Application.isPlaying) UnityEngine.Object.Destroy(readback);
-                    else UnityEngine.Object.DestroyImmediate(readback);
-                }
-            }
         }
 
         public static void SetMenuTab(Button tab, bool selected)
@@ -160,7 +70,7 @@ namespace TowerDuel
         {
             if (Textures.TryGetValue(surface, out var cached) && cached) return cached;
             int width = surface == Surface.CoinBadge ? 96 : 192;
-            int height = surface == Surface.Wallpaper || surface == Surface.CardBackdrop ? 256 :
+            int height = surface == Surface.Wallpaper ? 256 :
                 surface == Surface.CoinBadge ? 96 : 128;
             var pixels = new Color32[width * height];
             for (int y = 0; y < height; y++)
@@ -192,34 +102,6 @@ namespace TowerDuel
                 if (x % 73 == 13 && y % 61 == 27)
                     blue = Color.Lerp(blue, Color.white, .16f);
                 return blue;
-            }
-
-            if (surface == Surface.CardBackdrop)
-            {
-                // A small fantasy landscape: glowing sky, distant hills and stone ground.
-                // It sits *behind* the existing character PNG, never replacing the art.
-                float u = x / (float)(width - 1), v = y / (float)(height - 1);
-                var sky = Color.Lerp(new Color32(49, 105, 145, 255),
-                    new Color32(158, 213, 225, 255), v);
-                float dx = (u - .5f) * 1.2f, dy = v - .68f;
-                float halo = Mathf.Clamp01(1f - (dx * dx + dy * dy) * 4f);
-                sky = Color.Lerp(sky, new Color32(255, 228, 153, 255), halo * .35f);
-                float ridge = .30f + .035f * Mathf.Sin(u * 10.5f)
-                    + .018f * Mathf.Sin(u * 24f);
-                if (v < ridge)
-                {
-                    sky = Color.Lerp(new Color32(42, 78, 89, 255),
-                        new Color32(95, 151, 136, 255), Mathf.Clamp01(v / ridge));
-                    // A quieter foreground gives the hero's silhouette clear contrast.
-                    if (v < .13f)
-                        sky = Color.Lerp(new Color32(94, 83, 77, 255),
-                            new Color32(117, 115, 95, 255), v / .13f);
-                }
-                // Restrained, symmetrical fantasy crest glints at the top corners.
-                float ornament = Mathf.Abs(u - .5f);
-                if (v > .88f && ornament > .34f && ornament < .38f)
-                    sky = Color.Lerp(sky, new Color32(255, 239, 176, 255), .40f);
-                return sky;
             }
 
             if (surface == Surface.CoinBadge)
