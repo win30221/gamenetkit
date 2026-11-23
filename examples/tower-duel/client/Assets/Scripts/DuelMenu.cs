@@ -126,6 +126,8 @@ namespace TowerDuel
             battlePage.style.display = show ? DisplayStyle.None : DisplayStyle.Flex;
             cardsTab.EnableInClassList("menu-tab-selected", show);
             battleTab.EnableInClassList("menu-tab-selected", !show);
+            DuelCartoonSkin.SetMenuTab(cardsTab, show);
+            DuelCartoonSkin.SetMenuTab(battleTab, !show);
         }
 
         private void Connect(string mode)
