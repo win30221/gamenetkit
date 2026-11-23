@@ -255,8 +255,8 @@ func (w *match) clearSegment(from, to point, mover *unit, units []*unit) bool {
 	return clearUnits(from, to, mover, units)
 }
 
-// Building marches merge into their lane early. Combat routes and obstructed
-// approaches still use the grid, including recovery from a different gate.
+// Building marches merge into their lane early. The grid still handles combat
+// routes and approaches that have no clear route around a building.
 func (w *match) routeToGoal(from point, goal entity, stop, lane float64, mover *unit, units []*unit) []point {
 	to := position(goal)
 	if lane == 0 {
@@ -302,6 +302,11 @@ func (w *match) routeToGoal(from point, goal entity, stop, lane float64, mover *
 	current := from
 	for _, next := range path {
 		if !w.clearSegment(current, next, mover, units) {
+			if bypass := w.buildingBypass(from, current, next, forward, lane, mover, units); len(bypass) > 0 {
+				if suffix := w.routeToGoal(bypass[len(bypass)-1], goal, stop, lane, mover, units); len(suffix) > 0 {
+					return append(bypass, suffix...)
+				}
+			}
 			return w.route(from, to, stop, lane, mover, units)
 		}
 		current = next
@@ -319,6 +324,50 @@ func (w *match) routeToGoal(from point, goal entity, stop, lane float64, mover *
 		return append(path, suffix...)
 	}
 	return w.route(from, to, stop, lane, mover, units)
+}
+
+// Skirt the nearest allied building obstructing the planned lane approach.
+// Every bypass ends ahead of its building before planning the lane merge again.
+func (w *match) buildingBypass(from, blockedFrom, blockedTo point, forward, lane float64, mover *unit, units []*unit) []point {
+	dx, dz := blockedTo.X-blockedFrom.X, blockedTo.Z-blockedFrom.Z
+	lengthSquared := dx*dx + dz*dz
+	blockerDepth := math.Inf(1)
+	var blocker entity
+	for _, tower := range w.Towers {
+		depth := (tower.Z - from.Z) * forward
+		if tower.Seat != mover.State.Seat || tower.HP <= 0 || depth <= 0 || depth >= blockerDepth {
+			continue
+		}
+		x, z := tower.X-blockedFrom.X, tower.Z-blockedFrom.Z
+		along := math.Max(0, math.Min(1, (x*dx+z*dz)/lengthSquared))
+		if math.Hypot(x-along*dx, z-along*dz) < tower.Radius+mover.State.Radius+.04 {
+			blocker, blockerDepth = tower, depth
+		}
+	}
+	if blocker.ID == 0 {
+		return nil
+	}
+
+	side := from.X - blocker.X
+	if math.Abs(side) < .001 {
+		side = lane
+	}
+	clearance := blocker.Radius + mover.State.Radius + .14
+	x := blocker.X + math.Copysign(clearance, side)
+	depart := point{x, blocker.Z + forward*clearance*.65}
+	// Aim diagonally at the flank. Start earlier if the straighter
+	// approach brushes the rear of the building's collision footprint.
+	for _, setback := range []float64{.4, .7, 1} {
+		entryDepth := blockerDepth - clearance*setback
+		if entryDepth <= 0 {
+			continue
+		}
+		entry := point{x, from.Z + forward*entryDepth}
+		if w.clearSegment(from, entry, mover, units) && w.clearSegment(entry, depart, mover, units) {
+			return []point{entry, depart}
+		}
+	}
+	return nil
 }
 
 func (w *match) move(u *unit, goal entity, units []*unit) {

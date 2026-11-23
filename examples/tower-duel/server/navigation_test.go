@@ -134,3 +134,75 @@ func TestMarchRejoinsLaneAfterFightingOnEnemySide(t *testing.T) {
 		}
 	}
 }
+
+func TestMarchHugsAlliedBuildingBeforeRejoiningLane(t *testing.T) {
+	for _, spawn := range []struct {
+		name string
+		x    float64
+	}{
+		{"behind_keep", 0},
+		{"outer_rear_corner", -10},
+	} {
+		for seat := range 2 {
+			t.Run(fmt.Sprintf("%s/seat%d", spawn.name, seat), func(t *testing.T) {
+				w := playingMatch(t)
+				w.Rules.TowerDamage = 0
+				forward := 1.0
+				if seat == 1 {
+					forward = -1
+				}
+				start := point{spawn.x * forward, -13 * forward}
+				ack := w.deploy(seat, w.ID, 1, "guard", start.X, start.Z)
+				if !ack.Accepted {
+					t.Fatal(ack)
+				}
+				u := w.Units[ack.UnitID]
+				for w.Tick < u.State.ReadyTick {
+					w.step()
+				}
+				if (u.State.X-start.X)*(u.LaneX-start.X) <= 0 || (u.State.Z-start.Z)*forward <= 0 {
+					t.Fatalf("first step should be diagonal towards the building flank: %+v", u.State)
+				}
+
+				var blocker entity
+				for _, building := range w.Towers {
+					if building.Seat == seat && (spawn.x == 0 && building.Kind == "keep" ||
+						spawn.x != 0 && building.Kind == "tower" && building.X == u.LaneX) {
+						blocker = building
+						break
+					}
+				}
+				if blocker.ID == 0 {
+					t.Fatal("missing allied building")
+				}
+				passedFlank, merged := false, false
+				for range 400 {
+					before := position(u.State)
+					w.step()
+					after := position(u.State)
+					if !w.walkableFor(after, u.State.Radius, false) {
+						t.Fatalf("unit entered an obstacle: %+v", after)
+					}
+					if (before.Z-blocker.Z)*forward <= 0 && (after.Z-blocker.Z)*forward > 0 {
+						gap := math.Abs(after.X-blocker.X) - blocker.Radius - u.State.Radius
+						passedFlank = math.Abs(after.X-before.X) < .001 && gap >= .04 && gap < .3
+					}
+					if passedFlank && (after.X-before.X)*(u.LaneX-before.X) > .001 &&
+						(after.Z-before.Z)*forward > 0 {
+						merged = true
+					}
+					if after.Z*forward >= 0 {
+						if math.Abs(after.X-u.LaneX) > w.Map.BridgeHalfWidth-u.State.Radius {
+							t.Fatalf("unit left its lane: %+v", after)
+						}
+						break
+					}
+				}
+				if !passedFlank || !merged || u.State.Z*forward < 0 {
+					t.Fatalf("expected flank, diagonal merge, then gate crossing: flank=%v merge=%v state=%+v",
+						passedFlank, merged, u.State)
+				}
+			})
+		}
+	}
+}
