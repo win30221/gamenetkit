@@ -270,26 +270,23 @@ namespace TowerDuel
             dock.style.bottom=height*dockFraction-234f*scale;
             dock.style.scale=new Scale(new Vector3(scale,scale,1));
 
-            // The arena and card hand are height-framed. Scale the HUD from the
-            // panel height as well; never let a wider viewport enlarge its badges.
-            // Only positions change with horizontal aspect ratio.
-            const float hudReferenceHeight=900f;
+            // Keep the HUD at its authored pixel size, regardless of window
+            // height or width. Only its position tracks the safe-area edges.
             const float leftBadgeWidth=196f, rightBadgeWidth=204f;
-            float hudScale=height/hudReferenceHeight;
-            float edgeInset=8f*hudScale;
-            bool stacked=safeWidth<(leftBadgeWidth+rightBadgeWidth+16f)*hudScale+2f*edgeInset;
+            const float edgeInset=8f;
+            bool stacked=safeWidth<leftBadgeWidth+rightBadgeWidth+16f+2f*edgeInset;
             var top=root.Q("topHud");
-            top.style.top=7f*hudScale+(Screen.height-appliedSafeArea.yMax)*unitsPerPixel;
+            top.style.top=7f+(Screen.height-appliedSafeArea.yMax)*unitsPerPixel;
             top.style.left=edgeInset+appliedSafeArea.xMin*unitsPerPixel;
             top.style.right=edgeInset+(Screen.width-appliedSafeArea.xMax)*unitsPerPixel;
-            top.style.height=(stacked?92f:44f)*hudScale;
-            // Scale the two absolute-positioned corner groups individually. Do
-            // not scale the full-width topHud or the right controls would drift.
+            top.style.height=stacked?92f:44f;
+            // Corner groups keep their exact CSS width, height and font size.
+            // When too narrow, reposition the right group on a second row.
             var info=top.Q(className:"header-copy");
             var actions=top.Q(className:"hud-actions");
-            info.style.scale=new Scale(new Vector3(hudScale,hudScale,1));
-            actions.style.scale=new Scale(new Vector3(hudScale,hudScale,1));
-            actions.style.top=stacked?48f*hudScale:0f;
+            info.style.scale=new Scale(Vector3.one);
+            actions.style.scale=new Scale(Vector3.one);
+            actions.style.top=stacked?48f:0f;
         }
         public void Update()
         {
