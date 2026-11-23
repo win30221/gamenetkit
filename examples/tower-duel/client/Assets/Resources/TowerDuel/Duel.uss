@@ -558,3 +558,28 @@ Button:disabled { opacity: 0.63; }
     -unity-text-outline-width: 2px;
 }
 .unit-health { border-width: 1px; }
+
+
+/* Illustrated backdrop behind transparent card portraits only.
+ * Character art, frames, cost badges and card interactions stay unchanged. */
+.card-backdrop {
+    position: absolute;
+    left: 6px; right: 6px;
+    top: 6px; bottom: 6px;
+    border-radius: 9px;
+    -unity-background-scale-mode: stretch-to-fill;
+}
+.menu-card .card-backdrop {
+    left: 7px; right: 7px;
+    top: 7px; bottom: 24px;
+}
+.b3-card .card-backdrop {
+    left: 7px; right: 7px;
+    top: 7px; bottom: 7px;
+}
+.next-card .card-backdrop {
+    left: 2px; right: 2px;
+    top: 0; bottom: auto;
+    height: 80px;
+    border-radius: 7px;
+}
