@@ -37,6 +37,7 @@ namespace TowerDuel
         private string copyRoom="";
         private bool wasLobby=true;
         private Rect appliedSafeArea;
+        private int layoutScreenWidth=-1,layoutScreenHeight=-1;
 #if UNITY_WEBGL && !UNITY_EDITOR
         [DllImport("__Internal")] private static extern void TD_CopyRoomCode(string code,string target);
         [DllImport("__Internal")] private static extern void TD_CancelRoomCodeCopy();
@@ -103,6 +104,10 @@ namespace TowerDuel
             world.RegisterCallback<PointerCancelEvent>(_=>CancelPointer());
             world.RegisterCallback<PointerCaptureOutEvent>(_=>{pointer=-1;client.HidePreview();});
             root.RegisterCallback<KeyDownEvent>(evt=>{if(evt.keyCode==KeyCode.Escape){CancelCardDrags();client.Selected=false;CancelPointer();}});
+            DuelCartoonSkin.Apply(root);
+            // ShowCards(false) selects the battle page during DuelMenu construction.
+            // Reapply that selected texture after skinning all generic menu buttons.
+            DuelCartoonSkin.SetMenuTab(root.Q<Button>("battleTab"), true);
             Update();
         }
         private bool CanPlay()=>client.Session.CanAct&&(client.Session.State.phase=="playing"||client.Session.State.phase=="overtime")&&!client.Session.Pending;
@@ -250,29 +255,52 @@ namespace TowerDuel
             float width=root.resolvedStyle.width,height=root.resolvedStyle.height;
             if(float.IsNaN(width)||float.IsNaN(height))return;
             appliedSafeArea=Screen.safeArea;
+            layoutScreenWidth=Screen.width;
+            layoutScreenHeight=Screen.height;
+            // UI Toolkit scales with the screen (DuelPanel reference 720x1000).
+            // Convert physical pixels into panel units to keep HUD *rendered* size fixed.
             float unitsPerPixel=height/Mathf.Max(1,Screen.height);
             menu?.Layout(appliedSafeArea,unitsPerPixel);
-            float availableWidth=appliedSafeArea.width*unitsPerPixel-16;
-            // One fixed portrait layout; scale the whole dock uniformly in every viewport.
-            float scale=Mathf.Min(.9f,availableWidth/600,height*.18f/234);
+            float safeWidth=appliedSafeArea.width*unitsPerPixel;
+            float availableWidth=Mathf.Max(1f,safeWidth-16f);
+            // Hand occupies only the reserved 14.5% lower edge.
+            const float dockFraction=.145f;
+            float scale=Mathf.Min(.9f,availableWidth/600f,height*dockFraction/234f);
             var frame=root.Q("dockFrame");
-            frame.style.left=appliedSafeArea.center.x*unitsPerPixel-300*scale;
-            frame.style.width=600*scale;
-            frame.style.height=height*.18f;
+            frame.style.left=appliedSafeArea.center.x*unitsPerPixel-300f*scale;
+            frame.style.width=600f*scale;
+            frame.style.height=height*dockFraction;
             frame.style.bottom=appliedSafeArea.yMin*unitsPerPixel;
-            // Anchor the hand to a fixed screen-height boundary. Width can shrink the
-            // portraits, but cannot move the dock's top edge or change camera framing.
-            dock.style.left=300*scale-300;
-            dock.style.bottom=height*.18f-234*scale;
+            dock.style.left=300f*scale-300f;
+            dock.style.bottom=height*dockFraction-234f*scale;
             dock.style.scale=new Scale(new Vector3(scale,scale,1));
+
+            // Fixed physical-pixel HUD. PanelSettings scales USS pixels with the
+            // viewport; using scale=1 leaves the header visibly larger on a wide
+            // monitor. Compensate with panel-units-per-screen-pixel instead.
+            const float leftBadgeWidth=196f, rightBadgeWidth=204f;
+            const float edgeInset=8f;
+            bool stacked=appliedSafeArea.width<leftBadgeWidth+rightBadgeWidth+16f+2f*edgeInset;
             var top=root.Q("topHud");
-            top.style.top=16+(Screen.height-appliedSafeArea.yMax)*unitsPerPixel;
-            top.style.left=20+appliedSafeArea.xMin*unitsPerPixel;
-            top.style.right=20+(Screen.width-appliedSafeArea.xMax)*unitsPerPixel;
+            top.style.top=(7f+Screen.height-appliedSafeArea.yMax)*unitsPerPixel;
+            top.style.left=(edgeInset+appliedSafeArea.xMin)*unitsPerPixel;
+            top.style.right=(edgeInset+Screen.width-appliedSafeArea.xMax)*unitsPerPixel;
+            top.style.height=(stacked?92f:44f)*unitsPerPixel;
+            // Each badge has an absolute anchor and an appropriate transform
+            // origin in Duel.uss (top-left for info, top-right for controls).
+            // Text, buttons and border art all retain their physical pixel size.
+            var info=top.Q(className:"header-copy");
+            var actions=top.Q(className:"hud-actions");
+            var pixelScale=new Scale(new Vector3(unitsPerPixel,unitsPerPixel,1f));
+            info.style.scale=pixelScale;
+            actions.style.scale=pixelScale;
+            actions.style.top=(stacked?48f:0f)*unitsPerPixel;
         }
         public void Update()
         {
-            if(appliedSafeArea!=Screen.safeArea)LayoutViewport();
+            if(appliedSafeArea!=Screen.safeArea||
+                layoutScreenWidth!=Screen.width||layoutScreenHeight!=Screen.height)
+                LayoutViewport();
             var state=client.Session.State;
             if(state!=null&&wasLobby)BlurInputs();wasLobby=state==null;
             if(!CanPlay())CancelCardDrags();
@@ -322,8 +350,9 @@ namespace TowerDuel
             }
             if(state!=null)
             {
-                client.SetBoardInsets(.19f+Screen.safeArea.yMin/Screen.height,
-                    .02f+(Screen.height-Screen.safeArea.yMax)/Screen.height);
+                // Frame both keeps in the remaining field, not underneath the HUD.
+                client.SetBoardInsets(.16f+Screen.safeArea.yMin/Screen.height,
+                    .06f+(Screen.height-Screen.safeArea.yMax)/Screen.height);
                 UpdateHealth(state);
                 UpdateEnergy(state);
             }
