@@ -17,13 +17,14 @@ namespace TowerDuel
         public DuelAudio Audio {get;private set;}
         public const float KeepHealthHeight=10.2f;
         public const float TowerApproachClearance=1.7f;
-        private const float ReferencePortraitAspect=390f/892f;
+        private const float ArenaSidePadding=.6f;
         public float BoardBottom=>boardBottom;
         public float BoardTop=>boardTop;
         private DuelHud hud;
         private DuelPresentation presentation;
         private DuelVerification verification;
         private int viewSeat = -1, screenWidth, screenHeight;
+        private Rect framedSafeArea;
         private float boardBottom=.19f,boardTop=.02f;
         private string renderedMatch;
 
@@ -62,7 +63,7 @@ namespace TowerDuel
             var state = Session.State;
             if(state!=null&&state.match!=renderedMatch){presentation.Reset();renderedMatch=state.match;}
             int seat = state?.seat ?? 0;
-            if (screenWidth != Screen.width || screenHeight != Screen.height) FrameCamera();
+            if (screenWidth != Screen.width || screenHeight != Screen.height || framedSafeArea != Screen.safeArea) FrameCamera();
             if (seat != viewSeat) SetViewSeat(seat);
             if (!Session.CanAct || state == null || (state.phase != "playing" && state.phase != "overtime")) Selected = false;
             if (!Selected) HidePreview();
@@ -77,6 +78,7 @@ namespace TowerDuel
         private void FrameCamera()
         {
             screenWidth = Screen.width; screenHeight = Screen.height;
+            framedSafeArea = Screen.safeArea;
             Camera.transform.rotation=Quaternion.Euler(60,0,0);
             Camera.transform.position=-Camera.transform.forward*48;
             Camera.orthographic = true;
@@ -98,8 +100,14 @@ namespace TowerDuel
             float focus=(far-near)*.5f;
             float center=boardBottom+height*.5f;
             float size=(far+near)*.5f/height;
-            // Fit both lanes at the reference portrait aspect without making zoom depend on window width.
-            size=Mathf.Max(size,(tacticalHalfWidth+.1f)/ReferencePortraitAspect);
+            // Include the full playable map, not only its towers. Narrow screens
+            // must zoom out instead of cropping the outside deployment cells.
+            // Horizontal safe-area insets (e.g. a side notch) are not drawable.
+            float safeWidth=framedSafeArea.width>0?framedSafeArea.width:screenWidth;
+            float safeCenterX=framedSafeArea.width>0?framedSafeArea.center.x:screenWidth*.5f;
+            float safeAspect=safeWidth/Mathf.Max(1f,screenHeight);
+            float playableHalfWidth=Mathf.Max(Map.width*.5f,tacticalHalfWidth)+ArenaSidePadding;
+            size=Mathf.Max(size,playableHalfWidth/Mathf.Max(.01f,safeAspect));
             // Keep troops at the far rear edge inside the backbuffer.
             float unitHeight=0;
             foreach(var card in Rules.cards)if(!card.IsSpell)unitHeight=Mathf.Max(unitHeight,presentation.UnitHeight(card.id));
@@ -108,6 +116,10 @@ namespace TowerDuel
             // Render the entire backbuffer so transparent HUD text never accumulates.
             // The offset preserves the arena framing above the dock without a partial viewport.
             Camera.transform.position += Camera.transform.up * (focus-(center-.5f)*2*size);
+            // Keep the arena centered in the usable screen area without
+            // rotating the camera or changing world-space positions.
+            Camera.transform.position -= Camera.transform.right *
+                ((safeCenterX-screenWidth*.5f)*2*size/Mathf.Max(1f,screenHeight));
             Camera.rect = new Rect(0, 0, 1, 1);
             Camera.backgroundColor = Map.HasWall ? new Color(151f/255f, 210f/255f, 30f/255f) : new Color(.16f, .28f, .14f);
             DuelLighting.Apply(Camera);
