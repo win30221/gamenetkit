@@ -104,6 +104,9 @@ namespace TowerDuel
             world.RegisterCallback<PointerCaptureOutEvent>(_=>{pointer=-1;client.HidePreview();});
             root.RegisterCallback<KeyDownEvent>(evt=>{if(evt.keyCode==KeyCode.Escape){CancelCardDrags();client.Selected=false;CancelPointer();}});
             DuelCartoonSkin.Apply(root);
+            // ShowCards(false) selects the battle page during DuelMenu construction.
+            // Reapply that selected texture after skinning all generic menu buttons.
+            DuelCartoonSkin.SetMenuTab(root.Q<Button>("battleTab"), true);
             Update();
         }
         private bool CanPlay()=>client.Session.CanAct&&(client.Session.State.phase=="playing"||client.Session.State.phase=="overtime")&&!client.Session.Pending;
