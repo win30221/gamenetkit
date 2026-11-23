@@ -38,7 +38,6 @@ namespace TowerDuel
             Paint(root, "menu-join", Surface.BlueButton);
             Paint(root, "menu-deck-count", Surface.BlueButton);
 
-            Paint(root, "top-hud", Surface.DarkPanel);
             Paint(root, "dock", Surface.DarkPanel);
             Paint(root, "unit-card", Surface.CardFrame);
             Paint(root, "drag-card", Surface.CardFrame);

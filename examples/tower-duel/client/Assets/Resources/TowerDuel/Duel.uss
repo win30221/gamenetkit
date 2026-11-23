@@ -562,3 +562,101 @@ Button:disabled { opacity: 0.63; }
     -unity-text-outline-width: 2px;
 }
 .unit-health { border-width: 1px; }
+
+
+/* Battle HUD v2: tiny corner badges; centre of enemy arena remains unobstructed. */
+.top-hud {
+    height: 44px;
+    padding: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    border-width: 0;
+    border-radius: 0;
+    background-color: transparent;
+    background-image: none;
+}
+.header-copy {
+    flex-grow: 0;
+    flex-shrink: 1;
+    width: 196px;
+    min-width: 0;
+    height: 44px;
+    padding: 3px 10px;
+    justify-content: center;
+    background-color: rgba(27, 34, 56, 0.94);
+    border-width: 2px;
+    border-color: #c99751;
+    border-radius: 12px;
+}
+.header-copy .brand {
+    color: #ffe2a0;
+    font-size: 16px;
+    -unity-font-style: bold;
+    -unity-text-outline-color: #211a25;
+    -unity-text-outline-width: 1px;
+}
+.header-copy .small {
+    color: #e8dfcd;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.hud-actions {
+    flex-direction: row;
+    flex-shrink: 0;
+    align-items: center;
+    height: 44px;
+}
+.top-hud .timer {
+    width: 78px;
+    height: 44px;
+    padding: 0 4px;
+    flex-shrink: 0;
+    -unity-text-align: middle-center;
+    background-color: rgba(27, 34, 56, 0.94);
+    border-width: 2px;
+    border-color: #c99751;
+    border-radius: 12px;
+    color: #fff5d8;
+    font-size: 23px;
+    -unity-font-style: bold;
+    -unity-text-outline-color: #121a26;
+    -unity-text-outline-width: 1px;
+}
+.top-hud .small-button {
+    width: 58px;
+    height: 43px;
+    margin-left: 5px;
+    padding: 3px;
+    flex-shrink: 0;
+    border-width: 0;
+    border-radius: 10px;
+    color: #30251e;
+    font-size: 14px;
+}
+.top-hud.hud-compact .header-copy {
+    width: 78px;
+    height: 40px;
+    padding: 2px 5px;
+}
+.top-hud.hud-compact .header-copy .brand {
+    font-size: 13px;
+    -unity-text-align: middle-center;
+}
+.top-hud.hud-compact .header-copy .small { display: none; }
+.top-hud.hud-compact .hud-actions { height: 40px; }
+.top-hud.hud-compact .timer { width: 62px; height: 40px; font-size: 20px; }
+.top-hud.hud-compact .small-button {
+    width: 46px;
+    height: 40px;
+    margin-left: 3px;
+    font-size: 12px;
+}
+.top-hud.hud-tiny .header-copy { display: none; }
+.dock-frame {
+    background-color: transparent;
+    border-width: 0;
+    border-radius: 0;
+}

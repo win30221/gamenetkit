@@ -256,23 +256,27 @@ namespace TowerDuel
             appliedSafeArea=Screen.safeArea;
             float unitsPerPixel=height/Mathf.Max(1,Screen.height);
             menu?.Layout(appliedSafeArea,unitsPerPixel);
-            float availableWidth=appliedSafeArea.width*unitsPerPixel-16;
-            // One fixed portrait layout; scale the whole dock uniformly in every viewport.
-            float scale=Mathf.Min(.9f,availableWidth/600,height*.18f/234);
+            float safeWidth=appliedSafeArea.width*unitsPerPixel;
+            float availableWidth=Mathf.Max(1f,safeWidth-16f);
+            // Hand occupies only the reserved 14.5% lower edge.
+            const float dockFraction=.145f;
+            float scale=Mathf.Min(.9f,availableWidth/600f,height*dockFraction/234f);
             var frame=root.Q("dockFrame");
-            frame.style.left=appliedSafeArea.center.x*unitsPerPixel-300*scale;
-            frame.style.width=600*scale;
-            frame.style.height=height*.18f;
+            frame.style.left=appliedSafeArea.center.x*unitsPerPixel-300f*scale;
+            frame.style.width=600f*scale;
+            frame.style.height=height*dockFraction;
             frame.style.bottom=appliedSafeArea.yMin*unitsPerPixel;
-            // Anchor the hand to a fixed screen-height boundary. Width can shrink the
-            // portraits, but cannot move the dock's top edge or change camera framing.
-            dock.style.left=300*scale-300;
-            dock.style.bottom=height*.18f-234*scale;
+            dock.style.left=300f*scale-300f;
+            dock.style.bottom=height*dockFraction-234f*scale;
             dock.style.scale=new Scale(new Vector3(scale,scale,1));
+
+            // Keep the opponent's castle clear between small corner HUD badges.
             var top=root.Q("topHud");
-            top.style.top=16+(Screen.height-appliedSafeArea.yMax)*unitsPerPixel;
-            top.style.left=20+appliedSafeArea.xMin*unitsPerPixel;
-            top.style.right=20+(Screen.width-appliedSafeArea.xMax)*unitsPerPixel;
+            top.style.top=7f+(Screen.height-appliedSafeArea.yMax)*unitsPerPixel;
+            top.style.left=8f+appliedSafeArea.xMin*unitsPerPixel;
+            top.style.right=8f+(Screen.width-appliedSafeArea.xMax)*unitsPerPixel;
+            top.EnableInClassList("hud-compact",safeWidth<560f);
+            top.EnableInClassList("hud-tiny",safeWidth<270f);
         }
         public void Update()
         {
@@ -326,8 +330,9 @@ namespace TowerDuel
             }
             if(state!=null)
             {
-                client.SetBoardInsets(.19f+Screen.safeArea.yMin/Screen.height,
-                    .02f+(Screen.height-Screen.safeArea.yMax)/Screen.height);
+                // Frame both keeps in the remaining field, not underneath the HUD.
+                client.SetBoardInsets(.16f+Screen.safeArea.yMin/Screen.height,
+                    .06f+(Screen.height-Screen.safeArea.yMax)/Screen.height);
                 UpdateHealth(state);
                 UpdateEnergy(state);
             }

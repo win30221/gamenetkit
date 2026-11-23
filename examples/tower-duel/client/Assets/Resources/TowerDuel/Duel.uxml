@@ -7,9 +7,11 @@
         <ui:Label text="雙塔對決" class="brand" picking-mode="Ignore" />
         <ui:Label name="roomLabel" class="small" picking-mode="Ignore" />
       </ui:VisualElement>
-      <ui:Label name="timerLabel" text="3:00" class="timer" picking-mode="Ignore" />
-      <ui:Button name="audioButton" text="音效開" class="small-button" />
-      <ui:Button name="leaveButton" text="離開" class="small-button" />
+      <ui:VisualElement class="hud-actions" picking-mode="Ignore">
+        <ui:Label name="timerLabel" text="3:00" class="timer" picking-mode="Ignore" />
+        <ui:Button name="audioButton" text="音效開" class="small-button" />
+        <ui:Button name="leaveButton" text="離開" class="small-button" />
+      </ui:VisualElement>
     </ui:VisualElement>
     <ui:VisualElement name="dockFrame" class="dock-frame">
      <ui:VisualElement name="dock" class="dock">
