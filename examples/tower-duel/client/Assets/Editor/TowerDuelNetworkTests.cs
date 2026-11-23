@@ -180,6 +180,13 @@ namespace TowerDuel.Editor
                             "Ground art must cover the entire playable map");
                     var groundRotation=ground.rotation;
                     var groundPosition=ground.position;
+                    // A 180-degree seat transform must swap lanes as well as near/far sides.
+                    // The same transform maps a clicked view point back to its server position.
+                    var asymmetric=new Vector3(f.Map.bridges[1],1.5f,4);
+                    Require(DuelPresentation.MirrorDepth(asymmetric,0)==asymmetric&&
+                            DuelPresentation.MirrorDepth(asymmetric,1)==new Vector3(-asymmetric.x,asymmetric.y,-asymmetric.z)&&
+                            DuelPresentation.MirrorDepth(DuelPresentation.MirrorDepth(asymmetric,1),1)==asymmetric,
+                            "Seat-one view must reverse both lanes and round-trip input without changing height");
                     for(int seat=0;seat<2;seat++)
                     {
                         presentation.Environment.SetView(camera,seat);
@@ -190,21 +197,22 @@ namespace TowerDuel.Editor
                         {
                             bool own=tower.seat==seat;
                             var point=presentation.Environment.Building(tower.id).transform.position;
-                            Require(point.x==tower.x&&(point.z<0)==own&&presentation.Environment.BuildingFrame(tower.id)==(own?0:3),
-                                    "Own buildings must be blue on the near side with their original lane");
+                            Require(point==DuelPresentation.MirrorDepth(tower.Position,seat)&&(point.z<0)==own&&
+                                    presentation.Environment.BuildingFrame(tower.id)==(own?0:3),
+                                    "Own buildings must be blue on the near side with seat-one lanes reversed");
                         }
                     }
                     var state=f.State(100,"welcome");
                     state.seat=1;state.units[0].seat=1;state.units[0].x=f.Map.bridges[1];state.units[0].z=4;
                     f.Deliver(state);presentation.Update(f.Session);
-                    var nearPoint=new Vector3(f.Map.bridges[1],0,-4);
+                    var nearPoint=new Vector3(-f.Map.bridges[1],0,-4);
                     var serverPoint=DuelPresentation.MirrorDepth(nearPoint,state.seat);
                     Require(serverPoint==new Vector3(f.Map.bridges[1],0,4)&&DuelPresentation.MirrorDepth(serverPoint,state.seat)==nearPoint&&
                             f.Map.CanDeploy(state.seat,serverPoint,state,f.Rules.Find("guard")),
-                            "Seat one must deploy to its authoritative half in the same lane");
+                            "Seat one must deploy to its authoritative half in the opposite visual lane");
                     var unit=root.transform.Find("Battle visuals/guard 100");
                     Require(unit&&unit.position.x==nearPoint.x&&unit.position.z==nearPoint.z,
-                            "Seat one unit must render on the near side in the same lane");
+                            "Seat one unit must render on the near side with its lane reversed");
                 }
                 finally
                 {

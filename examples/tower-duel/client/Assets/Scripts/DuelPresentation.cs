@@ -94,11 +94,12 @@ namespace TowerDuel
             DeploymentPreview=new DuelDeploymentPreview(root,prefabs);
             DeploymentGrid=new DuelDeploymentGrid(root,map);
         }
-        // This reflection maps server space to the fixed board and back.
-        // Keeping X unchanged preserves the left and right gates for both seats.
+        // Both players see their own keep at the bottom of the fixed board.
+        // Seat one rotates the canonical arena by 180 degrees, swapping both lanes.
+        // This is its own inverse, so screen-space aiming maps back to server space.
         public static Vector3 MirrorDepth(Vector3 point,int seat)
         {
-            if(seat==1)point.z=-point.z;
+            if(seat==1){point.x=-point.x;point.z=-point.z;}
             return point;
         }
         private static Material Load(string name)

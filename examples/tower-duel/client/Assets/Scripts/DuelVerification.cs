@@ -109,8 +109,10 @@ namespace TowerDuel
                 if(report.ownBuildingsAway)foreach(var tower in state.towers)
                 {
                     bool own=tower.seat==state.seat;
+                    var rendered=environment.Building(tower.id).transform.position;
                     report.ownBuildingsAway&=environment.BuildingFrame(tower.id)==(own?0:3)
-                        && (environment.Building(tower.id).transform.position.z<0)==own;
+                        && (rendered.z<0)==own
+                        && Mathf.Abs(rendered.x-(state.seat==1?-tower.x:tower.x))<.001f;
                 }
                 report.accepted = client.Session.Accepted; report.rejected = client.Session.Rejected;
                 report.unitCount = state.units.Length; report.towers = state.towers;
