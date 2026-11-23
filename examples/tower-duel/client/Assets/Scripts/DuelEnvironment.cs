@@ -83,32 +83,33 @@ namespace TowerDuel
                 item.Building=entity;buildings.Add(entity.id,item);
             }
             BuildWall(map);
+            float edgeShift=map.width/2-10;
             for(int side=-1;side<=1;side+=2)
             {
-                Place("border-props",0,new Vector3(side*9,.02f,-12.6f),2.8f,"Border tree");
-                Place("border-props",1,new Vector3(side*9.1f,.02f,12.6f),1.8f,"Border sapling");
-                Place("border-props",0,new Vector3(side*9,.02f,4.8f),2.5f,"Border tree");
-                Place("border-props",2,new Vector3(side*9,.02f,-5),1.1f,"Border bush");
-                Place("border-props",3,new Vector3(side*8.9f,.02f,-1.6f),.9f,"Border stone");
-                Place("border-props",4,new Vector3(side*8.1f,.02f,8.5f),1.05f,"Border rocks");
+                Place("border-props",0,new Vector3(side*(9+edgeShift),.02f,-12.6f),2.8f,"Border tree");
+                Place("border-props",1,new Vector3(side*(9.1f+edgeShift),.02f,12.6f),1.8f,"Border sapling");
+                Place("border-props",0,new Vector3(side*(9+edgeShift),.02f,4.8f),2.5f,"Border tree");
+                Place("border-props",2,new Vector3(side*(9+edgeShift),.02f,-5),1.1f,"Border bush");
+                Place("border-props",3,new Vector3(side*(8.9f+edgeShift),.02f,-1.6f),.9f,"Border stone");
+                Place("border-props",4,new Vector3(side*(8.1f+edgeShift),.02f,8.5f),1.05f,"Border rocks");
 
-                Place("border-props",0,new Vector3(side*10.8f,.02f,-.2f),3.2f,"Wall terminus tree");
-                Place("border-props",2,new Vector3(side*11.2f,.02f,1.5f),1.6f,"Wall terminus bush");
-                Place("border-props",4,new Vector3(side*10.5f,.02f,-1.8f),1.1f,"Wall rocks");
+                Place("border-props",0,new Vector3(side*(10.8f+edgeShift),.02f,-.2f),3.2f,"Wall terminus tree");
+                Place("border-props",2,new Vector3(side*(11.2f+edgeShift),.02f,1.5f),1.6f,"Wall terminus bush");
+                Place("border-props",4,new Vector3(side*(10.5f+edgeShift),.02f,-1.8f),1.1f,"Wall rocks");
 
-                Place("border-props",0,new Vector3(side*13.5f,.02f,-10.5f),3.3f,"Outer tree");
-                Place("border-props",1,new Vector3(side*14.2f,.02f,-4.5f),2.0f,"Outer sapling");
-                Place("border-props",0,new Vector3(side*13.8f,.02f,6.2f),3.4f,"Outer tree");
-                Place("border-props",2,new Vector3(side*14.5f,.02f,11.8f),2.0f,"Outer bush");
-                Place("border-props",3,new Vector3(side*13.2f,.02f,-.8f),1.0f,"Outer stone");
+                Place("border-props",0,new Vector3(side*(13.5f+edgeShift),.02f,-10.5f),3.3f,"Outer tree");
+                Place("border-props",1,new Vector3(side*(14.2f+edgeShift),.02f,-4.5f),2.0f,"Outer sapling");
+                Place("border-props",0,new Vector3(side*(13.8f+edgeShift),.02f,6.2f),3.4f,"Outer tree");
+                Place("border-props",2,new Vector3(side*(14.5f+edgeShift),.02f,11.8f),2.0f,"Outer bush");
+                Place("border-props",3,new Vector3(side*(13.2f+edgeShift),.02f,-.8f),1.0f,"Outer stone");
 
-                Place("border-props",0,new Vector3(side*17.5f,.02f,-13.5f),3.6f,"Far tree");
-                Place("border-props",0,new Vector3(side*18.0f,.02f,-6.0f),3.5f,"Far tree");
-                Place("border-props",1,new Vector3(side*17.8f,.02f,1.0f),2.3f,"Far sapling");
-                Place("border-props",0,new Vector3(side*18.2f,.02f,9.0f),3.6f,"Far tree");
-                Place("border-props",2,new Vector3(side*18.5f,.02f,-1.2f),2.0f,"Far bush");
-                Place("border-props",0,new Vector3(side*22.5f,.02f,-7.5f),3.9f,"Deep forest tree");
-                Place("border-props",0,new Vector3(side*22.0f,.02f,5.5f),3.8f,"Deep forest tree");
+                Place("border-props",0,new Vector3(side*(17.5f+edgeShift),.02f,-13.5f),3.6f,"Far tree");
+                Place("border-props",0,new Vector3(side*(18.0f+edgeShift),.02f,-6.0f),3.5f,"Far tree");
+                Place("border-props",1,new Vector3(side*(17.8f+edgeShift),.02f,1.0f),2.3f,"Far sapling");
+                Place("border-props",0,new Vector3(side*(18.2f+edgeShift),.02f,9.0f),3.6f,"Far tree");
+                Place("border-props",2,new Vector3(side*(18.5f+edgeShift),.02f,-1.2f),2.0f,"Far bush");
+                Place("border-props",0,new Vector3(side*(22.5f+edgeShift),.02f,-7.5f),3.9f,"Deep forest tree");
+                Place("border-props",0,new Vector3(side*(22.0f+edgeShift),.02f,5.5f),3.8f,"Deep forest tree");
             }
             if(Camera.main)SetView(Camera.main,0);
         }
@@ -126,7 +127,11 @@ namespace TowerDuel
             // The roof joins the masonry just under the projecting battlements.
             const float paintedHeight=211f;
             float roofHeight=map.wallHeight*(atlas.baseline-100)/paintedHeight;
-            int[] cuts={16,391,649,1399,1657,2032};
+            var wallFaces=Resources.Load<Texture2D>("TowerDuel/B3/Environment/wall-face-open");
+            if(!wallFaces)throw new InvalidOperationException("Missing B3 open wall face art");
+            // The atlas packs the left, centre and right solid faces in each row.
+            int[] faceStarts={16,288,1296};
+            int[] faceWidths={240,960,240};
             float[] gates=(float[])map.bridges.Clone();
             Array.Sort(gates);
             float[] edges={-map.width/2,gates[0]-map.bridgeHalfWidth,gates[0]+map.bridgeHalfWidth,
@@ -140,9 +145,9 @@ namespace TowerDuel
                 float x=(edges[i]+edges[i+1])/2;
                 for(int view=0;view<2;view++)
                 {
-                    int slice=view==0?i:4-i;
-                    var rect=new Rect(cuts[slice],texture.height-(view+1)*atlas.height,cuts[slice+1]-cuts[slice],atlas.height);
-                    var sprite=CreateSprite(texture,rect,new Vector2(.5f,1-atlas.baseline/(float)atlas.height));
+                    int slice=view==0?i/2:2-i/2;
+                    var rect=new Rect(faceStarts[slice],wallFaces.height-(view+1)*atlas.height,faceWidths[slice],atlas.height);
+                    var sprite=CreateSprite(wallFaces,rect,new Vector2(.5f,1-atlas.baseline/(float)atlas.height));
                     var face=Renderer(root,"Castle wall face",sprite,bodyMaterial);
                     face.transform.localPosition=new Vector3(x,.02f,(view==0?-1:1)*map.wallHalfWidth);
                     face.transform.localRotation=Quaternion.Euler(0,view*180,0);

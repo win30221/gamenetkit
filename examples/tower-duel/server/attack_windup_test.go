@@ -18,7 +18,7 @@ func TestEveryTroopWaitsForWindupAndKeepsAttackInterval(t *testing.T) {
 		t.Run(card.ID, func(t *testing.T) {
 			w := playingMatch(t)
 			w.Rules.TowerDamage = 0
-			u := testSoldier(101, 0, card.ID, -5, 5.9)
+			u := testSoldier(101, 0, card.ID, w.Towers[4].X, 5.9)
 			w.Units[u.State.ID] = u
 			tower := &w.Towers[4]
 			w.step()
@@ -57,14 +57,14 @@ func TestDeathDuringWindupCancelsEveryTroopAttack(t *testing.T) {
 		for _, killer := range []string{"tower", "fireball"} {
 			t.Run(card.ID+"/"+killer, func(t *testing.T) {
 				w := playingMatch(t)
-				u := testSoldier(101, 0, card.ID, -5, 5.9)
+				u := testSoldier(101, 0, card.ID, w.Towers[4].X, 5.9)
 				u.State.HP = w.Rules.TowerDamage
 				u.Travelled = 3 // A charged strike must be cancelled too.
 				w.Units[u.State.ID] = u
 				if killer == "fireball" {
 					w.Rules.TowerDamage = 0
 					impact := uint64(card.WindupTicks) // Last tick before the scheduled hit.
-					w.Effects = []effectState{{ID: 900, Kind: "fireball", Seat: 1, X: -5, Z: 5.9, Radius: 2.2, Start: 1, Impact: impact, End: impact + 18, Damage: 110}}
+					w.Effects = []effectState{{ID: 900, Kind: "fireball", Seat: 1, X: u.State.X, Z: 5.9, Radius: 2.2, Start: 1, Impact: impact, End: impact + 18, Damage: 110}}
 				}
 				for range card.Cooldown + card.WindupTicks + 1 {
 					w.step()
@@ -143,10 +143,10 @@ func TestWindupCannotTransferToReplacementOrOutOfRangeTarget(t *testing.T) {
 func TestFrostSlowsWindup(t *testing.T) {
 	w := playingMatch(t)
 	w.Rules.TowerDamage = 0
-	u := testSoldier(101, 0, "guard", -5, 5.7)
+	u := testSoldier(101, 0, "guard", w.Towers[4].X, 5.7)
 	w.Units[101] = u
 	slow := w.Rules.ByID["frost"].Slow
-	w.Effects = []effectState{{ID: 900, Kind: "frost", Seat: 1, X: -5, Z: 5.7, Radius: 2.8, Impact: 1, End: 200, Slow: slow}}
+	w.Effects = []effectState{{ID: 900, Kind: "frost", Seat: 1, X: u.State.X, Z: 5.7, Radius: 2.8, Impact: 1, End: 200, Slow: slow}}
 	w.step()
 	card := w.Rules.ByID[u.State.Kind]
 	steps := int(math.Ceil(float64(card.WindupTicks) / slow))

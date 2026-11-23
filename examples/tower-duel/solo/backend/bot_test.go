@@ -61,14 +61,17 @@ func TestPracticeBuildsPushesInBacklineButDefendsAtRiver(t *testing.T) {
 			direction = -1
 		}
 		b := &bot{cards: map[string]card{"guard": {ID: "guard", Type: "troop", Cost: 3}}}
-		s := message{Seat: seat, Energy: 5, Hand: [4]string{"guard"}}
+		s := message{Seat: seat, Energy: 5, Hand: [4]string{"guard"}, Towers: []entity{
+			{Seat: seat, Kind: "tower", X: -6.5},
+			{Seat: seat, Kind: "tower", X: 6.5},
+		}}
 		move, ok := b.choose(s)
-		if !ok || move.Z*direction > -9 {
+		if !ok || move.X != -6 || move.Z*direction > -9 {
 			t.Fatal("practice attacked from the river instead of assembling behind its tower", move)
 		}
 		s.Units = []entity{{ID: 101, Seat: 1 - seat, X: 5, Z: -3 * direction, HP: 100}}
 		move, ok = b.choose(s)
-		if !ok || move.X < 0 || move.Z*direction < -5 {
+		if !ok || move.X != 7 || move.Z*direction < -5 {
 			t.Fatal("practice did not defend the threatened lane near the river", move)
 		}
 	}

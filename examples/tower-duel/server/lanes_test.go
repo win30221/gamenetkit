@@ -13,7 +13,7 @@ func TestDeploymentLaneAfterFrontTowerDestroyed(t *testing.T) {
 				t.Run(fmt.Sprintf("%s_seat%d_x%g", card, seat, x), func(t *testing.T) {
 					w := playingMatch(t)
 					w.Rules.TowerDamage = 0
-					z, lane := -5.0, math.Copysign(5, x)
+					z, lane := -5.0, w.nearestBridge(seat, x)
 					if seat == 1 {
 						z = -z
 					}
@@ -78,7 +78,7 @@ func TestSquadSharesLaneAtCentreLine(t *testing.T) {
 			units := w.sortedUnits()
 			for _, u := range units {
 				goal, ok := w.target(u, units)
-				if !ok || goal.Kind != "tower" || goal.X != math.Copysign(5, x) {
+				if !ok || goal.Kind != "tower" || goal.X != w.nearestBridge(seat, x) {
 					t.Fatalf("squad split across lanes near the centre: %+v", goal)
 				}
 			}
@@ -90,7 +90,7 @@ func TestUnitReturnsToObjectiveAfterOtherBridgeFight(t *testing.T) {
 	for seat := range 2 {
 		w := playingMatch(t)
 		w.Rules.TowerDamage = 0
-		x, lane := -5.0, 5.0
+		x, lane := w.Map.Bridges[0], w.Map.Bridges[1]
 		if seat == 1 {
 			x, lane = -x, -lane
 		}

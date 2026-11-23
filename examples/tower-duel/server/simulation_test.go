@@ -36,7 +36,7 @@ func TestDeployAuthorityAndIdempotence(t *testing.T) {
 	if again := w.deploy(0, w.ID, 1, "guard", 5, -9); again != good || len(w.Units) != 1 || w.Energy[0] != 2 {
 		t.Fatal("duplicate action changed state")
 	}
-	for i, p := range []point{{0, 0}, {5, 3}, {0, -11}, {-5, -7.7}, {11, -4}, {math.NaN(), -3}} {
+	for i, p := range []point{{0, 0}, {5, 3}, {0, -11}, {w.Towers[1].X, w.Towers[1].Z}, {11, -4}, {math.NaN(), -3}} {
 		before := w.Energy[0]
 		r := w.deploy(0, w.ID, uint64(i+2), "guard", p.X, p.Z)
 		if r.Accepted || before != w.Energy[0] {
@@ -211,7 +211,7 @@ func TestTimeScoreAndSuddenDeath(t *testing.T) {
 	w.Phase = "overtime"
 	w.Elapsed = w.Rules.Duration
 	w.Towers[4].HP = 20
-	w.Units[101] = &unit{State: entity{ID: 101, Seat: 0, Kind: "guard", X: -5, Z: 5.7, HP: 220, MaxHP: 220, Radius: guardRadius}}
+	w.Units[101] = &unit{State: entity{ID: 101, Seat: 0, Kind: "guard", X: w.Towers[4].X, Z: 5.7, HP: 220, MaxHP: 220, Radius: guardRadius}}
 	for range w.Rules.ByID["guard"].WindupTicks + 1 {
 		w.step()
 	}

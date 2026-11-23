@@ -16,6 +16,8 @@ namespace TowerDuel
         public DuelPresentation Presentation=>presentation;
         public DuelAudio Audio {get;private set;}
         public const float KeepHealthHeight=10.2f;
+        public const float TowerApproachClearance=1.7f;
+        private const float ReferencePortraitAspect=390f/892f;
         public float BoardBottom=>boardBottom;
         public float BoardTop=>boardTop;
         private DuelHud hud;
@@ -83,14 +85,21 @@ namespace TowerDuel
             float height=Mathf.Max(.25f,1-boardBottom-boardTop);
             float sin=Mathf.Sin(60*Mathf.Deg2Rad),cos=Mathf.Cos(60*Mathf.Deg2Rad);
             float keepDistance=0;
-            foreach(var tower in Map.towers)if(tower.kind=="keep")keepDistance=Mathf.Max(keepDistance,Mathf.Abs(tower.z));
+            float tacticalHalfWidth=0;
+            foreach(var tower in Map.towers)
+            {
+                if(tower.kind=="keep")keepDistance=Mathf.Max(keepDistance,Mathf.Abs(tower.z));
+                tacticalHalfWidth=Mathf.Max(tacticalHalfWidth,Mathf.Abs(tower.x)+TowerApproachClearance);
+            }
+            foreach(float gate in Map.bridges)
+                tacticalHalfWidth=Mathf.Max(tacticalHalfWidth,Mathf.Abs(gate)+Map.bridgeHalfWidth);
             float far=keepDistance*sin+KeepHealthHeight*cos+.45f;
             float near=(keepDistance+2.1f)*sin+.15f;
             float focus=(far-near)*.5f;
             float center=boardBottom+height*.5f;
             float size=(far+near)*.5f/height;
-            // Vertical framing is independent of width. Camera.aspect alone determines
-            // how much scenery appears beside the two combat lanes.
+            // Fit both lanes at the reference portrait aspect without making zoom depend on window width.
+            size=Mathf.Max(size,(tacticalHalfWidth+.1f)/ReferencePortraitAspect);
             // Keep troops at the far rear edge inside the backbuffer.
             float unitHeight=0;
             foreach(var card in Rules.cards)if(!card.IsSpell)unitHeight=Mathf.Max(unitHeight,presentation.UnitHeight(card.id));

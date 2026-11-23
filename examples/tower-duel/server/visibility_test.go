@@ -18,8 +18,10 @@ func TestSolidWallBlocksAttacksButGateAllowsThem(t *testing.T) {
 	if w.wallClear(point{0, -1}, point{0, 1}) {
 		t.Fatal("shot passed through wall")
 	}
-	if !w.wallClear(point{5, -1}, point{5, 1}) {
-		t.Fatal("open gate blocked shot")
+	for _, gate := range w.Map.Bridges {
+		if !w.wallClear(point{gate, -1}, point{gate, 1}) {
+			t.Fatal("open gate blocked shot")
+		}
 	}
 	if !w.wallClear(point{0, -1}, point{3, -1}) {
 		t.Fatal("same side shot blocked")

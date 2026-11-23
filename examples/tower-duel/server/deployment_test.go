@@ -7,7 +7,7 @@ import (
 
 func TestDestroyedEnemyTowerUnlocksOnlyItsPocket(t *testing.T) {
 	for seat := 0; seat < 2; seat++ {
-		for _, lane := range []float64{-5, 5} {
+		for _, lane := range testMap(t).Bridges {
 			t.Run(fmt.Sprintf("seat%d/lane%g", seat, lane), func(t *testing.T) {
 				w := playingMatch(t)
 				forward := 1.0

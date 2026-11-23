@@ -219,9 +219,9 @@ func (b *bot) choose(s message) (deployment, bool) {
 	if s.Seat == 1 {
 		direction = -1
 	}
-	lane := -5.0
+	side := -1.0
 	if b.plays%2 != 0 {
-		lane = 5
+		side = 1
 	}
 	var threat entity
 	for _, enemy := range s.Units {
@@ -230,7 +230,15 @@ func (b *bot) choose(s message) (deployment, bool) {
 		}
 	}
 	if threat.ID != 0 && -threat.Z*direction > -2 {
-		lane = math.Copysign(5, threat.X)
+		side = math.Copysign(1, threat.X)
+	}
+	// Read the lane centres from the tower layout in the current match.
+	lane := side * 5
+	for _, tower := range s.Towers {
+		if tower.Seat == s.Seat && tower.Kind == "tower" && tower.X*side > 0 {
+			lane = tower.X
+			break
+		}
 	}
 	for offset := 0; offset < len(s.Hand); offset++ {
 		id := s.Hand[(b.plays+offset)%len(s.Hand)]

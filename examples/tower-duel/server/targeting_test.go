@@ -6,9 +6,10 @@ import (
 	"testing"
 )
 
-func targetingFixture(t *testing.T, kind string, seat int, lane float64) (*match, *unit, *entity) {
+func targetingFixture(t *testing.T, kind string, seat int, laneIndex int) (*match, *unit, *entity) {
 	t.Helper()
 	w := playingMatch(t)
+	lane := w.Map.Bridges[laneIndex]
 	for i := range w.Towers {
 		tower := &w.Towers[i]
 		if tower.Seat == seat || tower.Kind != "tower" || tower.X != lane {
@@ -33,9 +34,9 @@ func TestTargetTowerAndNearbyDefenders(t *testing.T) {
 	for _, scenario := range []string{"behind", "front", "outside_aggro", "no_defender", "after_tower_lock"} {
 		for _, kind := range []string{"guard", "swords", "charger", "archer", "bomber", "siege"} {
 			for seat := range 2 {
-				for _, lane := range []float64{-5, 5} {
-					t.Run(fmt.Sprintf("%s/%s/seat%d/lane%g", scenario, kind, seat, lane), func(t *testing.T) {
-						w, u, tower := targetingFixture(t, kind, seat, lane)
+				for laneIndex := range 2 {
+					t.Run(fmt.Sprintf("%s/%s/seat%d/lane%d", scenario, kind, seat, laneIndex), func(t *testing.T) {
+						w, u, tower := targetingFixture(t, kind, seat, laneIndex)
 						forward := 1.0
 						if seat == 1 {
 							forward = -1
@@ -52,7 +53,7 @@ func TestTargetTowerAndNearbyDefenders(t *testing.T) {
 						if scenario != "no_defender" {
 							x, z := u.State.X, tower.Z+1.8*forward
 							if scenario == "front" {
-								x, z = lane+math.Copysign(1.5, lane), tower.Z-1.2*forward
+								x, z = tower.X+math.Copysign(1.5, tower.X), tower.Z-1.2*forward
 							} else if scenario == "outside_aggro" {
 								z = tower.Z + 6.8*forward
 							}
@@ -94,8 +95,8 @@ func TestTargetTowerAndNearbyDefenders(t *testing.T) {
 }
 
 func TestUnstartedTowerAttackYieldsToEnemy(t *testing.T) {
-	w, u, tower := targetingFixture(t, "guard", 0, -5)
-	enemy := testSoldier(201, 1, "archer", -6.5, 6.9)
+	w, u, tower := targetingFixture(t, "guard", 0, 0)
+	enemy := testSoldier(201, 1, "archer", u.State.X-1, 6.9)
 	w.Units[201] = enemy
 	if distance(position(u.State), position(enemy.State)) >= distance(position(u.State), position(*tower)) {
 		t.Fatal("fixture must put the enemy centre closer than the tower centre")
@@ -108,7 +109,7 @@ func TestUnstartedTowerAttackYieldsToEnemy(t *testing.T) {
 
 func TestTargetDeterministicTies(t *testing.T) {
 	t.Run("troop_before_unlocked_tower", func(t *testing.T) {
-		w, u, tower := targetingFixture(t, "guard", 0, -5)
+		w, u, tower := targetingFixture(t, "guard", 0, 0)
 		gap := distance(position(u.State), position(*tower)) - u.State.Radius - tower.Radius
 		enemy := testSoldier(201, 1, "archer", u.State.X-gap-2*guardRadius, u.State.Z)
 		goal, _ := w.target(u, []*unit{enemy, u})
@@ -176,7 +177,7 @@ func TestTargetApproachesEnemyBeforeAttacking(t *testing.T) {
 }
 
 func TestTargetReevaluatesBeforeFirstAttack(t *testing.T) {
-	w, u, tower := targetingFixture(t, "guard", 0, -5)
+	w, u, tower := targetingFixture(t, "guard", 0, 0)
 	u.State.Z = 4
 	enemy := testSoldier(201, 1, "archer", u.State.X, 5.6)
 	enemy.Cooldown = 10000
@@ -193,8 +194,8 @@ func TestTargetReevaluatesBeforeFirstAttack(t *testing.T) {
 }
 
 func TestTargetNearbyTowerAfterCrossLaneFight(t *testing.T) {
-	w, u, _ := targetingFixture(t, "swords", 0, -5)
-	u.LaneX = 5
+	w, u, _ := targetingFixture(t, "swords", 0, 0)
+	u.LaneX = w.Map.Bridges[1]
 	enemy := testSoldier(201, 1, "archer", u.State.X, 9.5)
 	goal, _ := w.target(u, []*unit{u, enemy})
 	if goal.ID != enemy.State.ID {

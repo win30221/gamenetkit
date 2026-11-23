@@ -43,13 +43,13 @@ func TestSoldierKeepsAttackedTargetWithinAggro(t *testing.T) {
 func TestSoldierKeepsAttackingTowerWhenDefenderArrives(t *testing.T) {
 	w := playingMatch(t)
 	w.Rules.TowerDamage = 0
-	u := testSoldier(101, 0, "guard", -5, 5.7)
+	u := testSoldier(101, 0, "guard", w.Towers[4].X, 5.7)
 	w.Units[101] = u
 	w.step()
 	if u.LockedTarget != 5 {
 		t.Fatal("did not lock the front tower", u.State)
 	}
-	enemy := testSoldier(201, 1, "guard", -4.2, 5.7)
+	enemy := testSoldier(201, 1, "guard", u.State.X+.8, 5.7)
 	enemy.Cooldown = 10000
 	w.Units[201] = enemy
 	w.step()
@@ -65,7 +65,7 @@ func TestSoldierKeepsAttackingTowerWhenDefenderArrives(t *testing.T) {
 
 func TestFrontTowerKeepsTargetUntilDeath(t *testing.T) {
 	w := playingMatch(t)
-	a := testSoldier(201, 1, "archer", -5, -4.7)
+	a := testSoldier(201, 1, "archer", w.Towers[1].X, -4.7)
 	a.Cooldown = 10000
 	w.Units[201] = a
 	w.step()
@@ -73,7 +73,7 @@ func TestFrontTowerKeepsTargetUntilDeath(t *testing.T) {
 	if tower.Target != 201 {
 		t.Fatal("tower did not acquire first soldier", tower)
 	}
-	b := testSoldier(202, 1, "archer", -5, -5.7)
+	b := testSoldier(202, 1, "archer", w.Towers[1].X, -5.7)
 	b.Cooldown = 10000
 	w.Units[202] = b
 	w.TowerCooldown[tower.ID] = 0

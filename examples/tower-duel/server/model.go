@@ -74,7 +74,8 @@ func loadMap(path string) (mapDefinition, error) {
 	if err = json.Unmarshal(data, &m); err != nil {
 		return m, err
 	}
-	if (m.ID != "twinbridge-1" && m.ID != "wall-gates-1") || m.Width != 20 || m.Length != 30 || len(m.Bridges) != 2 || len(m.Towers) != 6 {
+	if (m.ID != "twinbridge-1" && m.ID != "wall-gates-1") ||
+		(m.Width != 20 && (m.ID != "wall-gates-1" || m.Width != 21)) || m.Length != 30 || len(m.Bridges) != 2 || len(m.Towers) != 6 {
 		return m, errors.New("unsupported map")
 	}
 	if m.DeploymentCellSize != 1 || m.PocketDepth != 4 {

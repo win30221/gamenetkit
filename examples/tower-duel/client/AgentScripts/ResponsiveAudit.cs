@@ -58,7 +58,8 @@ public static class ResponsiveAudit
         // Width changes the visible side margins. Castles, labels and bridge approaches
         // must stay visible without changing vertical framing to fit outer grass.
         bool fullFieldInCanvas=true;
-        foreach(float x in new[]{-9.68f,9.68f})foreach(float z in new[]{-14.68f,14.68f})
+        float fieldHalfWidth=client.Map.width/2-.32f,fieldHalfLength=client.Map.length/2-.32f;
+        foreach(float x in new[]{-fieldHalfWidth,fieldHalfWidth})foreach(float z in new[]{-fieldHalfLength,fieldHalfLength})
         {
             var p=client.Camera.WorldToViewportPoint(new Vector3(x,0,z));
             fullFieldInCanvas&=p.x>=0&&p.x<=1&&p.y>=0&&p.y<=1;
@@ -66,7 +67,7 @@ public static class ResponsiveAudit
         float tacticalMin=1,tacticalMax=0;
         foreach(var tower in client.Map.towers)
         {
-            foreach(float x in new[]{tower.x-1.7f,tower.x+1.7f})
+            foreach(float x in new[]{tower.x-TowerDuelClient.TowerApproachClearance,tower.x+TowerDuelClient.TowerApproachClearance})
             {
                 var edge=client.Camera.WorldToViewportPoint(new Vector3(x,0,tower.z));
                 if(edge.x<0||edge.x>1)throw new Exception("Castle approach outside horizontal view");

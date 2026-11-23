@@ -4,10 +4,16 @@ import "testing"
 
 func TestWallBlocksExceptGatesAndAllowsAmbushDeployment(t *testing.T) {
 	w := playingMatch(t)
-	if w.walkable(point{0, 0}) || w.walkable(point{3, 0}) {
+	leftGate, rightGate := w.Map.Bridges[0], w.Map.Bridges[1]
+	gateHalf, halfWidth := w.Map.BridgeHalfWidth, w.Map.Width/2
+	if rightGate-leftGate-2*gateHalf != 10 || halfWidth+leftGate-gateHalf != 2.5 ||
+		halfWidth-rightGate-gateHalf != 2.5 {
+		t.Fatal("expected ten central cells and two equal outer wall spans")
+	}
+	if w.walkable(point{0, 0}) || w.walkable(point{4.9, 0}) || w.walkable(point{9, 0}) {
 		t.Fatal("walked through wall")
 	}
-	for _, x := range []float64{-5, 5} {
+	for _, x := range w.Map.Bridges {
 		if !w.walkable(point{x, 0}) {
 			t.Fatal("gate blocked", x)
 		}
@@ -16,6 +22,11 @@ func TestWallBlocksExceptGatesAndAllowsAmbushDeployment(t *testing.T) {
 		z := -1.5
 		if seat == 1 {
 			z = 1.5
+		}
+		for _, x := range []float64{-10, 10} {
+			if !w.deploymentPoint(seat, point{x, z}) {
+				t.Fatal("outermost cell must accept a guard", seat, x)
+			}
 		}
 		if !w.deploymentPoint(seat, point{0, z}) {
 			t.Fatal("cannot deploy beside own wall", seat)

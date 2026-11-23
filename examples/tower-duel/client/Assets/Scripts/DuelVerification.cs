@@ -59,7 +59,8 @@ namespace TowerDuel
         {
             report.frames++;
             report.uiWidth=ui.resolvedStyle.width;report.uiHeight=ui.resolvedStyle.height;
-            report.wholeFieldVisible=true;foreach(float x in new[]{-9.68f,9.68f})foreach(float z in new[]{-14.68f,14.68f}){var p=client.Camera.WorldToViewportPoint(new Vector3(x,0,z));if(p.x<0||p.x>1||p.y<client.BoardBottom||p.y>1-client.BoardTop)report.wholeFieldVisible=false;}
+            float fieldHalfWidth=client.Map.width/2-.32f,fieldHalfLength=client.Map.length/2-.32f;
+            report.wholeFieldVisible=true;foreach(float x in new[]{-fieldHalfWidth,fieldHalfWidth})foreach(float z in new[]{-fieldHalfLength,fieldHalfLength}){var p=client.Camera.WorldToViewportPoint(new Vector3(x,0,z));if(p.x<0||p.x>1||p.y<client.BoardBottom||p.y>1-client.BoardTop)report.wholeFieldVisible=false;}
             report.tacticalContentVisible=CombatViewVisible();
             ui.Query<Label>(className:"health-amount").ForEach(label=>{if(label.text.Contains(" / "))report.numericHealth=true;});
             ui.Query<VisualElement>(className:"energy-pip-fill").ForEach(fill=>{
@@ -133,10 +134,11 @@ namespace TowerDuel
                     string card=client.Rules.cards[client.Session.Accepted%8].id;
                     if(client.Session.InHand(card)&&state.energy>=client.Rules.Find(card).cost)
                     {
-                    float x=card=="swords"?-5:-5+(report.accepted%2==0?-.38f:.38f);
+                    float lane=client.Map.bridges[0];
+                    float x=card=="swords"?lane:lane+(report.accepted%2==0?-.38f:.38f);
                     float z=card=="archer"||card=="bomber"?4.2f:3.2f;
                     var position=new Vector3(x,0,state.seat==0?-z:z);
-                    if(client.Rules.Find(card).IsSpell){position=new Vector3(-5,0,state.seat==0?7.7f:-7.7f);foreach(var unit in state.units)if(unit.seat!=state.seat){position=unit.Position;break;}}
+                    if(client.Rules.Find(card).IsSpell){position=new Vector3(lane,0,state.seat==0?7.7f:-7.7f);foreach(var unit in state.units)if(unit.seat!=state.seat){position=unit.Position;break;}}
                     DeployThroughUI(position,card);
                     nextDeploy = DuelSession.Now + .4;
                     }
@@ -161,13 +163,15 @@ namespace TowerDuel
         {
             foreach(var tower in client.Map.towers)
             {
-                foreach(float x in new[]{tower.x-1.7f,tower.x+1.7f})
+                foreach(float x in new[]{tower.x-TowerDuelClient.TowerApproachClearance,tower.x+TowerDuelClient.TowerApproachClearance})
                     if(!InCombatView(new Vector3(x,0,tower.z)))return false;
                 if(!InCombatView(new Vector3(tower.x,tower.kind=="keep"?TowerDuelClient.KeepHealthHeight:client.Map.HasWall?7.4f:3.9f,tower.z)))return false;
                 if(tower.kind=="keep"&&!InCombatView(new Vector3(tower.x,0,tower.z+Mathf.Sign(tower.z)*2.1f)))return false;
             }
-            foreach(float bridge in client.Map.bridges)foreach(float z in new[]{-2.5f,2.5f})
-                if(!InCombatView(new Vector3(bridge,0,z)))return false;
+            foreach(float gate in client.Map.bridges)
+                foreach(float edge in new[]{gate-client.Map.bridgeHalfWidth,gate+client.Map.bridgeHalfWidth})
+                    foreach(float z in new[]{-2.5f,2.5f})
+                        if(!InCombatView(new Vector3(edge,0,z)))return false;
             return true;
         }
         private bool InCombatView(Vector3 point)

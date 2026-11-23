@@ -90,6 +90,13 @@ namespace TowerDuel.Editor
             using(var f=new Fixture())
             {
                 Require(f.Map.HasWall&&f.Map.id=="wall-gates-1","Canonical wall map was not imported");
+                float halfWidth=f.Map.width/2;
+                float gateHalf=f.Map.bridgeHalfWidth;
+                Require(f.Map.width==21&&f.Map.bridges[1]-f.Map.bridges[0]-2*gateHalf==10&&
+                        f.Map.bridges[0]-gateHalf+halfWidth==2.5f&&halfWidth-f.Map.bridges[1]-gateHalf==2.5f,
+                        "Expected ten central cells and two equal outer wall spans");
+                foreach(var tower in f.Map.towers)
+                    if(tower.kind=="tower")Require(tower.x==f.Map.bridges[tower.x<0?0:1],"Front tower must line up with its gate");
                 var root=new GameObject("Fixed battlefield regression");DuelPresentation presentation=null;
                 GameObject temporaryCamera=null;var camera=Camera.main;
                 if(!camera){temporaryCamera=new GameObject("Environment test camera");camera=temporaryCamera.AddComponent<Camera>();temporaryCamera.tag="MainCamera";}
@@ -126,7 +133,8 @@ namespace TowerDuel.Editor
                                 Mathf.Abs(bounds.size.z-f.Map.length)<.001f,
                                 "Side wall must span the outside edge without taking deployable space");
                     }
-                    int wallFaces=0,wallTops=0,wallShadows=0;
+                    int wallFaces=0,wallShadows=0;
+                    float wallTopWidth=0;
                     foreach(var wall in presentation.Environment.Root.GetComponentsInChildren<SpriteRenderer>())
                     {
                         if(wall.name=="Castle wall face")
@@ -137,11 +145,11 @@ namespace TowerDuel.Editor
                         }
                         else if(wall.name=="Castle wall top")
                         {
-                            wallTops++;
+                            wallTopWidth+=wall.bounds.size.x;
                             Require(Mathf.Abs(wall.bounds.size.z-f.Map.wallHalfWidth*2)<.001f,
                                     "Wall top must span the full wall thickness");
                             foreach(float gate in f.Map.bridges)
-                                Require(gate<=wall.bounds.min.x||gate>=wall.bounds.max.x,
+                                Require(gate+gateHalf<=wall.bounds.min.x+.001f||gate-gateHalf>=wall.bounds.max.x-.001f,
                                         "Solid wall top must not cover a gate");
                         }
                         Require(wall.name!="Gate lintel art"&&wall.name!="Open gate face",
@@ -155,7 +163,8 @@ namespace TowerDuel.Editor
                                         "Wall shadows must leave both gates clear");
                         }
                     }
-                    Require(wallFaces==6&&wallTops==3,"Expected paired wall faces, three tops and two open gates");
+                    Require(wallFaces==6&&Mathf.Abs(wallTopWidth-(f.Map.width-4*gateHalf))<.001f,
+                            "Expected paired wall faces and masonry tops spanning all three solid sections");
                     Require(wallShadows==5,"Three wall sections and two side walls must cast shadows");
 
                     Require(presentation.Environment.Root.GetComponentsInChildren<MeshRenderer>().Length==0,
@@ -166,6 +175,9 @@ namespace TowerDuel.Editor
                     camera.transform.rotation=rotation;
                     var cameraPosition=camera.transform.position;
                     var ground=presentation.Environment.Root.Find("Ground");
+                    var groundBounds=ground.GetComponent<SpriteRenderer>().bounds;
+                    Require(Mathf.Abs(groundBounds.size.x-f.Map.width)<.001f&&Mathf.Abs(groundBounds.size.z-f.Map.length)<.001f,
+                            "Ground art must cover the entire playable map");
                     var groundRotation=ground.rotation;
                     var groundPosition=ground.position;
                     for(int seat=0;seat<2;seat++)
@@ -183,11 +195,11 @@ namespace TowerDuel.Editor
                         }
                     }
                     var state=f.State(100,"welcome");
-                    state.seat=1;state.units[0].seat=1;state.units[0].x=5;state.units[0].z=4;
+                    state.seat=1;state.units[0].seat=1;state.units[0].x=f.Map.bridges[1];state.units[0].z=4;
                     f.Deliver(state);presentation.Update(f.Session);
-                    var nearPoint=new Vector3(5,0,-4);
+                    var nearPoint=new Vector3(f.Map.bridges[1],0,-4);
                     var serverPoint=DuelPresentation.MirrorDepth(nearPoint,state.seat);
-                    Require(serverPoint==new Vector3(5,0,4)&&DuelPresentation.MirrorDepth(serverPoint,state.seat)==nearPoint&&
+                    Require(serverPoint==new Vector3(f.Map.bridges[1],0,4)&&DuelPresentation.MirrorDepth(serverPoint,state.seat)==nearPoint&&
                             f.Map.CanDeploy(state.seat,serverPoint,state,f.Rules.Find("guard")),
                             "Seat one must deploy to its authoritative half in the same lane");
                     var unit=root.transform.Find("Battle visuals/guard 100");
@@ -285,27 +297,27 @@ namespace TowerDuel.Editor
                     Require(Mathf.Abs(p.x-targetX)<.001f&&Mathf.Abs(p.z-targetZ*forward)<.001f,"Wrong nearest destination for "+card.id+": "+p);
                     Require(f.Map.CanDeploy(seat,p,state,card),"Nearest destination contains an illegal formation member.");
                 }
-                Expect(-4.2f,-3.8f,guard,-4.5f,-3.5f);
-                Expect(-4.2f,.2f,guard,-4.5f,home);
-                Expect(-4.2f,3.2f,guard,-4.5f,home);
-                Expect(-5.2f,-7.7f,guard,-6.5f,-7.5f);
-                Expect(30,-3.2f,guard,9.5f,-3.5f);
-                Expect(30,-3.2f,squad,8.5f,-3.5f);
-                Expect(-4.2f,-1.7f,squad,-4.5f,Mathf.Min(-1.5f,home));
+                Expect(-4.2f,-3.8f,guard,-4f,-3.5f);
+                Expect(-4.2f,.2f,guard,-4f,home);
+                Expect(-4.2f,3.2f,guard,-4f,home);
+                Expect(-6.7f,-7.7f,guard,-8f,-7.5f);
+                Expect(30,-3.2f,guard,10f,-3.5f);
+                Expect(30,-3.2f,squad,9f,-3.5f);
+                Expect(-4.2f,-1.7f,squad,-4f,Mathf.Min(-1.5f,home));
                 foreach(var tower in state.towers)if(tower.seat==seat&&tower.kind=="tower"&&tower.x<0)tower.hp=0;
-                Expect(-4.2f,3.2f,guard,-4.5f,home);
+                Expect(-4.2f,3.2f,guard,-4f,home);
                 foreach(var tower in state.towers)if(tower.seat!=seat&&tower.kind=="tower"&&tower.x<0)tower.hp=0;
-                Expect(-4.2f,3.2f,guard,-4.5f,3.5f);
-                Expect(4.2f,3.2f,guard,f.Map.HasWall?4.5f:-.5f,f.Map.HasWall?home:3.5f);
-                Expect(-4.2f,5.4f,squad,-4.5f,f.Map.HasWall?3.5f:4.5f);
+                Expect(-4.2f,3.2f,guard,-4f,3.5f);
+                Expect(4.2f,3.2f,guard,f.Map.HasWall?4f:-.5f,f.Map.HasWall?home:3.5f);
+                Expect(-4.2f,5.4f,squad,-4f,f.Map.HasWall?3.5f:4.5f);
                 state=f.State(102);state.seat=seat;
-                Expect(-4.2f,3.2f,guard,-4.5f,home);
+                Expect(-4.2f,3.2f,guard,-4f,home);
                 Expect(-4.24f,3.16f,spell,-4.24f,3.16f);
-                Expect(30,40,spell,10,15);
+                Expect(30,40,spell,10.5f,15);
                 state.energy=0;
-                Expect(-4.2f,.2f,guard,-4.5f,home);
+                Expect(-4.2f,.2f,guard,-4f,home);
                 f.Deliver(state);
-                Require(!f.Session.Deploy(new Vector3(-4.5f,0,-2.5f*forward)),"Nearest destination bypassed the energy check.");
+                Require(!f.Session.Deploy(new Vector3(-4f,0,-2.5f*forward)),"Nearest destination bypassed the energy check.");
                 Require(!f.Map.TryNearestDeployment(seat,new Vector3(float.NaN,0,0),state,guard,out _),"Nonfinite aim resolved to a cell.");
                 Require(!f.Map.TryNearestDeployment(seat,new Vector3(0,0,float.PositiveInfinity),state,spell,out _),"Nonfinite spell aim resolved to a point.");
                 var blocked=new DuelMap{width=1,length=1,deploymentCellSize=1,riverHalfWidth=1.5f};

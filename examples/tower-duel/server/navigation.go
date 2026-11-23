@@ -105,17 +105,20 @@ func (w *match) route(from, to point, stopDistance, laneX float64, mover *unit, 
 			}
 		}
 	}
-	const cols = 41
-	const rows = 61
+	const step = .5
+	halfWidth, halfLength := w.Map.Width/2, w.Map.Length/2
+	cols, rows := int(w.Map.Width/step)+1, int(w.Map.Length/step)+1
 	index := func(p point) int {
-		x := int(math.Round((p.X + 10) * 2))
-		z := int(math.Round((p.Z + 15) * 2))
+		x := int(math.Round((p.X + halfWidth) / step))
+		z := int(math.Round((p.Z + halfLength) / step))
 		x = max(0, min(cols-1, x))
 		z = max(0, min(rows-1, z))
 		return z*cols + x
 	}
-	coord := func(id int) point { return point{float64(id%cols)*.5 - 10, float64(id/cols)*.5 - 15} }
-	var occupied [cols * rows]bool
+	coord := func(id int) point {
+		return point{float64(id%cols)*step - halfWidth, float64(id/cols)*step - halfLength}
+	}
+	occupied := make([]bool, cols*rows)
 	for _, other := range units {
 		if other == mover || other.State.Airborne != mover.State.Airborne || other.State.HP <= 0 || other.State.Seat == mover.State.Seat {
 			continue

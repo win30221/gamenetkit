@@ -61,7 +61,8 @@ func TestWalkingSoldierPushesAlly(t *testing.T) {
 
 func TestOpposingSoldiersAlsoSeparate(t *testing.T) {
 	w := playingMatch(t)
-	a, b := testSoldier(101, 0, "guard", 5, 0), testSoldier(201, 1, "guard", 5, .1)
+	gate := w.Map.Bridges[1]
+	a, b := testSoldier(101, 0, "guard", gate, 0), testSoldier(201, 1, "guard", gate, .1)
 	w.resolvePush([]*unit{a, b})
 	if distance(position(a.State), position(b.State)) < a.State.Radius+b.State.Radius-.002 || !w.walkableFor(position(a.State), a.State.Radius, a.State.Airborne) || !w.walkable(position(b.State)) {
 		t.Fatal("opponents did not collide", a.State, b.State)

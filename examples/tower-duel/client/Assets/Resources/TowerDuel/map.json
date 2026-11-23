@@ -1,6 +1,6 @@
 {
   "id": "wall-gates-1",
-  "width": 20,
+  "width": 21,
   "length": 30,
   "riverHalfWidth": 0,
   "wallHalfWidth": 0.5,
@@ -9,8 +9,8 @@
   "deploymentCellSize": 1,
   "pocketDepth": 4,
   "bridges": [
-    -5,
-    5
+    -6.5,
+    6.5
   ],
   "towers": [
     {
@@ -25,7 +25,7 @@
       "id": 2,
       "seat": 0,
       "kind": "tower",
-      "x": -5,
+      "x": -6.5,
       "z": -7.7,
       "radius": 1.05
     },
@@ -33,7 +33,7 @@
       "id": 3,
       "seat": 0,
       "kind": "tower",
-      "x": 5,
+      "x": 6.5,
       "z": -7.7,
       "radius": 1.05
     },
@@ -49,7 +49,7 @@
       "id": 5,
       "seat": 1,
       "kind": "tower",
-      "x": -5,
+      "x": -6.5,
       "z": 7.7,
       "radius": 1.05
     },
@@ -57,7 +57,7 @@
       "id": 6,
       "seat": 1,
       "kind": "tower",
-      "x": 5,
+      "x": 6.5,
       "z": 7.7,
       "radius": 1.05
     }

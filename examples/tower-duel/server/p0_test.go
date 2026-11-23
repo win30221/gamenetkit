@@ -135,9 +135,10 @@ func TestBomberSplashChargerAndSiege(t *testing.T) {
 		t.Fatal("charge not consumed exactly once")
 	}
 	w = playingMatch(t)
-	siege := &unit{State: entity{ID: 200, Seat: 0, Kind: "siege", X: -5, Z: -3, HP: 380, Radius: guardRadius}, LaneX: -5}
+	lane := w.Map.Bridges[0]
+	siege := &unit{State: entity{ID: 200, Seat: 0, Kind: "siege", X: lane, Z: -3, HP: 380, Radius: guardRadius}, LaneX: lane}
 	w.Units[200] = siege
-	w.Units[201] = &unit{State: entity{ID: 201, Seat: 1, Kind: "guard", X: -5, Z: -2.2, HP: 220}}
+	w.Units[201] = &unit{State: entity{ID: 201, Seat: 1, Kind: "guard", X: lane, Z: -2.2, HP: 220}}
 	target, ok := w.target(siege, w.sortedUnits())
 	if !ok || target.Kind != "tower" {
 		t.Fatal("siege targeted soldier", target)
