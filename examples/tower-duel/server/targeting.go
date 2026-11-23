@@ -45,56 +45,30 @@ func (w *match) buildingObjective(u *unit) entity {
 	if chosen.ID == 0 {
 		chosen = keep
 	}
-	// A building already in attack range is still a valid immediate objective
-	// after a fight has pulled the unit away from its deployment lane.
-	attackRange := w.Rules.ByID[u.State.Kind].Range
-	for _, tower := range w.Towers {
-		if tower.Seat != u.State.Seat && tower.HP > 0 && contactDistance(u.State, tower) <= attackRange && nearerTarget(u.State, tower, chosen) {
-			chosen = tower
-		}
-	}
+
 	return chosen
 }
 
 func (w *match) target(u *unit, units []*unit) (entity, bool) {
 	definition := w.Rules.ByID[u.State.Kind]
-	for _, tower := range w.Towers {
-		if tower.ID == u.LockedTarget && definition.canTarget(u.State, tower) {
-			return tower, true
-		}
-	}
-	building := w.buildingObjective(u)
-	from := position(u.State)
-	forward := 1.0
-	if u.State.Seat == 1 {
-		forward = -1
-	}
-	approaching := building.ID != 0 && (building.Z-from.Z)*forward > 0
-	buildingInReach := approaching && contactDistance(u.State, building) <= definition.Range &&
-		w.attackLine(u.State, building, from, position(building))
 	var nearest entity
+	consider := func(candidate entity) {
+		if definition.canTarget(u.State, candidate) && contactDistance(u.State, candidate) <= definition.Aggro &&
+			nearerTarget(u.State, candidate, nearest) {
+			nearest = candidate
+		}
+	}
+	for _, tower := range w.Towers {
+		consider(tower)
+	}
 	for _, enemy := range units {
-		state := enemy.State
-		if !definition.canTarget(u.State, state) || distance(position(u.State), position(state)) > definition.Aggro {
-			continue
-		}
-		if state.ID == u.LockedTarget {
-			return state, true
-		}
-		// A defender level with or behind the objective can be fought in place,
-		// but should not draw an approaching attacker around the building.
-		if approaching && (state.Z-building.Z)*forward >= 0 &&
-			(buildingInReach || contactDistance(u.State, state) > definition.Range ||
-				!w.attackLine(u.State, state, from, position(state))) {
-			continue
-		}
-		if nearerTarget(u.State, state, nearest) {
-			nearest = state
-		}
+		consider(enemy.State)
 	}
-	u.LockedTarget = 0
-	if nearest.ID != 0 {
-		return nearest, true
+	if nearest.ID == 0 {
+		nearest = w.buildingObjective(u)
 	}
-	return building, building.ID != 0
+	if u.LockedTarget != nearest.ID {
+		u.LockedTarget = 0
+	}
+	return nearest, nearest.ID != 0
 }

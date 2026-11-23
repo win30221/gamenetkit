@@ -86,7 +86,7 @@ func TestSquadSharesLaneAtCentreLine(t *testing.T) {
 	}
 }
 
-func TestUnitReturnsToObjectiveAfterOtherBridgeFight(t *testing.T) {
+func TestUnitFinishesOtherBridgeCrossingAndAttacksNearestTower(t *testing.T) {
 	for seat := range 2 {
 		w := playingMatch(t)
 		w.Rules.TowerDamage = 0
@@ -95,12 +95,19 @@ func TestUnitReturnsToObjectiveAfterOtherBridgeFight(t *testing.T) {
 			x, lane = -x, -lane
 		}
 		w.Units[101] = &unit{State: entity{ID: 101, Seat: seat, Kind: "guard", X: x, Z: 0, Radius: guardRadius, HP: 220, MaxHP: 220}, LaneX: lane}
-		for range 20 * tickRate {
-			w.step()
+		var nearestTower uint64
+		for _, tower := range w.Towers {
+			if tower.Seat != seat && tower.Kind == "tower" && tower.X == x {
+				nearestTower = tower.ID
+				break
+			}
 		}
 		u := w.Units[101]
-		if u.State.AttackTick == 0 || u.State.X*lane <= 0 || u.LaneX != lane {
-			t.Fatalf("unit became trapped after combat on another bridge: %+v", u)
+		for i := 0; i < 20*tickRate && u.State.HitTick == 0; i++ {
+			w.step()
+		}
+		if nearestTower == 0 || u.State.HitTarget != nearestTower || u.LaneX != lane {
+			t.Fatalf("unit did not finish crossing and attack the closest tower: %+v", u)
 		}
 	}
 }

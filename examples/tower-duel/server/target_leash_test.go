@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"testing"
 )
 
@@ -43,8 +42,8 @@ func TestSoldierDropsEscapedTarget(t *testing.T) {
 								t.Fatal("enemy still inside aggro was not pursued", u)
 							}
 						}
-						old.State.X, old.State.Z = u.State.X+card.Aggro+.01, u.State.Z
-						outside := testSoldier(203, 1-seat, "guard", u.State.X-card.Aggro-.1, u.State.Z)
+						old.State.X, old.State.Z = u.State.X+card.Aggro+2*guardRadius+.01, u.State.Z
+						outside := testSoldier(203, 1-seat, "guard", u.State.X-card.Aggro-2*guardRadius-.1, u.State.Z)
 						outside.Cooldown = 10000
 						w.Units[203] = outside
 						objective := w.buildingObjective(u)
@@ -90,11 +89,11 @@ func TestLockedEnemyAggroBoundary(t *testing.T) {
 			t.Run(kind+"/"+offset, func(t *testing.T) {
 				w := playingMatch(t)
 				u := testSoldier(101, 0, kind, 0, -5)
-				d := w.Rules.ByID[kind].Aggro
+				d := w.Rules.ByID[kind].Aggro + 2*guardRadius
 				if offset == "inside" {
-					d = math.Nextafter(d, 0)
+					d = d - 1e-6
 				} else if offset == "outside" {
-					d = math.Nextafter(d, math.Inf(1))
+					d = d + 1e-6
 				}
 				enemy := testSoldier(201, 1, "guard", d, -5)
 				u.LockedTarget = enemy.State.ID

@@ -56,7 +56,7 @@ func TestTargetTowerAndNearbyDefenders(t *testing.T) {
 						if scenario != "no_defender" {
 							x, z := u.State.X, tower.Z+1.8*forward
 							if scenario == "front" {
-								x, z = tower.X+math.Copysign(1.5, tower.X), tower.Z-1.2*forward
+								x, z = u.State.X, tower.Z-2.7*forward
 							} else if scenario == "beside" {
 								x, z = tower.X+math.Copysign(2, tower.X), tower.Z
 							} else if scenario == "outside_aggro" {
@@ -99,7 +99,7 @@ func TestTargetTowerAndNearbyDefenders(t *testing.T) {
 	}
 }
 
-func TestUnstartedTowerAttackYieldsToEnemy(t *testing.T) {
+func TestCloserTowerFootprintWinsOverEnemyCentre(t *testing.T) {
 	w, u, tower := targetingFixture(t, "guard", 0, 0)
 	enemy := testSoldier(201, 1, "archer", u.State.X-1, 6.9)
 	w.Units[201] = enemy
@@ -107,19 +107,19 @@ func TestUnstartedTowerAttackYieldsToEnemy(t *testing.T) {
 		t.Fatal("fixture must put the enemy centre closer than the tower centre")
 	}
 	goal, _ := w.target(u, w.sortedUnits())
-	if goal.ID != enemy.State.ID {
-		t.Fatalf("nearer tower took priority over detected enemy: %+v", goal)
+	if goal.ID != tower.ID {
+		t.Fatalf("target with a closer collision edge should win: %+v", goal)
 	}
 }
 
 func TestTargetDeterministicTies(t *testing.T) {
-	t.Run("troop_before_unlocked_tower", func(t *testing.T) {
+	t.Run("tower_on_equal_distance", func(t *testing.T) {
 		w, u, tower := targetingFixture(t, "guard", 0, 0)
 		gap := distance(position(u.State), position(*tower)) - u.State.Radius - tower.Radius
 		enemy := testSoldier(201, 1, "archer", u.State.X-gap-2*guardRadius, u.State.Z)
 		goal, _ := w.target(u, []*unit{enemy, u})
-		if goal.ID != enemy.State.ID {
-			t.Fatal("unlocked tower should yield to the enemy", goal)
+		if goal.ID != tower.ID {
+			t.Fatal("tower should win an exact edge-distance tie", goal)
 		}
 	})
 	t.Run("nearest_troop_then_id", func(t *testing.T) {
@@ -146,8 +146,8 @@ func TestTargetAggroAcrossWall(t *testing.T) {
 		x, z, uz   float64
 		wantEnemy  bool
 	}{
-		{"aggro_boundary", "guard", 4.2, -5, -5, true},
-		{"outside_aggro", "guard", 4.2001, -5, -5, false},
+		{"aggro_boundary", "guard", 4.84, -5, -5, true},
+		{"outside_aggro", "guard", 4.8401, -5, -5, false},
 		{"melee_across_wall", "guard", 0, .9, -.9, true},
 		{"ranged_across_wall", "archer", 0, .8, -.8, true},
 	} {
@@ -201,13 +201,13 @@ func TestTargetReevaluatesBeforeFirstAttack(t *testing.T) {
 func TestTargetNearbyTowerAfterCrossLaneFight(t *testing.T) {
 	w, u, _ := targetingFixture(t, "swords", 0, 0)
 	u.LaneX = w.Map.Bridges[1]
-	enemy := testSoldier(201, 1, "archer", u.State.X, 4.5)
+	enemy := testSoldier(201, 1, "archer", u.State.X, 5.0)
 	goal, _ := w.target(u, []*unit{u, enemy})
 	if goal.ID != enemy.State.ID {
 		t.Fatal("nearby enemy should take priority while unlocked", goal)
 	}
 	goal, _ = w.target(u, []*unit{u})
-	if goal.Kind != "tower" || goal.X != u.LaneX {
-		t.Fatal("without a local fight, the deployment lane must remain the objective", goal)
+	if goal.Kind != "tower" || goal.X != w.Map.Bridges[0] {
+		t.Fatal("the nearby tower should take priority after a cross-lane fight", goal)
 	}
 }

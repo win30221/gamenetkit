@@ -6,7 +6,7 @@ func testSoldier(id uint64, seat int, kind string, x, z float64) *unit {
 	return &unit{State: entity{ID: id, Seat: seat, Kind: kind, X: x, Z: z, Radius: guardRadius, HP: 10000, MaxHP: 10000}}
 }
 
-func TestSoldierKeepsAttackedTargetWithinAggro(t *testing.T) {
+func TestSoldierSwitchesToCloserEnemyDuringWindup(t *testing.T) {
 	for _, kind := range []string{"guard", "archer", "swords", "bomber", "charger"} {
 		t.Run(kind, func(t *testing.T) {
 			w := playingMatch(t)
@@ -23,24 +23,20 @@ func TestSoldierKeepsAttackedTargetWithinAggro(t *testing.T) {
 			closer.Cooldown = 10000
 			w.Units[202] = closer
 			w.step()
-			if u.State.Target != 201 || closer.State.HP != 10000 {
-				t.Fatal("switched to the closer enemy", u.State)
+			if u.State.Target != 202 || u.LockedTarget != 0 || u.WindupTarget != 0 {
+				t.Fatal("closer enemy did not replace the previous target and cancel its windup", u.State)
 			}
-			old.State.X, old.State.Z = w.Rules.ByID[kind].Aggro-.1, u.State.Z
-			w.step()
-			if u.State.Target != 201 {
-				t.Fatal("dropped living target still inside aggro range", u.State)
+			for range w.Rules.ByID[kind].WindupTicks {
+				w.step()
 			}
-			delete(w.Units, 201)
-			w.step()
-			if u.State.Target != 202 {
-				t.Fatal("did not acquire a new enemy after death", u.State)
+			if old.State.HP != 10000 || closer.State.HP != 10000 || u.State.HitTick != 0 {
+				t.Fatal("cancelled windup should not damage either target", u.State)
 			}
 		})
 	}
 }
 
-func TestSoldierKeepsAttackingTowerWhenDefenderArrives(t *testing.T) {
+func TestSoldierSwitchesFromTowerToCloserDefender(t *testing.T) {
 	w := playingMatch(t)
 	w.Rules.TowerDamage = 0
 	u := testSoldier(101, 0, "guard", w.Towers[4].X, 5.7)
@@ -53,17 +49,17 @@ func TestSoldierKeepsAttackingTowerWhenDefenderArrives(t *testing.T) {
 	enemy.Cooldown = 10000
 	w.Units[201] = enemy
 	w.step()
-	if u.State.Target != 5 {
-		t.Fatal("defender pulled attacker off its tower", u.State)
+	if u.State.Target != 201 || u.WindupTarget != 0 {
+		t.Fatal("closer defender did not replace the tower target", u.State)
 	}
-	w.Towers[4].HP = 0
+	delete(w.Units, 201)
 	w.step()
-	if u.State.Target != 201 {
-		t.Fatal("did not retarget after the tower fell", u.State)
+	if u.State.Target != 5 {
+		t.Fatal("did not reacquire the nearest tower", u.State)
 	}
 }
 
-func TestFrontTowerKeepsTargetUntilDeath(t *testing.T) {
+func TestFrontTowerShootsNearestEnemyInRange(t *testing.T) {
 	w := playingMatch(t)
 	a := testSoldier(201, 1, "archer", w.Towers[1].X, -4.7)
 	a.Cooldown = 10000
@@ -78,20 +74,14 @@ func TestFrontTowerKeepsTargetUntilDeath(t *testing.T) {
 	w.Units[202] = b
 	w.TowerCooldown[tower.ID] = 0
 	w.step()
-	if tower.Target != 201 {
-		t.Fatal("tower switched to closer soldier", tower)
-	}
-	a.State.X, a.State.Z = 8, 6
-	w.TowerCooldown[tower.ID] = 0
-	tick := tower.AttackTick
-	w.step()
-	if tower.Target != 201 || tower.AttackTick != tick {
-		t.Fatal("tower changed a living out-of-range lock", tower)
-	}
-	delete(w.Units, 201)
-	w.step()
 	if tower.Target != 202 {
-		t.Fatal("tower failed to acquire after target death", tower)
+		t.Fatal("tower did not switch to the closer soldier", tower)
+	}
+	b.State.X, b.State.Z = 8, 6
+	w.TowerCooldown[tower.ID] = 0
+	w.step()
+	if tower.Target != 201 || tower.AttackTick != w.Tick {
+		t.Fatal("tower did not fire at the remaining enemy in range", tower)
 	}
 }
 

@@ -159,34 +159,20 @@ func (w *match) step() {
 		if t.Kind == "keep" {
 			attackRange = w.Rules.KeepRange
 		}
-		reach := attackRange + t.Radius
-		best := math.Inf(1)
-		var target *unit
+		var target entity
 		for _, u := range units {
-			if u.State.ID == t.Target && u.State.HP > 0 && u.State.Seat != t.Seat {
-				target = u
-				break
+			enemy := u.State
+			if enemy.Seat != t.Seat && enemy.HP > 0 && contactDistance(*t, enemy) <= attackRange &&
+				nearerTarget(*t, enemy, target) {
+				target = enemy
 			}
 		}
-		if target == nil {
-			t.Target = 0
-			for _, u := range units {
-				if u.State.Seat == t.Seat || u.State.HP <= 0 {
-					continue
-				}
-				d := distance(position(*t), position(u.State))
-				if d <= reach+u.State.Radius && d < best {
-					best = d
-					target = u
-				}
-			}
-		}
-		if target != nil && distance(position(*t), position(target.State)) <= reach+target.State.Radius {
-			damage[target.State.ID] += w.Rules.TowerDamage
+		t.Target = target.ID
+		if target.ID != 0 {
+			damage[target.ID] += w.Rules.TowerDamage
 			w.TowerCooldown[t.ID] = w.Rules.TowerCooldownTicks
 			w.TowerProgress[t.ID] = 0
 			t.AttackTick = w.Tick
-			t.Target = target.State.ID
 		}
 	}
 	// Completed attacks on the same tick resolve together. Unfinished windups

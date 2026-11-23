@@ -402,7 +402,10 @@ func (w *match) move(u *unit, goal entity, units []*unit) {
 		return
 	}
 	lane := 0.0
-	if goal.Kind == "tower" || goal.Kind == "keep" {
+	switch goal.Kind {
+	case "tower":
+		lane = goal.X
+	case "keep":
 		lane = u.LaneX
 	}
 	changed := u.Goal != goal.ID || (w.Tick >= u.NextRoute && distance(position(goal), u.GoalPoint) > .6)
