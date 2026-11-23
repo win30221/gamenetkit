@@ -270,13 +270,26 @@ namespace TowerDuel
             dock.style.bottom=height*dockFraction-234f*scale;
             dock.style.scale=new Scale(new Vector3(scale,scale,1));
 
-            // Keep the opponent's castle clear between small corner HUD badges.
+            // The arena and card hand are height-framed. Scale the HUD from the
+            // panel height as well; never let a wider viewport enlarge its badges.
+            // Only positions change with horizontal aspect ratio.
+            const float hudReferenceHeight=900f;
+            const float leftBadgeWidth=196f, rightBadgeWidth=204f;
+            float hudScale=height/hudReferenceHeight;
+            float edgeInset=8f*hudScale;
+            bool stacked=safeWidth<(leftBadgeWidth+rightBadgeWidth+16f)*hudScale+2f*edgeInset;
             var top=root.Q("topHud");
-            top.style.top=7f+(Screen.height-appliedSafeArea.yMax)*unitsPerPixel;
-            top.style.left=8f+appliedSafeArea.xMin*unitsPerPixel;
-            top.style.right=8f+(Screen.width-appliedSafeArea.xMax)*unitsPerPixel;
-            top.EnableInClassList("hud-compact",safeWidth<560f);
-            top.EnableInClassList("hud-tiny",safeWidth<270f);
+            top.style.top=7f*hudScale+(Screen.height-appliedSafeArea.yMax)*unitsPerPixel;
+            top.style.left=edgeInset+appliedSafeArea.xMin*unitsPerPixel;
+            top.style.right=edgeInset+(Screen.width-appliedSafeArea.xMax)*unitsPerPixel;
+            top.style.height=(stacked?92f:44f)*hudScale;
+            // Scale the two absolute-positioned corner groups individually. Do
+            // not scale the full-width topHud or the right controls would drift.
+            var info=top.Q(className:"header-copy");
+            var actions=top.Q(className:"hud-actions");
+            info.style.scale=new Scale(new Vector3(hudScale,hudScale,1));
+            actions.style.scale=new Scale(new Vector3(hudScale,hudScale,1));
+            actions.style.top=stacked?48f*hudScale:0f;
         }
         public void Update()
         {
