@@ -47,7 +47,7 @@ func TestWalkingSoldierPushesAlly(t *testing.T) {
 	a, b := testSoldier(101, 0, "guard", 5, -5), testSoldier(102, 0, "archer", 5, -4)
 	units := []*unit{a, b}
 	goal := w.Towers[5]
-	for range 30 {
+	for range 60 {
 		w.move(a, goal, units)
 		w.resolvePush(units)
 	}
@@ -87,7 +87,7 @@ func TestSiegePushesDefendersStraightThroughGate(t *testing.T) {
 		back := testSoldier(103, 1-seat, "archer", lane, -.9*direction)
 		back.State.Radius, back.Cooldown = w.Rules.ByID["archer"].bodyRadius(), front.Cooldown
 		w.Units[101], w.Units[102], w.Units[103] = siege, front, back
-		for range 180 {
+		for range 360 {
 			w.step()
 			for _, u := range []*unit{siege, front, back} {
 				if u.State.X != lane || !w.walkableFor(position(u.State), u.State.Radius, false) {

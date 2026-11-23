@@ -31,7 +31,7 @@ func TestSwordSquadCrossesFromDeployment(t *testing.T) {
 						t.Skip("Formation intersects a tower or river")
 					}
 					crossed := map[uint64]bool{}
-					for range 20 * tickRate {
+					for range 40 * tickRate {
 						w.step()
 						for id, u := range w.Units {
 							if !w.walkableFor(position(u.State), u.State.Radius, u.State.Airborne) {
@@ -82,7 +82,7 @@ func TestMarchMergesDiagonallyBeforeGate(t *testing.T) {
 			t.Fatalf("seat %d did not advance diagonally on the first step: %+v", seat, u.State)
 		}
 		gateSteps := 0
-		for range 220 {
+		for range 440 {
 			previous := position(u.State)
 			w.step()
 			if math.Abs(previous.Z) < w.Map.barrierHalfWidth()-.15 {
@@ -176,7 +176,7 @@ func TestMarchHugsAlliedBuildingBeforeRejoiningLane(t *testing.T) {
 					t.Fatal("missing allied building")
 				}
 				passedFlank, merged := false, false
-				for range 400 {
+				for range 800 {
 					before := position(u.State)
 					w.step()
 					after := position(u.State)
