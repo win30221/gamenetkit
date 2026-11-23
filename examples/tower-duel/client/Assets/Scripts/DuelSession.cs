@@ -210,7 +210,6 @@ namespace TowerDuel
             return entity.Position;
         }
         private static bool SelectUnit(DuelFrame frame,long id,out EntityState entity)=>frame.Units.TryGetValue(id,out entity);
-        public float SampleTerrainFactor(EntityState entity)=>entity.airborne?1:map.TerrainMovementFactor(Sample(entity));
         public bool SampleSlowed(EntityState entity)
         {
             // Match the ring and interpolated foot position, rather than a newer

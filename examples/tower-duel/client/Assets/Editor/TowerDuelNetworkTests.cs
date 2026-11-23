@@ -75,7 +75,7 @@ namespace TowerDuel.Editor
                 RangedWindupAndRelease();
                 CosmeticImpactDeduplication();
                 DeploymentWaitAndRecovery();
-                EnvironmentAndTerrain();
+                FixedBattlefieldView();
                 return "TOWER_DUEL_NETWORK_TESTS PASS: SDK backoff/expiry, saved-seat restore, pending-action recovery, cancellation, nearest legal deployment, shared effect timing, rendered frost boundary, snapshot stalls, match resets, ranged windup/release, cosmetic impact deduplication and deployment readiness/recovery";
             }
             finally
@@ -85,15 +85,12 @@ namespace TowerDuel.Editor
             }
         }
 
-        private static void EnvironmentAndTerrain()
+        private static void FixedBattlefieldView()
         {
             using(var f=new Fixture())
             {
-                Require(f.Map.HasWall&&f.Map.id=="wall-gates-mud-1","Canonical wall map was not imported");
-                foreach(float z in new[]{-7.7f,-.5f,0,.5f,7.7f})
-                    Require(Mathf.Abs(f.Map.TerrainMovementFactor(new Vector3(5,0,z))-.7f)<.0001f,"Mud has a gap through the gate");
-                Require(f.Map.TerrainMovementFactor(new Vector3(-5,0,0))==1&&f.Map.TerrainMovementFactor(new Vector3(6.71f,0,0))==1,"Dry lane or mud exit slowed");
-                var root=new GameObject("Environment and mud regression");DuelPresentation presentation=null;
+                Require(f.Map.HasWall&&f.Map.id=="wall-gates-1","Canonical wall map was not imported");
+                var root=new GameObject("Fixed battlefield regression");DuelPresentation presentation=null;
                 GameObject temporaryCamera=null;var camera=Camera.main;
                 if(!camera){temporaryCamera=new GameObject("Environment test camera");camera=temporaryCamera.AddComponent<Camera>();temporaryCamera.tag="MainCamera";}
                 var oldRotation=camera.transform.rotation;
@@ -104,9 +101,10 @@ namespace TowerDuel.Editor
                     var sideWallBounds=new Bounds?[2];
                     foreach(var sprite in presentation.Environment.Root.GetComponentsInChildren<SpriteRenderer>())
                     {
-                        if(sprite.name!="Paired ground shadow")
-                            Require(sprite.sharedMaterial.GetTexture("_B3EnvironmentTex")==sprite.sprite.texture,
-                                    "Each environment sprite must sample its own atlas");
+                        bool overlay=sprite.name=="Paired ground shadow"||sprite.name=="Wall ground shadow";
+                        var textureSlot=overlay?"_B3ShadowTex":"_B3EnvironmentTex";
+                        Require(sprite.sharedMaterial.GetTexture(textureSlot)==sprite.sprite.texture,
+                                "Each environment sprite must sample its own texture");
                         Require(sprite.drawMode==SpriteDrawMode.Simple,"Battlefield art must use single sprite strips");
                         if(sprite.name!="Arena side wall")continue;
                         var bounds=sprite.bounds;
@@ -128,7 +126,7 @@ namespace TowerDuel.Editor
                                 Mathf.Abs(bounds.size.z-f.Map.length)<.001f,
                                 "Side wall must span the outside edge without taking deployable space");
                     }
-                    int wallFaces=0,wallTops=0,lintels=0;
+                    int wallFaces=0,wallTops=0,wallShadows=0;
                     foreach(var wall in presentation.Environment.Root.GetComponentsInChildren<SpriteRenderer>())
                     {
                         if(wall.name=="Castle wall face")
@@ -146,28 +144,55 @@ namespace TowerDuel.Editor
                                 Require(gate<=wall.bounds.min.x||gate>=wall.bounds.max.x,
                                         "Solid wall top must not cover a gate");
                         }
-                        else if(wall.name=="Gate lintel art")lintels++;
+                        Require(wall.name!="Gate lintel art"&&wall.name!="Open gate face",
+                                "A roofless gate must not have a lintel or an arch");
+                        if(wall.name=="Wall ground shadow")
+                        {
+                            wallShadows++;
+                            foreach(float gate in f.Map.bridges)
+                                Require(gate+f.Map.bridgeHalfWidth<=wall.bounds.min.x+.001f||
+                                        gate-f.Map.bridgeHalfWidth>=wall.bounds.max.x-.001f,
+                                        "Wall shadows must leave both gates clear");
+                        }
                     }
-                    Require(wallFaces==6&&wallTops==3&&lintels==2,"Expected paired wall faces, three tops and two open gates");
+                    Require(wallFaces==6&&wallTops==3,"Expected paired wall faces, three tops and two open gates");
+                    Require(wallShadows==5,"Three wall sections and two side walls must cast shadows");
 
                     Require(presentation.Environment.Root.GetComponentsInChildren<MeshRenderer>().Length==0,
                             "Battlefield walls must use B3 sprite art");
 
 
+                    var rotation=Quaternion.Euler(60,0,0);
+                    camera.transform.rotation=rotation;
+                    var cameraPosition=camera.transform.position;
+                    var ground=presentation.Environment.Root.Find("Ground");
+                    var groundRotation=ground.rotation;
+                    var groundPosition=ground.position;
                     for(int seat=0;seat<2;seat++)
                     {
-                        camera.transform.rotation=Quaternion.Euler(60,seat*180,0);
                         presentation.Environment.SetView(camera,seat);
-                        var ground=presentation.Environment.Root.Find("Ground").GetComponent<SpriteRenderer>();
-                        Require(ground.sharedMaterial.GetTexture("_B3EnvironmentTex")==ground.sprite.texture,
-                                "Changing seats must bind the new ground atlas");
+                        Require(Quaternion.Angle(camera.transform.rotation,rotation)<.01f&&camera.transform.position==cameraPosition&&
+                                ground.position==groundPosition&&ground.rotation==groundRotation,
+                                "Changing seats must preserve camera and ground transforms");
                         foreach(var tower in f.Map.towers)
-                            Require(presentation.Environment.BuildingFrame(tower.id)%2==(tower.seat==seat?0:1),"Building did not face opponent");
+                        {
+                            bool own=tower.seat==seat;
+                            var point=presentation.Environment.Building(tower.id).transform.position;
+                            Require(point.x==tower.x&&(point.z<0)==own&&presentation.Environment.BuildingFrame(tower.id)==(own?0:3),
+                                    "Own buildings must be blue on the near side with their original lane");
+                        }
                     }
-                    var state=f.State(100,"welcome");state.units[0].seat=1;state.units[0].x=5;state.units[0].z=-4;state.units[0].muddy=true;
+                    var state=f.State(100,"welcome");
+                    state.seat=1;state.units[0].seat=1;state.units[0].x=5;state.units[0].z=4;
                     f.Deliver(state);presentation.Update(f.Session);
-                    Require(Mathf.Abs(f.Session.SampleTerrainFactor(state.units[0])-.7f)<.0001f,"Rendered muddy foot not recognized");
-                    Require(f.Session.SampleTerrainFactor(new EntityState{id=999,kind="guard",x=-5,z=-4})==1,"Mud persisted after leaving");
+                    var nearPoint=new Vector3(5,0,-4);
+                    var serverPoint=DuelPresentation.MirrorDepth(nearPoint,state.seat);
+                    Require(serverPoint==new Vector3(5,0,4)&&DuelPresentation.MirrorDepth(serverPoint,state.seat)==nearPoint&&
+                            f.Map.CanDeploy(state.seat,serverPoint,state,f.Rules.Find("guard")),
+                            "Seat one must deploy to its authoritative half in the same lane");
+                    var unit=root.transform.Find("Battle visuals/guard 100");
+                    Require(unit&&unit.position.x==nearPoint.x&&unit.position.z==nearPoint.z,
+                            "Seat one unit must render on the near side in the same lane");
                 }
                 finally
                 {

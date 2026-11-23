@@ -46,7 +46,8 @@ namespace TowerDuel
             if (!Camera) throw new InvalidOperationException("Arena camera is missing");
             if(!Camera.GetComponent<AudioListener>())Camera.gameObject.AddComponent<AudioListener>();
             presentation = new DuelPresentation(transform, Map,Rules);
-            SetView(0);
+            FrameCamera();
+            SetViewSeat(0);
             hud = new DuelHud(this);
             Session.TryRestore(Server,gameObject.name);
             if (Debug.isDebugBuild && Argument("-td-auto", "") != "") verification = new DuelVerification(this);
@@ -59,7 +60,8 @@ namespace TowerDuel
             var state = Session.State;
             if(state!=null&&state.match!=renderedMatch){presentation.Reset();renderedMatch=state.match;}
             int seat = state?.seat ?? 0;
-            if (seat != viewSeat || screenWidth != Screen.width || screenHeight != Screen.height) SetView(seat);
+            if (screenWidth != Screen.width || screenHeight != Screen.height) FrameCamera();
+            if (seat != viewSeat) SetViewSeat(seat);
             if (!Session.CanAct || state == null || (state.phase != "playing" && state.phase != "overtime")) Selected = false;
             if (!Selected) HidePreview();
             if(Selected&&state!=null)presentation.DeploymentGrid.Show(state,Rules.Find(SelectedCard));
@@ -70,10 +72,10 @@ namespace TowerDuel
             verification?.Update();
         }
 
-        private void SetView(int seat)
+        private void FrameCamera()
         {
-            viewSeat = seat; screenWidth = Screen.width; screenHeight = Screen.height;
-            Camera.transform.rotation=Quaternion.Euler(60,seat==0?0:180,0);
+            screenWidth = Screen.width; screenHeight = Screen.height;
+            Camera.transform.rotation=Quaternion.Euler(60,0,0);
             Camera.transform.position=-Camera.transform.forward*48;
             Camera.orthographic = true;
             // Frame the castles and their labels, rather than the empty rear grass.
@@ -100,13 +102,17 @@ namespace TowerDuel
             Camera.rect = new Rect(0, 0, 1, 1);
             Camera.backgroundColor = Map.HasWall ? new Color(151f/255f, 210f/255f, 30f/255f) : new Color(.16f, .28f, .14f);
             DuelLighting.Apply(Camera);
-            presentation?.Environment?.SetView(Camera,seat);
+        }
+        private void SetViewSeat(int seat)
+        {
+            viewSeat=seat;
+            presentation.Environment.SetView(Camera,seat);
         }
         public void SetBoardInsets(float bottom,float top)
         {
             bottom=Mathf.Clamp(bottom,.14f,.46f);top=Mathf.Clamp(top,.02f,.25f);
             if(Mathf.Abs(bottom-boardBottom)<.001f&&Mathf.Abs(top-boardTop)<.001f)return;
-            boardBottom=bottom;boardTop=top;SetView(Session.State?.seat??0);
+            boardBottom=bottom;boardTop=top;FrameCamera();
         }
 
         public void Connect(string server, string mode, string room, string name, string[] deck = null)
@@ -132,7 +138,7 @@ namespace TowerDuel
             var state = Session.State;
             var card=Rules.Find(SelectedCard);
             bool valid = CanDeploy(point);
-            presentation.DeploymentGrid.Highlight(point,visible);
+            presentation.DeploymentGrid.Highlight(DuelPresentation.MirrorDepth(point,state?.seat??0),visible);
             presentation.Preview(point,visible,valid,SelectedCard,state?.seat??0,DuelRules.Formation(state?.seat??0,point,card),card!=null?(card.IsSpell?card.radius:card.BodyRadius):.32f, state);
         }
         public void HidePreview()

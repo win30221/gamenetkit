@@ -203,7 +203,7 @@ namespace TowerDuel
             var screen=new Vector2(ui.x/width*Screen.width,(1-ui.y/height)*Screen.height);
             if(!client.Camera.pixelRect.Contains(screen))return false;
             var ray=client.Camera.ScreenPointToRay(screen);var plane=new Plane(Vector3.up,Vector3.zero);
-            if(!plane.Raycast(ray,out var enter))return false;point=ray.GetPoint(enter);return true;
+            if(!plane.Raycast(ray,out var enter))return false;point=DuelPresentation.MirrorDepth(ray.GetPoint(enter),client.Session.State?.seat??0);return true;
         }
         private void CancelPointer(){if(pointer>=0&&world.HasPointerCapture(pointer))world.ReleasePointer(pointer);pointer=-1;client.HidePreview();}
         private void Text(string name,string value){var label=root.Q<Label>(name);if(label.text!=value)label.text=value;}
@@ -334,10 +334,9 @@ namespace TowerDuel
                 else if(unit)
                 {
                     float deployMilliseconds=Mathf.Clamp((float)(e.readyTick-client.Session.RenderTick)*1000/state.tickRate,0,client.Rules.Find(e.kind).deployTicks*1000f/state.tickRate);
-                    bool mud=client.Session.SampleTerrainFactor(e)<1;
-                    bar.Q<Label>(className:"unit-status").text=e.IsDeploying(client.Session.RenderTick)?"部署 "+Mathf.CeilToInt(deployMilliseconds)+"ms":client.Session.SampleSlowed(e)?(mud?"冰霜・泥濘":"減速"):mud?"泥濘":e.charging?"衝鋒":"";
+                    bar.Q<Label>(className:"unit-status").text=e.IsDeploying(client.Session.RenderTick)?"部署 "+Mathf.CeilToInt(deployMilliseconds)+"ms":client.Session.SampleSlowed(e)?"減速":e.charging?"衝鋒":"";
                 }
-                var worldPos=unit?client.Session.Sample(e):e.Position;
+                var worldPos=DuelPresentation.MirrorDepth(unit?client.Session.Sample(e):e.Position,state.seat);
                 var bodyCenter=worldPos+Vector3.up*(unit?client.Presentation.UnitHeight(e.kind)*.5f:1f);
                 worldPos.y+=e.kind=="keep"?TowerDuelClient.KeepHealthHeight:e.kind=="tower"?(client.Map.HasWall?7.4f:3.9f):client.Presentation.UnitHeight(e.kind)+.22f;
                 var screen=client.Camera.WorldToScreenPoint(worldPos);bool visible=!client.Presentation.Environment.WallOccludes(client.Camera,bodyCenter)&&!client.Presentation.Environment.WallOccludes(client.Camera,worldPos)&&screen.z>0&&client.Camera.pixelRect.Contains(new Vector2(screen.x,screen.y));Display(bar,visible);

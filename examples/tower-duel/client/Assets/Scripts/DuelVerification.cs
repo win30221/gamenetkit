@@ -13,9 +13,7 @@ namespace TowerDuel
         {
             public string room, match, phase, status, role, reason, resultTitle;
             public string mapID;
-            public bool environment2D,ownBuildingsAway,mudObserved;
-            public int mudSyncErrors,mudMoveSamples;
-            public float mudMoveRatioTotal;
+            public bool environment2D,ownBuildingsAway,fixedCamera;
             public int seat, winner, accepted, rejected, frames, unitCount, unitsRemoved;
             public float uiWidth, uiHeight;
             public int cardsUsed,models,walkPose,attackPose,deathPose,walkKinds,attackKinds,deaths,arrows,previewCards;
@@ -48,9 +46,6 @@ namespace TowerDuel
         private readonly List<string> completed=new List<string>();
         private readonly List<float> frameTimes=new List<float>();
         private int acceptedObserved;
-        private readonly Dictionary<long,Vector3> mudPositions=new();
-        private readonly Dictionary<long,long> mudTicks=new();
-        private readonly HashSet<long> muddyBefore=new();
         public DuelVerification(TowerDuelClient client)
         {
             this.client = client;
@@ -107,22 +102,14 @@ namespace TowerDuel
                 report.seat = state.seat; report.tick = state.tick; report.winner = state.winner;
                 report.mapID=client.Map.id;
                 var environment=client.Presentation.Environment;
+                report.fixedCamera=Quaternion.Angle(client.Camera.transform.rotation,Quaternion.Euler(60,0,0))<.01f;
                 report.environment2D=environment!=null&&environment.BuildingCount==6;
                 report.ownBuildingsAway=report.environment2D&&environment.ViewSeat==state.seat;
                 if(report.ownBuildingsAway)foreach(var tower in state.towers)
-                    report.ownBuildingsAway&=environment.BuildingFrame(tower.id)%2==(tower.seat==state.seat?0:1);
-                foreach(var unit in state.units)
                 {
-                    bool mud=client.Map.TerrainMovementFactor(unit.Position)<1;
-                    if(mud!=unit.muddy)report.mudSyncErrors++;
-                    report.mudObserved|=mud&&unit.muddy;
-                    if(mudTicks.TryGetValue(unit.id,out long tick)&&tick<state.tick&&mud&&muddyBefore.Contains(unit.id)&&!unit.IsDeploying(state.tick))
-                    {
-                        float travel=Vector3.Distance(unit.Position,mudPositions[unit.id]);
-                        if(travel>.001f){report.mudMoveRatioTotal+=travel/((state.tick-tick)/30f*client.Rules.Find(unit.kind).speed);report.mudMoveSamples++;}
-                    }
-                    if(!mudTicks.TryGetValue(unit.id,out long previous)||previous<state.tick)
-                    {mudTicks[unit.id]=state.tick;mudPositions[unit.id]=unit.Position;if(mud)muddyBefore.Add(unit.id);else muddyBefore.Remove(unit.id);}
+                    bool own=tower.seat==state.seat;
+                    report.ownBuildingsAway&=environment.BuildingFrame(tower.id)==(own?0:3)
+                        && (environment.Building(tower.id).transform.position.z<0)==own;
                 }
                 report.accepted = client.Session.Accepted; report.rejected = client.Session.Rejected;
                 report.unitCount = state.units.Length; report.towers = state.towers;
@@ -147,7 +134,6 @@ namespace TowerDuel
                     if(client.Session.InHand(card)&&state.energy>=client.Rules.Find(card).cost)
                     {
                     float x=card=="swords"?-5:-5+(report.accepted%2==0?-.38f:.38f);
-                    if(role=="attacker"&&report.accepted==0&&TowerDuelClient.Argument("-td-terrain-audit","")=="1")x=5;
                     float z=card=="archer"||card=="bomber"?4.2f:3.2f;
                     var position=new Vector3(x,0,state.seat==0?-z:z);
                     if(client.Rules.Find(card).IsSpell){position=new Vector3(-5,0,state.seat==0?7.7f:-7.7f);foreach(var unit in state.units)if(unit.seat!=state.seat){position=unit.Position;break;}}
@@ -193,7 +179,7 @@ namespace TowerDuel
         {
             if(!client.Selected||client.SelectedCard!=card)Click(card+"Card");
             if(!client.Selected)return;
-            Vector3 screen=client.Camera.WorldToScreenPoint(position);
+            Vector3 screen=client.Camera.WorldToScreenPoint(DuelPresentation.MirrorDepth(position,client.Session.State.seat));
             var world=ui.Q("worldInput");
             Vector2 point=RuntimePanelUtils.ScreenToPanel(world.panel,new Vector2(screen.x,Screen.height-screen.y));
             using(var down=PointerDownEvent.GetPooled(new Event{type=EventType.MouseDown,mousePosition=point,button=0,clickCount=1}))world.SendEvent(down);

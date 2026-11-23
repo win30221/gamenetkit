@@ -49,14 +49,14 @@ namespace TowerDuel
             return (Mathf.FloorToInt((degrees + 22.5f) / 45) + 8) % 8;
         }
         public void Present(EntityState entity, CardDefinition definition, double tick, float movement,
-                            bool deploying, float slow, float reaction, double? confirmedReleaseTick = null)
+                            bool deploying, float slow, float reaction, double? confirmedReleaseTick = null, int viewSeat = 0)
         {
             if (preview || !double.IsNaN(deathStarted)) return;
             PlaybackSpeed = slow;
             if (!view) view = Camera.main;
             var heading = new Vector3(entity.dx, 0, entity.dz);
             if (heading.sqrMagnitude < .0001f) heading = entity.seat == 0 ? Vector3.forward : Vector3.back;
-            DirectionIndex = Direction(heading, view, DirectionIndex);
+            DirectionIndex = Direction(DuelPresentation.MirrorDepth(heading,viewSeat), view, DirectionIndex);
             double step = double.IsNaN(lastTick) ? 0 : Math.Max(0, tick - lastTick); lastTick = tick;
             if (entity.attackTick != attackSeen)
             {
@@ -102,7 +102,7 @@ namespace TowerDuel
         }
         public void PresentPreview(int seat, bool valid)
         {
-            preview = true; enemy = seat == 1;
+            preview = true; enemy = false;
             if (!view) view = Camera.main;
             Show(DuelSpriteClip.Idle, Direction(seat == 0 ? Vector3.forward : Vector3.back, view), 0);
             tint = valid ? new Color(.78f, 1, 1) : new Color(1, .36f, .3f);

@@ -38,26 +38,31 @@ type entity struct {
 	LockedTarget  uint64  `json:"lockedTarget,omitempty"`
 	Active        bool    `json:"active"`
 	Slowed        bool    `json:"slowed"`
-	Muddy         bool    `json:"muddy,omitempty"`
 	Airborne      bool    `json:"airborne,omitempty"`
 	PausedUntil   uint64  `json:"pausedUntil,omitempty"`
 	TransformTick uint64  `json:"transformTick,omitempty"`
 	Charging      bool    `json:"charging"`
 }
 type mapDefinition struct {
-	ID                 string        `json:"id"`
-	Width              float64       `json:"width"`
-	Length             float64       `json:"length"`
-	RiverHalfWidth     float64       `json:"riverHalfWidth"`
-	WallHalfWidth      float64       `json:"wallHalfWidth,omitempty"`
-	WallHeight         float64       `json:"wallHeight,omitempty"`
-	BridgeHalfWidth    float64       `json:"bridgeHalfWidth"`
-	DeploymentCellSize float64       `json:"deploymentCellSize"`
-	PocketDepth        float64       `json:"pocketDepth"`
-	Bridges            []float64     `json:"bridges"`
-	Towers             []entity      `json:"towers"`
-	TerrainZones       []terrainZone `json:"terrainZones,omitempty"`
-	Hash               string        `json:"-"`
+	ID                 string    `json:"id"`
+	Width              float64   `json:"width"`
+	Length             float64   `json:"length"`
+	RiverHalfWidth     float64   `json:"riverHalfWidth"`
+	WallHalfWidth      float64   `json:"wallHalfWidth,omitempty"`
+	WallHeight         float64   `json:"wallHeight,omitempty"`
+	BridgeHalfWidth    float64   `json:"bridgeHalfWidth"`
+	DeploymentCellSize float64   `json:"deploymentCellSize"`
+	PocketDepth        float64   `json:"pocketDepth"`
+	Bridges            []float64 `json:"bridges"`
+	Towers             []entity  `json:"towers"`
+	Hash               string    `json:"-"`
+}
+
+func (m mapDefinition) barrierHalfWidth() float64 {
+	if m.WallHalfWidth > 0 {
+		return m.WallHalfWidth
+	}
+	return m.RiverHalfWidth
 }
 
 func loadMap(path string) (mapDefinition, error) {
@@ -69,14 +74,15 @@ func loadMap(path string) (mapDefinition, error) {
 	if err = json.Unmarshal(data, &m); err != nil {
 		return m, err
 	}
-	if (m.ID != "twinbridge-1" && m.ID != "wall-gates-mud-1") || m.Width != 20 || m.Length != 30 || len(m.Bridges) != 2 || len(m.Towers) != 6 {
+	if (m.ID != "twinbridge-1" && m.ID != "wall-gates-1") || m.Width != 20 || m.Length != 30 || len(m.Bridges) != 2 || len(m.Towers) != 6 {
 		return m, errors.New("unsupported map")
 	}
 	if m.DeploymentCellSize != 1 || m.PocketDepth != 4 {
 		return m, errors.New("unsupported deployment geometry")
 	}
-	if err := m.validateTerrain(); err != nil {
-		return m, err
+	if !finite(m.WallHalfWidth) || !finite(m.WallHeight) || m.WallHalfWidth < 0 || m.WallHeight < 0 ||
+		(m.ID == "wall-gates-1" && (m.WallHalfWidth == 0 || m.WallHeight == 0)) {
+		return m, errors.New("invalid wall geometry")
 	}
 	h := sha256.Sum256(data)
 	m.Hash = hex.EncodeToString(h[:])

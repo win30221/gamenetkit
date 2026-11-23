@@ -49,6 +49,7 @@ namespace TowerDuel
                 for(float z=-map.length*.5f+cell*.5f;z<map.length*.5f;z+=cell)
                 {
                     var p=new Vector3(x,map.HasWall?.012f:.22f,z);bool legal=map.CanDeploy(state.seat,p,state,card);
+                    p=DuelPresentation.MirrorDepth(p,state.seat);
                     if(legal){Border(good,goodIndices,p,cell);AllowedCells++;}
                     else Border(bad,badIndices,p,cell);
                 }

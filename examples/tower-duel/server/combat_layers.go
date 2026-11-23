@@ -91,10 +91,6 @@ func (w *match) advanceKnockback(u *unit) {
 }
 
 func (w *match) movementFactor(u *unit, units []*unit) float64 {
-	factor := w.speedFactor(u)
-	if !u.State.Airborne {
-		factor *= w.Map.terrainFactor(position(u.State))
-	}
 	boost := 1.0
 	for _, ally := range units {
 		card := w.Rules.ByID[ally.State.Kind]
@@ -102,5 +98,5 @@ func (w *match) movementFactor(u *unit, units []*unit) float64 {
 			boost = max(boost, card.MoveMultiplier)
 		}
 	}
-	return factor * boost
+	return w.speedFactor(u) * boost
 }

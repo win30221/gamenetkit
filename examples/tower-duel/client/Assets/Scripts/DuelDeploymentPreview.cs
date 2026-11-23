@@ -83,6 +83,7 @@ namespace TowerDuel
         public void Show(string card,int seat,Vector3 point,bool visible,bool valid,Vector3[] formation,float radius,bool spell,bool airborne=false)
         {
             if(!visible){Hide();return;}
+            point=DuelPresentation.MirrorDepth(point,seat);
             ActiveKind=card;ActiveRadius=spell?radius:0;
             if(!spell&&(kind!=card||ghosts.Count!=formation.Length))CreateGhosts(card,formation.Length);
             Color color=!valid?new Color(1,.27f,.22f,1):spell?(card=="fireball"?new Color(1,.55f,.12f,1):new Color(.3f,.86f,1,1)):new Color(.5f,1,.78f,1);
@@ -92,9 +93,11 @@ namespace TowerDuel
             for(int i=0;i<ghosts.Count;i++)
             {
                 var ghost=ghosts[i];ghost.SetActive(!spell&&i<formation.Length);
-                if(!ghost.activeSelf)continue;ghost.transform.position=formation[i]+(airborne?Vector3.up*2.35f:Vector3.zero);ghost.transform.rotation=Quaternion.Euler(0,seat==0?0:180,0);
+                if(!ghost.activeSelf)continue;
+                ghost.transform.position=DuelPresentation.MirrorDepth(formation[i],seat)+(airborne?Vector3.up*2.35f:Vector3.zero);
+                ghost.transform.rotation=Quaternion.identity;
                 var art=ghost.GetComponent<DuelUnitArt>();
-                if(art.Sprites)art.Sprites.PresentPreview(seat,valid);
+                if(art.Sprites)art.Sprites.PresentPreview(0,valid);
                 else if(!art.Animator&&Camera.main)
                 {
                     var body=art.transform.Find("Facing");
@@ -110,7 +113,7 @@ namespace TowerDuel
             for(int n=0;n<rings.Length;n++)
             {
                 var line=rings[n];line.enabled=n<(spell?1:formation.Length);if(!line.enabled)continue;
-                var centre=spell?point:formation[n];float r=radius;
+                var centre=spell?point:DuelPresentation.MirrorDepth(formation[n],seat);float r=radius;
                 for(int i=0;i<Segments;i++){float angle=i*Mathf.PI*2/Segments;line.SetPosition(i,new Vector3(centre.x+Mathf.Cos(angle)*r,.25f,centre.z+Mathf.Sin(angle)*r));}
             }
         }

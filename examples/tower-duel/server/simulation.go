@@ -261,7 +261,6 @@ func (w *match) refreshUnitSlows(units []*unit) {
 		u.SlowUntil = 0
 		u.SlowFactor = 0
 		u.State.Slowed = false
-		u.State.Muddy = !u.State.Airborne && w.Map.terrainFactor(position(u.State)) < 1
 		for _, e := range w.Effects {
 			if e.Slow <= 0 || w.Tick < e.Impact || w.Tick >= e.End || u.State.Seat == e.Seat || (u.State.Airborne && !e.Definition.HitAir) {
 				continue

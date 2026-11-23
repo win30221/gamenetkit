@@ -94,6 +94,13 @@ namespace TowerDuel
             DeploymentPreview=new DuelDeploymentPreview(root,prefabs);
             DeploymentGrid=new DuelDeploymentGrid(root,map);
         }
+        // This reflection maps server space to the fixed board and back.
+        // Keeping X unchanged preserves the left and right gates for both seats.
+        public static Vector3 MirrorDepth(Vector3 point,int seat)
+        {
+            if(seat==1)point.z=-point.z;
+            return point;
+        }
         private static Material Load(string name)
         {
             var material=Resources.Load<Material>("TowerDuel/Materials/"+name);
@@ -111,7 +118,7 @@ namespace TowerDuel
             foreach(var e in state.units)
                 if(units.TryGetValue(e.id,out var unit)) SetOutline(e,unit.Art.transform.position,unit.Renderers,state.seat);
             foreach(var e in state.towers)
-                SetOutline(e,e.Position,towers[e.id].GetComponentsInChildren<SpriteRenderer>(),state.seat);
+                SetOutline(e,towers[e.id].transform.position,towers[e.id].GetComponentsInChildren<SpriteRenderer>(),state.seat);
             outlineVisible=previewSpell!=null;
         }
         private void SetOutline(EntityState entity,Vector3 renderedPosition,Renderer[] renderers,int seat)
@@ -128,34 +135,35 @@ namespace TowerDuel
                 renderer.SetPropertyBlock(spellOutline);
             }
         }
-        private UnitVisual Create(EntityState e)
+        private UnitVisual Create(EntityState e,int ownSeat)
         {
-            var go=UnityEngine.Object.Instantiate(prefabs[e.kind],root,false);go.name=e.kind+" "+e.id;go.transform.position=e.Position;go.SetActive(true);
+            var go=UnityEngine.Object.Instantiate(prefabs[e.kind],root,false);go.name=e.kind+" "+e.id;go.transform.position=MirrorDepth(e.Position,ownSeat);go.SetActive(true);
             var art=go.GetComponent<DuelUnitArt>();
             var contact=DuelContactShadow.Attach(art);
             if(art.Sprites)
             {
-                art.Sprites.SetTeam(e.seat);SpriteKinds|=CardBit(e.kind);
+                art.Sprites.SetTeam(e.seat==ownSeat?0:1);SpriteKinds|=CardBit(e.kind);
             }
             RenderedKinds|=CardBit(e.kind);
             var pivot=art.transform.Find("Facing");
-            return new UnitVisual{Art=art,Contact=contact,Previous=e.Position,Hit=e.hitTick,Health=e.hp,Renderers=art.GetComponentsInChildren<Renderer>(),Pivot=pivot,PivotPosition=pivot?pivot.localPosition:Vector3.zero,Leg=art.WalkProbe?art.WalkProbe.localRotation:Quaternion.identity,Arm=art.AttackProbe?art.AttackProbe.localRotation:Quaternion.identity,Hip=art.DeathProbe?art.DeathProbe.localRotation:Quaternion.identity};
+            return new UnitVisual{Art=art,Contact=contact,Previous=go.transform.position,Hit=e.hitTick,Health=e.hp,Renderers=art.GetComponentsInChildren<Renderer>(),Pivot=pivot,PivotPosition=pivot?pivot.localPosition:Vector3.zero,Leg=art.WalkProbe?art.WalkProbe.localRotation:Quaternion.identity,Arm=art.AttackProbe?art.AttackProbe.localRotation:Quaternion.identity,Hip=art.DeathProbe?art.DeathProbe.localRotation:Quaternion.identity};
         }
         public void Update(DuelSession session)
         {
             var state=session.State;if(state==null)return;
+            previewState=state;
             effects.Update(session);
             var live=new HashSet<long>();
             foreach(var e in state.units)
             {
                 live.Add(e.id);
-                if(!units.TryGetValue(e.id,out var v)){v=Create(e);units.Add(e.id,v);}
+                if(!units.TryGetValue(e.id,out var v)){v=Create(e,state.seat);units.Add(e.id,v);}
                 var definition=rules.Find(e.kind);
                 bool deploying=e.IsDeploying(session.RenderTick);
                 bool paused=session.RenderTick<e.pausedUntil;
-                Vector3 position=session.Sample(e);
+                Vector3 position=MirrorDepth(session.Sample(e),state.seat);
                 float travel=Vector3.Distance(position,v.Previous);
-                var direction=new Vector3(e.dx,0,e.dz);
+                var direction=MirrorDepth(new Vector3(e.dx,0,e.dz),state.seat);
                 v.Art.transform.position=position;v.Previous=position;
                 if(!v.Art.Sprites&&!v.Art.Animator)
                 {
@@ -171,7 +179,7 @@ namespace TowerDuel
                         bool flyingGriffin=e.airborne&&e.kind=="griffin";
                         renderer.sprite=(flyingGriffin?DuelSpriteLibrary.SinglePose("griffin-air",v.Art.Height):null)
                             ??DuelSpriteLibrary.SinglePose(e.kind,v.Art.Height);
-                        renderer.flipX=e.dx*Camera.main.transform.right.x+e.dz*Camera.main.transform.right.z<-.05f;
+                        renderer.flipX=Vector3.Dot(direction,Camera.main.transform.right)<-.05f;
                         renderer.color=e.seat==state.seat?Color.white:new Color(1,.75f,.72f);
                         if(!paused&&e.attackTick>0&&session.RenderTick>=e.attackTick&&session.RenderTick<e.attackTick+definition.windupTicks)
                         {
@@ -206,7 +214,7 @@ namespace TowerDuel
                         v.ReleaseTick=e.hitTick-RangedFlightDuration(position+Vector3.up*v.Art.Height*.72f,hitPoint)*30;
                     }
                     v.Art.Sprites.Present(e,definition,paused?e.pausedUntil-rules.Find("fireball").pauseTicks:session.RenderTick,paused?0:speed,deploying,slow,reaction,
-                        v.ReleaseHit==e.hitTick&&!double.IsNaN(v.ReleaseTick)?v.ReleaseTick:(double?)null);
+                        v.ReleaseHit==e.hitTick&&!double.IsNaN(v.ReleaseTick)?v.ReleaseTick:(double?)null,state.seat);
                 }
                 if(v.Art.Sprites&&v.Art.Sprites.ShadowMatchesFrame)SpriteShadowKinds|=CardBit(e.kind);
                 if(!deploying&&e.attackTick>v.Attack)
@@ -292,8 +300,8 @@ namespace TowerDuel
             {
                 if(towerHealth.TryGetValue(e.id,out int priorHP)&&priorHP>e.hp)
                 {
-                    if(e.hp==0)effects.Collapse(e.Position,e.kind=="keep");
-                    else effects.Impact(e.Position+Vector3.up*1.1f,false,(long)session.RenderTick);
+                    if(e.hp==0)effects.Collapse(towers[e.id].transform.position,e.kind=="keep");
+                    else effects.Impact(towers[e.id].transform.position+Vector3.up*1.1f,false,(long)session.RenderTick);
                 }
                 towerHealth[e.id]=e.hp;
                 Environment?.Present(e,session.RenderTick);
@@ -304,7 +312,7 @@ namespace TowerDuel
                     if(TryTarget(state,e.target,out var target))
                     {
                         var line=NewLine("Tower shot",lineMaterial,.055f);line.positionCount=2;
-                        line.SetPosition(0,Environment!=null?Environment.Muzzle(e.id):new Vector3(e.x,e.kind=="keep"?3.5f:2.9f,e.z));line.SetPosition(1,target+Vector3.up*.7f);
+                        line.SetPosition(0,Environment.Muzzle(e.id));line.SetPosition(1,target+Vector3.up*.7f);
                         bolts.Add(new Bolt{Line=line,Until=DuelSession.Now+.12});
                     }
                 }
@@ -324,8 +332,8 @@ namespace TowerDuel
         private static float RangedFlightDuration(Vector3 from,Vector3 target)=>Mathf.Clamp(Vector3.Distance(from,target)/24,.08f,.24f);
         private bool TryTarget(DuelMessage state,long id,out Vector3 point)
         {
-            foreach(var e in state.units)if(e.id==id){point=e.Position;return true;}
-            foreach(var e in state.towers)if(e.id==id){point=e.Position;return true;}
+            foreach(var e in state.units)if(e.id==id){point=MirrorDepth(e.Position,state.seat);return true;}
+            foreach(var e in state.towers)if(e.id==id){point=MirrorDepth(e.Position,state.seat);return true;}
             if(units.TryGetValue(id,out var v)){point=v.Art.transform.position;return true;}
             point=Vector3.zero;return false;
         }
@@ -340,8 +348,8 @@ namespace TowerDuel
         {
             if(formation==null)formation=new[]{point};
             var definition=rules.Find(card);
+            spellPoint=MirrorDepth(point,seat);
             DeploymentPreview.Show(card,seat,point,visible,valid,formation,radius,definition.IsSpell,definition.initialAir);
-            spellPoint=point;
             previewSpell=visible&&valid&&definition.IsSpell?definition:null;
             var current=state??previewState;
             if(current!=null)UpdateSpellOutline(current);

@@ -95,7 +95,7 @@ namespace TowerDuel
                     visual.Trail.widthCurve=AnimationCurve.Linear(0,1,1,0);
                     visual.Trail.startColor=new Color(1,.88f,.40f,.85f);visual.Trail.endColor=new Color(1,.27f,.035f,0);
                 }
-                var target=new Vector3(e.x,.3f,e.z);
+                var target=DuelPresentation.MirrorDepth(new Vector3(e.x,.3f,e.z),state.seat);
                 for(int i=0;i<32;i++){float a=i*Mathf.PI*2/32;visual.Ring.SetPosition(i,target+new Vector3(Mathf.Cos(a)*e.radius,0,Mathf.Sin(a)*e.radius));}
                 bool impact=renderTick>=e.impact;
                 if(impact&&!visual.Impacted)
@@ -120,7 +120,7 @@ namespace TowerDuel
                 {
                     if(impact)
                     {
-                        visual.Particles.Place(new Vector3(e.x,.24f,e.z),Quaternion.identity,e.radius);
+                        visual.Particles.Place(new Vector3(target.x,.24f,target.z),Quaternion.identity,e.radius);
                         visual.Particles.Present((float)(renderTick-e.impact)/30f);
                     }
                 }

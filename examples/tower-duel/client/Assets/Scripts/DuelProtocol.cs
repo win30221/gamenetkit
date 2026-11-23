@@ -11,7 +11,7 @@ namespace TowerDuel
         public int seat, hp, maxHP;
         public string kind;
         public float x,z,radius,dx,dz;
-        public bool active,slowed,charging,muddy,airborne;
+        public bool active,slowed,charging,airborne;
         public bool IsDeploying(double tick)=>readyTick>0&&tick<readyTick;
         public Vector3 Position => new Vector3(x,DuelMap.GroundHeight(z)+(airborne?2.35f:0),z);
     }
@@ -49,19 +49,10 @@ namespace TowerDuel
     {
         public string id;public float width,length,riverHalfWidth,wallHalfWidth,wallHeight,bridgeHalfWidth,deploymentCellSize,pocketDepth;
         public float[] bridges; public EntityState[] towers;
-        public TerrainZone[] terrainZones;
         public bool HasWall=>wallHalfWidth>0;
         public float BarrierHalfWidth=>HasWall?wallHalfWidth:riverHalfWidth;
         private static bool flatGround;
         public static float GroundHeight(float z)=>flatGround?.02f:Mathf.Abs(z)<1.7f?.16f:.06f;
-        public float TerrainMovementFactor(Vector3 point)
-        {
-            float factor=1;
-            if(terrainZones!=null)foreach(var zone in terrainZones)
-                if(Mathf.Abs(point.x-zone.x)<=zone.halfWidth+1e-6f&&Mathf.Abs(point.z-zone.z)<=zone.halfLength+1e-6f)
-                    factor=Mathf.Min(factor,zone.moveFactor);
-            return factor;
-        }
         public string Hash {get;private set;}
         public static DuelMap Load()
         {
@@ -126,11 +117,6 @@ namespace TowerDuel
             return found;
         }
         public static bool Finite(float n)=>!float.IsNaN(n)&&!float.IsInfinity(n);
-    }
-    [Serializable] public sealed class TerrainZone
-    {
-        public string id,kind;
-        public float x,z,halfWidth,halfLength,moveFactor;
     }
     [Serializable] public sealed class CardDefinition
     {

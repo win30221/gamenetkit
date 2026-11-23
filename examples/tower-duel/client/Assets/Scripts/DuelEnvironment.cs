@@ -14,8 +14,7 @@ namespace TowerDuel
         [NonSerialized] public Sprite[] body,shadow;
     }
 
-    // The same authored colour and paired ground frames are used for both
-    // teams. Camera changes select a true front/back view, never flip lighting.
+    // The fixed arena uses authored front and back building frames and paired shadows.
     public sealed class DuelEnvironment : IDisposable
     {
         private sealed class Item
@@ -38,8 +37,9 @@ namespace TowerDuel
         private readonly Dictionary<long,Item> buildings=new();
         private readonly List<Item> items=new();
         private readonly List<Sprite> owned=new();
-        private readonly SpriteRenderer ground, meadow;
-        private readonly Sprite[] groundViews=new Sprite[2];
+        private readonly SpriteRenderer meadow;
+        private readonly List<(Transform Shadow,Vector3 Center,Vector3 CastAxis)> wallShadows=new();
+        private Texture2D wallShadowTexture;
         private readonly List<Bounds> wallBounds=new();
         private int seat=-1;
         public int BuildingCount=>buildings.Count;
@@ -74,17 +74,11 @@ namespace TowerDuel
                 meadow.transform.localScale=new Vector3(22.5f,22.5f,1);
                 meadow.transform.localPosition=new Vector3(0,-.005f,0);
             }
-            for(int i=0;i<2;i++)
-            {
-                var texture=Resources.Load<Texture2D>("TowerDuel/B3/Environment/ground-"+(i==0?"south":"north"));
-                if(!texture)throw new InvalidOperationException("Missing ground view");
-                var sprite=Sprite.Create(texture,new Rect(0,0,texture.width,texture.height),new Vector2(.5f,.5f),texture.width/20f,0,SpriteMeshType.FullRect);
-                groundViews[i]=sprite;owned.Add(sprite);
-            }
-            ground=Renderer(root,"Ground",groundViews[0],bodyMaterial);
+            var ground=EnvironmentSprite("ground-dry");
+            PlaceGroundSprite(root,"Ground",ground,Vector3.zero,map.width,map.length,bodyMaterial);
             foreach(var entity in map.towers)
             {
-                var item=Place(entity.kind=="keep"?"keep-static":"tower-static",entity.seat*2,entity.Position,
+                var item=Place(entity.kind=="keep"?"keep-static":"tower-static",entity.seat==0?0:3,entity.Position,
                                entity.kind=="keep"?3.8f:2.6f,entity.kind+" "+entity.id);
                 item.Building=entity;buildings.Add(entity.id,item);
             }
@@ -122,6 +116,7 @@ namespace TowerDuel
         {
             if(!map.HasWall)return;
             float thickness=map.wallHalfWidth*2;
+            var shadow=CreateWallShadowSprite();
             var atlas=atlases["wall-gates"];
             var texture=atlas.body[0].texture;
             var stoneTop=Resources.Load<Texture2D>("TowerDuel/B3/Environment/side-wall-art");
@@ -131,41 +126,32 @@ namespace TowerDuel
             // The roof joins the masonry just under the projecting battlements.
             const float paintedHeight=211f;
             float roofHeight=map.wallHeight*(atlas.baseline-100)/paintedHeight;
-            float lintelHeight=map.wallHeight*(atlas.baseline-62)/paintedHeight;
             int[] cuts={16,391,649,1399,1657,2032};
             float[] gates=(float[])map.bridges.Clone();
             Array.Sort(gates);
             float[] edges={-map.width/2,gates[0]-map.bridgeHalfWidth,gates[0]+map.bridgeHalfWidth,
                 gates[1]-map.bridgeHalfWidth,gates[1]+map.bridgeHalfWidth,map.width/2};
-            var cap=WallSprite(stoneTop,new Rect(0,0,stoneTop.width,stoneTop.height),new Vector2(.5f,.5f),stoneTop.width);
-            var masonry=WallSprite(texture,new Rect(754,texture.height-216,52,75),new Vector2(.5f,0));
-            var gold=WallSprite(texture,new Rect(468,texture.height-84,96,14),new Vector2(.5f,.5f));
-            for(int i=0;i<5;i++)
+            var cap=CreateSprite(stoneTop,new Rect(0,0,stoneTop.width,stoneTop.height),new Vector2(.5f,.5f),stoneTop.width);
+            var masonry=CreateSprite(texture,new Rect(754,texture.height-216,52,75),new Vector2(.5f,0));
+            // Only the three solid spans get faces and roof pieces.
+            for(int i=0;i<5;i+=2)
             {
                 float width=edges[i+1]-edges[i];
                 float x=(edges[i]+edges[i+1])/2;
-                bool gate=i%2!=0;
                 for(int view=0;view<2;view++)
                 {
                     int slice=view==0?i:4-i;
                     var rect=new Rect(cuts[slice],texture.height-(view+1)*atlas.height,cuts[slice+1]-cuts[slice],atlas.height);
-                    var sprite=WallSprite(texture,rect,new Vector2(.5f,1-atlas.baseline/(float)atlas.height));
-                    var face=Renderer(root,gate?"Open gate face":"Castle wall face",sprite,bodyMaterial);
+                    var sprite=CreateSprite(texture,rect,new Vector2(.5f,1-atlas.baseline/(float)atlas.height));
+                    var face=Renderer(root,"Castle wall face",sprite,bodyMaterial);
                     face.transform.localPosition=new Vector3(x,.02f,(view==0?-1:1)*map.wallHalfWidth);
                     face.transform.localRotation=Quaternion.Euler(0,view*180,0);
                     face.transform.localScale=new Vector3(width/rect.width,map.wallHeight/paintedHeight,1);
                 }
-                if(gate)
-                {
-                    var lintel=Renderer(root,"Gate lintel art",gold,bodyMaterial);
-                    lintel.transform.localPosition=new Vector3(x,.02f+lintelHeight,0);
-                    lintel.transform.localRotation=Quaternion.Euler(90,0,0);
-                    lintel.transform.localScale=new Vector3(width/gold.rect.width,thickness/gold.rect.height,1);
-                    continue;
-                }
                 PlaceWallTop("Castle wall top",cap,new Vector3(x,.02f+roofHeight,0),thickness,width,Vector3.right);
                 foreach(float edge in new[]{edges[i],edges[i+1]})
                     PlaceWallMasonry("Wall end art",masonry,new Vector3(edge,.02f,0),thickness,roofHeight,90);
+                PlaceWallShadow(shadow,x,width,thickness+.9f,Vector3.forward);
                 wallBounds.Add(new Bounds(new Vector3(x,.02f+map.wallHeight/2,0),new Vector3(width,map.wallHeight,thickness)));
             }
             foreach(int side in new[]{-1,1})
@@ -174,10 +160,51 @@ namespace TowerDuel
                 PlaceWallTop("Arena side wall",cap,new Vector3(x,.02f+roofHeight,0),thickness,map.length,Vector3.forward);
                 foreach(int end in new[]{-1,1})
                     PlaceWallMasonry("Side wall end art",masonry,new Vector3(x,.02f,end*map.length/2),thickness,roofHeight,0);
+                PlaceWallShadow(shadow,x,thickness+.9f,map.length,Vector3.right);
                 wallBounds.Add(new Bounds(new Vector3(x,.02f+map.wallHeight/2,0),new Vector3(thickness,map.wallHeight,map.length)));
             }
         }
-        private Sprite WallSprite(Texture2D texture,Rect rect,Vector2 pivot,float pixelsPerUnit=1)
+        private Sprite EnvironmentSprite(string name)
+        {
+            var texture=Resources.Load<Texture2D>("TowerDuel/B3/Environment/"+name);
+            if(!texture)throw new InvalidOperationException("Missing B3 environment texture "+name);
+            return CreateSprite(texture,new Rect(0,0,texture.width,texture.height),new Vector2(.5f,.5f));
+        }
+        private SpriteRenderer PlaceGroundSprite(Transform parent,string name,Sprite sprite,
+            Vector3 center,float width,float length,Material material)
+        {
+            var renderer=Renderer(parent,name,sprite,material);
+            renderer.transform.localPosition=center;
+            renderer.transform.localRotation=Quaternion.LookRotation(Vector3.down,Vector3.forward);
+            renderer.transform.localScale=new Vector3(width/sprite.bounds.size.x,length/sprite.bounds.size.y,1);
+            return renderer;
+        }
+        private Sprite CreateWallShadowSprite()
+        {
+            const int size=32;
+            wallShadowTexture=new Texture2D(size,size,TextureFormat.RGBA32,false)
+            {
+                name="Castle wall shadow", wrapMode=TextureWrapMode.Clamp, filterMode=FilterMode.Bilinear
+            };
+            var pixels=new Color32[size*size];
+            for(int y=0;y<size;y++)
+                for(int x=0;x<size;x++)
+                {
+                    int edge=Mathf.Min(Mathf.Min(x,size-1-x),Mathf.Min(y,size-1-y));
+                    byte opacity=(byte)Mathf.RoundToInt(82*Mathf.SmoothStep(0,1,edge/6f));
+                    pixels[y*size+x]=new Color32(7,10,17,opacity);
+                }
+            wallShadowTexture.SetPixels32(pixels);
+            wallShadowTexture.Apply(false,true);
+            return CreateSprite(wallShadowTexture,new Rect(0,0,size,size),new Vector2(.5f,.5f));
+        }
+        private void PlaceWallShadow(Sprite sprite,float x,float width,float length,Vector3 castAxis)
+        {
+            var center=new Vector3(x,.009f,0);
+            var renderer=PlaceGroundSprite(root,"Wall ground shadow",sprite,center,width,length,shadowMaterial);
+            wallShadows.Add((renderer.transform,center,castAxis));
+        }
+        private Sprite CreateSprite(Texture2D texture,Rect rect,Vector2 pivot,float pixelsPerUnit=1)
         {
             var sprite=Sprite.Create(texture,rect,pivot,pixelsPerUnit,0,SpriteMeshType.FullRect);
             owned.Add(sprite);
@@ -234,7 +261,11 @@ namespace TowerDuel
                 material.SetFloat("_Baked",1);
                 material.SetFloat("_Enemy",0);
             }
-            else material.SetTexture("_MainTex",texture);
+            else
+            {
+                material.SetTexture("_B3ShadowTex",texture);
+                material.SetFloat("_UseB3ShadowTex",1);
+            }
             cache.Add(texture,material);
             return material;
         }
@@ -269,12 +300,17 @@ namespace TowerDuel
         {
             if(seat!=viewSeat)
             {
-                seat=viewSeat;ground.sprite=groundViews[seat];
-                ground.sharedMaterial=BoundMaterial(ground.sprite.texture,bodyMaterial);
-                foreach(var item in buildings.Values)SetFrame(item,item.Building.seat*2+(item.Building.seat==seat?0:1));
+                seat=viewSeat;
+                foreach(var item in buildings.Values)
+                {
+                    item.Root.position=DuelPresentation.MirrorDepth(item.Building.Position,seat);
+                    SetFrame(item,item.Building.seat==seat?0:3);
+                }
             }
             var forward=Vector3.ProjectOnPlane(camera.transform.forward,Vector3.up).normalized;
-            ground.transform.rotation=Quaternion.LookRotation(Vector3.down,forward);
+            var castDirection=-forward-Vector3.Cross(Vector3.up,forward);
+            foreach(var shadow in wallShadows)
+                shadow.Shadow.localPosition=shadow.Center+.42f*Vector3.Project(castDirection,shadow.CastAxis);
             if(meadow)meadow.transform.rotation=Quaternion.LookRotation(Vector3.down,forward);
             foreach(var item in items)
             {
@@ -297,6 +333,7 @@ namespace TowerDuel
         public void Dispose()
         {
             foreach(var sprite in owned) Release(sprite);
+            Release(wallShadowTexture);
             foreach(var material in bodyTextures.Values)Release(material);
             foreach(var material in shadowTextures.Values)Release(material);
             if(root) Release(root.gameObject);

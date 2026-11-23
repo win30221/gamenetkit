@@ -1,5 +1,5 @@
 {
-  "id": "wall-gates-mud-1",
+  "id": "wall-gates-1",
   "width": 20,
   "length": 30,
   "riverHalfWidth": 0,
@@ -11,17 +11,6 @@
   "bridges": [
     -5,
     5
-  ],
-  "terrainZones": [
-    {
-      "id": "old-gate-road",
-      "kind": "mud",
-      "x": 5,
-      "z": 0,
-      "halfWidth": 1.7,
-      "halfLength": 7.7,
-      "moveFactor": 0.7
-    }
   ],
   "towers": [
     {
