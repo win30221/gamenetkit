@@ -19,7 +19,12 @@ namespace TowerDuel
         private readonly Dictionary<string,Button> cards=new Dictionary<string,Button>();
         private readonly List<DuelCardDrag> cardDrags=new List<DuelCardDrag>();
         private Button draggingCard;
-        private Vector2 dragOrigin,dragPosition,dragSize,dragCardOrigin,dragAimOffset;
+        private Vector2 dragOrigin,dragPosition,dragSize,dragCardOrigin;
+        private bool battlefieldDragStarted,hasDragPreviewPoint;
+        private Vector3 dragPreviewPoint;
+        private float dragCardOpacity=1f,lastDragAnimationTime;
+        private const float DragCardFadeSeconds=.16f;
+        private const float DragCardMaxOpacity=.68f;
         private readonly List<VisualElement> pips=new List<VisualElement>();
         private readonly Dictionary<long,VisualElement> bars=new Dictionary<long,VisualElement>();
         private readonly Dictionary<long,VisualElement> fills=new Dictionary<long,VisualElement>();
@@ -117,13 +122,12 @@ namespace TowerDuel
         private void StartDrag(string card,Button button,Vector2 point,bool touch)
         {
             client.BeginDeployment(card);draggingCard=button;
+            battlefieldDragStarted=false;hasDragPreviewPoint=false;
+            dragCardOpacity=1f;lastDragAnimationTime=Time.unscaledTime;
             bool b3=DuelSpriteLibrary.Converted(card);dragPreview.EnableInClassList("b3-card",b3);Display(dragFrame,b3);
             dragOrigin=point;dragPosition=point;
             dragSize=button.worldBound.size;dragCardOrigin=button.worldBound.position;
             dragPreview.style.scale=new Scale(new Vector3(dragSize.x/112,dragSize.y/150,1));
-            float uiPerPixel=root.resolvedStyle.height/Mathf.Max(1,Screen.height);
-            float lift=touch?Mathf.Clamp(Screen.height*.065f,48,72):Mathf.Clamp(Screen.height*.035f,20,36);
-            dragAimOffset=button.worldBound.center-point-Vector2.up*(lift*uiPerPixel);
             button.AddToClassList("dragging");
             dragPreview.Q("dragArt").style.backgroundImage=button.Q(className:"card-art").resolvedStyle.backgroundImage;
             var definition=client.Rules.Find(card);
@@ -137,34 +141,66 @@ namespace TowerDuel
             return root.worldBound.Contains(point)&&!root.Q("dockFrame").worldBound.Contains(point)
                 &&!root.Q("audioButton").worldBound.Contains(point)&&!root.Q("leaveButton").worldBound.Contains(point)&&WorldPoint(point,out worldPoint);
         }
+        private bool DragOnBattlefield(Vector2 point)
+        {
+            // The card/placement visual mode depends on the pointer crossing the hand,
+            // not on whether a valid deployment point can currently be resolved.
+            return point.y<root.Q("dockFrame").worldBound.yMin;
+        }
         private void MoveDrag(Vector2 point)
         {
             dragPosition=point;
-            bool model=DragPoint(point,out var p);
+            bool battlefield=DragOnBattlefield(point);
+            battlefieldDragStarted|=battlefield;
+
+            // A reversible, time-based card fade works for mouse and touch,
+            // including a fast return from the arena to the hand.
+            float now=Time.unscaledTime;
+            float delta=Mathf.Max(0f,now-lastDragAnimationTime);
+            lastDragAnimationTime=now;
+            dragCardOpacity=Mathf.MoveTowards(dragCardOpacity,battlefield?0f:1f,delta/DragCardFadeSeconds);
             var position=dragCardOrigin+point-dragOrigin;
             dragPreview.style.translate=new Translate(position.x,position.y);
-            Display(dragPreview,!model);
-            dragPreview.EnableInClassList("invalid",model&&!client.CanDeploy(p));
-            client.ShowPreview(p,model);
+            dragPreview.style.opacity=dragCardOpacity*DragCardMaxOpacity;
+            Display(dragPreview,dragCardOpacity>.001f);
+            dragPreview.EnableInClassList("invalid",false);
+
+            // The closest legal deployment cell is also the ghost's location
+            // when the pointer is over the wall, enemy territory or outside
+            // the playable map. Never render troops on an illegal cell.
+            if(battlefield&&DragPoint(point,out var nearest))
+            {
+                dragPreviewPoint=nearest;hasDragPreviewPoint=true;
+            }
+            // During return-to-hand the last legal ghost stays in place until
+            // the card has faded in, avoiding a blank intermediate frame.
+            bool model=battlefieldDragStarted&&hasDragPreviewPoint&&(battlefield||dragCardOpacity<.999f);
+            client.ShowPreview(dragPreviewPoint,model);
         }
         private bool DragPoint(Vector2 point,out Vector3 p)
         {
             p=default;
-            if(!root.worldBound.Contains(point)||Vector2.Distance(point,dragOrigin)<dragSize.y*.2f)return false;
-            if(!DropPoint(point+dragAimOffset,out var aim))return false;
+            if(!root.worldBound.Contains(point)||!WorldPoint(point,out var aim))return false;
             var state=client.Session.State;
-            return client.Map.TryNearestDeployment(state?.seat??-1,aim,state,client.Rules.Find(client.SelectedCard),out p);
+            var card=client.Rules.Find(client.SelectedCard);
+            if(state==null||card==null)return false;
+            return client.Map.TryNearestDeployment(state.seat,aim,state,card,out p);
         }
         private void DropDrag(Vector2 point)
         {
             Vector3 p=default;
-            bool valid=CanPlay()&&DragPoint(point,out p)&&client.CanDeploy(p);
+            // Rendering a snapped ghost does not bypass the actual input and
+            // server-side placement requirements.
+            bool valid=CanPlay()&&DropPoint(point,out var aim)&&client.CanDeploy(aim)
+                &&DragPoint(point,out p)&&client.CanDeploy(p);
             if(valid)client.Deploy(p);
             CancelDrag();
         }
         private void CancelDrag()
         {
             draggingCard?.RemoveFromClassList("dragging");draggingCard=null;
+            battlefieldDragStarted=false;hasDragPreviewPoint=false;
+            dragCardOpacity=1f;dragPreview.style.opacity=DragCardMaxOpacity;
             Display(dragPreview,false);
             client.Selected=false;client.HidePreview();
         }
