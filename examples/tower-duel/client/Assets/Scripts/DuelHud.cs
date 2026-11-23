@@ -57,17 +57,13 @@ namespace TowerDuel
             root.Query<Label>().ForEach(label=>label.enableRichText=false);
             world=root.Q("worldInput");health=root.Q("healthLayer");lobby=root.Q("lobbyLayer");waiting=root.Q("waitingLayer");result=root.Q("resultLayer");dock=root.Q("dock");
             dragPreview=root.Q("dragPreview");energyRow=root.Q("energyRow");
-            dragPreview.Insert(0,DuelCartoonSkin.NewCardBackdrop());
-            dragFrame=CardFrame();dragPreview.Insert(2,dragFrame);Display(dragFrame,false);
-            var nextCardArt=root.Q("nextCardArt");
-            nextCardArt.parent.Insert(0,DuelCartoonSkin.NewCardBackdrop());
-            nextFrame=CardFrame(true);nextCardArt.Add(nextFrame);Display(nextFrame,false);
+            dragFrame=CardFrame();dragPreview.Insert(1,dragFrame);Display(dragFrame,false);
+            nextFrame=CardFrame(true);root.Q("nextCardArt").Add(nextFrame);Display(nextFrame,false);
             menu=new DuelMenu(lobby,client,BlurInputs);
             ready=root.Q<Button>("readyButton");
             foreach(var definition in client.Rules.cards)
             {
                 string id=definition.id;var button=new Button{name=id+"Card",tooltip=definition.name+" · "+definition.cost+" 能量\n"+definition.description};button.AddToClassList("unit-card");
-                button.Add(DuelCartoonSkin.NewCardBackdrop());
                 var portrait=new VisualElement{pickingMode=PickingMode.Ignore};portrait.AddToClassList("card-art");portrait.style.backgroundImage=DuelSpriteLibrary.Card(id);button.Add(portrait);
                 if(DuelSpriteLibrary.Converted(id)){button.AddToClassList("b3-card");button.Add(CardFrame());}
                 var title=new Label(definition.name){pickingMode=PickingMode.Ignore};title.AddToClassList("card-name");button.Add(title);

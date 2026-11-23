@@ -282,7 +282,6 @@ namespace TowerDuel
             {
                 Button = new Button(click);
                 Button.AddToClassList("menu-card");
-                Button.Add(DuelCartoonSkin.NewCardBackdrop());
                 art = new VisualElement { pickingMode = PickingMode.Ignore };
                 art.AddToClassList("menu-card-art");
                 Button.Add(art);

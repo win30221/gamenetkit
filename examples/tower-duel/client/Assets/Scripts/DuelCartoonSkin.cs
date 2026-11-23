@@ -52,13 +52,95 @@ namespace TowerDuel
             Paint(root, "secondary-button", Surface.Button);
         }
 
-        // A shared illustrated background, placed behind transparent character art.
-        public static VisualElement NewCardBackdrop()
+        // Called once per card ID by DuelSpriteLibrary's existing texture cache.
+        // The resulting texture is fully opaque, so it works in every UI location.
+        public static Texture2D CardArtWithBackdrop(Texture2D source)
         {
-            var backdrop = new VisualElement { pickingMode = PickingMode.Ignore };
-            backdrop.AddToClassList("card-backdrop");
-            backdrop.style.backgroundImage = Get(Surface.CardBackdrop);
-            return backdrop;
+            if (!source) return null;
+            try
+            {
+                return ComposeCardArt(source);
+            }
+            catch (System.Exception error)
+            {
+                Debug.LogWarning("Card background compose failed for " +
+                    source.name + ": " + error.Message);
+                return source;
+            }
+        }
+
+        private static Texture2D ComposeCardArt(Texture2D source)
+        {
+            Color32[] foreground = ReadCardPixels(source);
+            bool transparent = false;
+            for (int i = 0; i < foreground.Length; i++)
+                if (foreground[i].a < 255) { transparent = true; break; }
+            if (!transparent) return source; // Keep pre-illustrated cards unchanged.
+
+            int width = source.width, height = source.height;
+            Color32[] result = new Color32[foreground.Length];
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int index = y * width + x;
+                    Color32 hero = foreground[index];
+                    if (hero.a == 255) { result[index] = hero; continue; }
+                    Color32 bg = Pixel(Surface.CardBackdrop, x, y, width, height);
+                    if (hero.a == 0) { result[index] = bg; continue; }
+                    int a = hero.a, b = 255 - a;
+                    result[index] = new Color32(
+                        (byte)((hero.r * a + bg.r * b + 127) / 255),
+                        (byte)((hero.g * a + bg.g * b + 127) / 255),
+                        (byte)((hero.b * a + bg.b * b + 127) / 255),
+                        255);
+                }
+            }
+
+            var composed = new Texture2D(width, height, TextureFormat.RGBA32, false)
+            {
+                name = source.name + "_WithBackdrop",
+                filterMode = source.filterMode,
+                wrapMode = TextureWrapMode.Clamp,
+                hideFlags = HideFlags.DontSave
+            };
+            composed.SetPixels32(result);
+            composed.Apply(false, true);
+            return composed;
+        }
+
+        private static Color32[] ReadCardPixels(Texture2D source)
+        {
+            if (source.isReadable) return source.GetPixels32();
+
+            // B3 cards use Read/Write-disabled imports; copy once through the GPU
+            // instead of enabling permanent extra CPU-side texture memory.
+            var target = RenderTexture.GetTemporary(
+                source.width, source.height, 0,
+                RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
+            RenderTexture oldTarget = RenderTexture.active;
+            Texture2D readback = null;
+            try
+            {
+                Graphics.Blit(source, target);
+                RenderTexture.active = target;
+                readback = new Texture2D(source.width, source.height,
+                    TextureFormat.RGBA32, false);
+                readback.ReadPixels(new Rect(0, 0, source.width, source.height),
+                    0, 0, false);
+                readback.Apply(false, false);
+                return readback.GetPixels32();
+            }
+            finally
+            {
+                RenderTexture.active = oldTarget;
+                RenderTexture.ReleaseTemporary(target);
+                if (readback)
+                {
+                    if (Application.isPlaying) UnityEngine.Object.Destroy(readback);
+                    else UnityEngine.Object.DestroyImmediate(readback);
+                }
+            }
         }
 
         public static void SetMenuTab(Button tab, bool selected)
