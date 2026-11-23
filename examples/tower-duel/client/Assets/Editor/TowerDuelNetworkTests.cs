@@ -76,6 +76,7 @@ namespace TowerDuel.Editor
                 CosmeticImpactDeduplication();
                 DeploymentWaitAndRecovery();
                 FixedBattlefieldView();
+                MobileBattlefieldFraming();
                 return "TOWER_DUEL_NETWORK_TESTS PASS: SDK backoff/expiry, saved-seat restore, pending-action recovery, cancellation, nearest legal deployment, shared effect timing, rendered frost boundary, snapshot stalls, match resets, ranged windup/release, cosmetic impact deduplication and deployment readiness/recovery";
             }
             finally
@@ -83,6 +84,30 @@ namespace TowerDuel.Editor
                 if(hadResume)PlayerPrefs.SetString(ResumeKey,savedResume);else PlayerPrefs.DeleteKey(ResumeKey);
                 PlayerPrefs.Save();
             }
+        }
+
+        private static void MobileBattlefieldFraming()
+        {
+            var map=DuelMap.Load();
+            // Horizontal fit may not drop playable outer columns for phones.
+            foreach(var resolution in new[]{
+                new Vector2(320,780),new Vector2(355,780),
+                new Vector2(390,844),new Vector2(815,895)})
+            {
+                float size=TowerDuelClient.HorizontalFitSize(map.width*.5f,resolution.x,resolution.y);
+                float halfViewWidth=size*resolution.x/resolution.y;
+                Require(halfViewWidth>=map.width*.5f,
+                    "Narrow screen cropped legal placement coordinates: "+resolution);
+            }
+            // A side notch reduces safe width independently of screen width.
+            float withNotch=TowerDuelClient.HorizontalFitSize(map.width*.5f,295,780);
+            Require(withNotch*295f/780f>=map.width*.5f,
+                "Horizontal safe-area cropping bypassed the camera fit");
+            Require(Mathf.Abs(TowerDuelClient.VisualScaleForSize(18f)-1f)<.001f,
+                "Large-screen sprite presentation changed");
+            Require(TowerDuelClient.VisualScaleForSize(26f)>1f&&
+                    TowerDuelClient.VisualScaleForSize(26f)<=1.20f,
+                "Narrow-screen sprite compensation out of bounds");
         }
 
         private static void FixedBattlefieldView()

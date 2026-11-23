@@ -317,13 +317,17 @@ namespace TowerDuel
             foreach(var shadow in wallShadows)
                 shadow.Shadow.localPosition=shadow.Center+.42f*Vector3.Project(castDirection,shadow.CastAxis);
             if(meadow)meadow.transform.rotation=Quaternion.LookRotation(Vector3.down,forward);
+            float combatScale=TowerDuelClient.VisualScaleForSize(camera.orthographicSize);
             foreach(var item in items)
             {
+                // Compensate only gameplay buildings, never trees or the wall;
+                // decoration must not grow into the playable lanes.
+                float scale=item.Scale*(item.Building!=null?combatScale:1f);
                 item.Body.transform.rotation=Quaternion.LookRotation(forward);
-                item.Body.transform.localScale=new Vector3(item.Scale,item.Scale/Mathf.Max(.15f,camera.transform.up.y),item.Scale);
+                item.Body.transform.localScale=new Vector3(scale,scale/Mathf.Max(.15f,camera.transform.up.y),scale);
                 item.Shadow.transform.rotation=Quaternion.LookRotation(Vector3.down,forward);
                 item.Shadow.transform.localPosition=new Vector3(0,.002f,0);
-                item.Shadow.transform.localScale=Vector3.one*(item.Scale*2.2f);
+                item.Shadow.transform.localScale=Vector3.one*(scale*2.2f);
             }
         }
         public void Present(EntityState entity,double tick)

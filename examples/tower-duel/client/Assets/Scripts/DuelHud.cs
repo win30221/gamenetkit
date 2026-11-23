@@ -380,6 +380,7 @@ namespace TowerDuel
             var seen=new HashSet<long>();
             // Match the arena's height-based framing, independent of window width.
             float healthScale=root.resolvedStyle.height/1000f;
+            float combatScale=TowerDuelClient.VisualScaleForSize(client.Camera.orthographicSize);
             foreach(var group in new[]{state.towers,state.units})foreach(var e in group)
             {
                 if(e.hp<=0||e.hp>=e.maxHP)continue;seen.Add(e.id);
@@ -403,7 +404,7 @@ namespace TowerDuel
                 }
                 var worldPos=DuelPresentation.MirrorDepth(unit?client.Session.Sample(e):e.Position,state.seat);
                 var bodyCenter=worldPos+Vector3.up*(unit?client.Presentation.UnitHeight(e.kind)*.5f:1f);
-                worldPos.y+=e.kind=="keep"?TowerDuelClient.KeepHealthHeight:e.kind=="tower"?(client.Map.HasWall?7.4f:3.9f):client.Presentation.UnitHeight(e.kind)+.22f;
+                worldPos.y+=(e.kind=="keep"?TowerDuelClient.KeepHealthHeight:e.kind=="tower"?(client.Map.HasWall?7.4f:3.9f):client.Presentation.UnitHeight(e.kind))*combatScale+.22f;
                 var screen=client.Camera.WorldToScreenPoint(worldPos);bool visible=!client.Presentation.Environment.WallOccludes(client.Camera,bodyCenter)&&!client.Presentation.Environment.WallOccludes(client.Camera,worldPos)&&screen.z>0&&client.Camera.pixelRect.Contains(new Vector2(screen.x,screen.y));Display(bar,visible);
                 if(visible)
                 {

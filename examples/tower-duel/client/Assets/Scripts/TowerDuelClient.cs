@@ -17,7 +17,7 @@ namespace TowerDuel
         public DuelAudio Audio {get;private set;}
         public const float KeepHealthHeight=10.2f;
         public const float TowerApproachClearance=1.7f;
-        private const float ArenaSidePadding=.6f;
+        private const float SideMarginPixels=8f;
         public float BoardBottom=>boardBottom;
         public float BoardTop=>boardTop;
         private DuelHud hud;
@@ -75,54 +75,64 @@ namespace TowerDuel
             verification?.Update();
         }
 
+        // Fit every legal placement coordinate inside the horizontal safe area.
+        // Padding is in physical pixels, not world units, so narrow phones do
+        // not waste additional horizontal space on a fixed world-space margin.
+        public static float HorizontalFitSize(float mapHalfWidth,float safeWidth,float pixelHeight)
+        {
+            float inset=Mathf.Min(SideMarginPixels,Mathf.Max(0f,safeWidth*.04f));
+            return mapHalfWidth*Mathf.Max(1f,pixelHeight)/Mathf.Max(1f,safeWidth-2f*inset);
+        }
+
+        // Mildly enlarge only combat sprites when a wide arena must be shown
+        // through a narrow viewport; logical positions and hit radii never change.
+        public static float VisualScaleForSize(float orthographicSize)=>
+            Mathf.Clamp(1f+Mathf.Max(0f,orthographicSize-18f)*.03f,1f,1.20f);
+
         private void FrameCamera()
         {
-            screenWidth = Screen.width; screenHeight = Screen.height;
-            framedSafeArea = Screen.safeArea;
+            screenWidth=Screen.width;screenHeight=Screen.height;
+            framedSafeArea=Screen.safeArea;
             Camera.transform.rotation=Quaternion.Euler(60,0,0);
             Camera.transform.position=-Camera.transform.forward*48;
-            Camera.orthographic = true;
-            // Frame the castles and their labels, rather than the empty rear grass.
-            // The header's empty centre can show the arena; its buttons stay at the sides.
-            float height=Mathf.Max(.25f,1-boardBottom-boardTop);
+            Camera.orthographic=true;
+
+            float availableHeight=Mathf.Max(.25f,1-boardBottom-boardTop);
             float sin=Mathf.Sin(60*Mathf.Deg2Rad),cos=Mathf.Cos(60*Mathf.Deg2Rad);
-            float keepDistance=0;
-            float tacticalHalfWidth=0;
+            float keepDistance=0f,unitHeight=0f;
             foreach(var tower in Map.towers)
-            {
                 if(tower.kind=="keep")keepDistance=Mathf.Max(keepDistance,Mathf.Abs(tower.z));
-                tacticalHalfWidth=Mathf.Max(tacticalHalfWidth,Mathf.Abs(tower.x)+TowerApproachClearance);
-            }
-            foreach(float gate in Map.bridges)
-                tacticalHalfWidth=Mathf.Max(tacticalHalfWidth,Mathf.Abs(gate)+Map.bridgeHalfWidth);
-            float far=keepDistance*sin+KeepHealthHeight*cos+.45f;
-            float near=(keepDistance+2.1f)*sin+.15f;
-            float focus=(far-near)*.5f;
-            float center=boardBottom+height*.5f;
-            float size=(far+near)*.5f/height;
-            // Include the full playable map, not only its towers. Narrow screens
-            // must zoom out instead of cropping the outside deployment cells.
-            // Horizontal safe-area insets (e.g. a side notch) are not drawable.
+            foreach(var card in Rules.cards)
+                if(!card.IsSpell)unitHeight=Mathf.Max(unitHeight,presentation.UnitHeight(card.id));
+
             float safeWidth=framedSafeArea.width>0?framedSafeArea.width:screenWidth;
             float safeCenterX=framedSafeArea.width>0?framedSafeArea.center.x:screenWidth*.5f;
-            float safeAspect=safeWidth/Mathf.Max(1f,screenHeight);
-            float playableHalfWidth=Mathf.Max(Map.width*.5f,tacticalHalfWidth)+ArenaSidePadding;
-            size=Mathf.Max(size,playableHalfWidth/Mathf.Max(.01f,safeAspect));
-            // Keep troops at the far rear edge inside the backbuffer.
-            float unitHeight=0;
-            foreach(var card in Rules.cards)if(!card.IsSpell)unitHeight=Mathf.Max(unitHeight,presentation.UnitHeight(card.id));
-            size=Mathf.Max(size,(Map.length*.5f*sin+unitHeight*cos+.15f-focus)/(2*(1-center)));
+            float horizontalSize=HorizontalFitSize(Map.width*.5f,safeWidth,screenHeight);
+            float size=horizontalSize;
+            float far=0f,near=Map.length*.5f*sin+.15f;
+
+            // The roof and the tallest troop at the rear are the vertical
+            // extremes. Refine after sprite compensation to avoid clipping.
+            for(int i=0;i<3;i++)
+            {
+                float artScale=VisualScaleForSize(size);
+                far=Mathf.Max(keepDistance*sin+KeepHealthHeight*artScale*cos+.45f,
+                    Map.length*.5f*sin+unitHeight*artScale*cos+.15f);
+                size=Mathf.Max(horizontalSize,(far+near)*.5f/availableHeight);
+            }
+            float focus=(far-near)*.5f;
+            float center=boardBottom+availableHeight*.5f;
             Camera.orthographicSize=size;
-            // Render the entire backbuffer so transparent HUD text never accumulates.
-            // The offset preserves the arena framing above the dock without a partial viewport.
-            Camera.transform.position += Camera.transform.up * (focus-(center-.5f)*2*size);
-            // Keep the arena centered in the usable screen area without
-            // rotating the camera or changing world-space positions.
-            Camera.transform.position -= Camera.transform.right *
-                ((safeCenterX-screenWidth*.5f)*2*size/Mathf.Max(1f,screenHeight));
-            Camera.rect = new Rect(0, 0, 1, 1);
-            Camera.backgroundColor = Map.HasWall ? new Color(151f/255f, 210f/255f, 30f/255f) : new Color(.16f, .28f, .14f);
+
+            // The HUD's top and bottom are reserved; center the battlefield
+            // in the remaining height without changing camera yaw or tilt.
+            Camera.transform.position+=Camera.transform.up*(focus-(center-.5f)*2f*size);
+            Camera.transform.position-=Camera.transform.right*
+                ((safeCenterX-screenWidth*.5f)*2f*size/Mathf.Max(1f,screenHeight));
+            Camera.rect=new Rect(0,0,1,1);
+            Camera.backgroundColor=Map.HasWall?new Color(151f/255f,210f/255f,30f/255f):new Color(.16f,.28f,.14f);
             DuelLighting.Apply(Camera);
+            if(viewSeat>=0)presentation.Environment.SetView(Camera,viewSeat);
         }
         private void SetViewSeat(int seat)
         {

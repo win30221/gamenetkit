@@ -145,6 +145,7 @@ namespace TowerDuel
             var forward = view.transform.forward; forward.y = 0;
             billboard.rotation = Quaternion.LookRotation(forward.normalized);
             float scale = currentSet.WorldHeight * currentSet.TileSize / Mathf.Max(1, currentSet.ReferenceHeight);
+            scale *= TowerDuelClient.VisualScaleForSize(view.orthographicSize);
             if (Clip == DuelSpriteClip.Idle && !preview && !double.IsNaN(lastTick))
                 scale *= 1 + .004f * Mathf.Sin((float)(lastTick / 30 * Math.PI * 2));
             if (Clip == DuelSpriteClip.Death) scale *= Mathf.Lerp(.84f, 1, alpha);
