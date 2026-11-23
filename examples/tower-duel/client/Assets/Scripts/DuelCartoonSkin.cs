@@ -13,7 +13,7 @@ namespace TowerDuel
         private enum Surface
         {
             Wallpaper, Parchment, Scroll, Button, GreenButton, BlueButton,
-            DarkPanel, CardFrame, CoinBadge
+            DarkPanel, CardFrame, CardBackdrop, CoinBadge
         }
 
         private static readonly Dictionary<Surface, Texture2D> Textures =
@@ -52,6 +52,15 @@ namespace TowerDuel
             Paint(root, "secondary-button", Surface.Button);
         }
 
+        // A shared illustrated background, placed behind transparent character art.
+        public static VisualElement NewCardBackdrop()
+        {
+            var backdrop = new VisualElement { pickingMode = PickingMode.Ignore };
+            backdrop.AddToClassList("card-backdrop");
+            backdrop.style.backgroundImage = Get(Surface.CardBackdrop);
+            return backdrop;
+        }
+
         public static void SetMenuTab(Button tab, bool selected)
         {
             if (tab != null)
@@ -69,7 +78,7 @@ namespace TowerDuel
         {
             if (Textures.TryGetValue(surface, out var cached) && cached) return cached;
             int width = surface == Surface.CoinBadge ? 96 : 192;
-            int height = surface == Surface.Wallpaper ? 256 :
+            int height = surface == Surface.Wallpaper || surface == Surface.CardBackdrop ? 256 :
                 surface == Surface.CoinBadge ? 96 : 128;
             var pixels = new Color32[width * height];
             for (int y = 0; y < height; y++)
@@ -101,6 +110,34 @@ namespace TowerDuel
                 if (x % 73 == 13 && y % 61 == 27)
                     blue = Color.Lerp(blue, Color.white, .16f);
                 return blue;
+            }
+
+            if (surface == Surface.CardBackdrop)
+            {
+                // A small fantasy landscape: glowing sky, distant hills and stone ground.
+                // It sits *behind* the existing character PNG, never replacing the art.
+                float u = x / (float)(width - 1), v = y / (float)(height - 1);
+                var sky = Color.Lerp(new Color32(49, 105, 145, 255),
+                    new Color32(158, 213, 225, 255), v);
+                float dx = (u - .5f) * 1.2f, dy = v - .68f;
+                float halo = Mathf.Clamp01(1f - (dx * dx + dy * dy) * 4f);
+                sky = Color.Lerp(sky, new Color32(255, 228, 153, 255), halo * .35f);
+                float ridge = .30f + .035f * Mathf.Sin(u * 10.5f)
+                    + .018f * Mathf.Sin(u * 24f);
+                if (v < ridge)
+                {
+                    sky = Color.Lerp(new Color32(42, 78, 89, 255),
+                        new Color32(95, 151, 136, 255), Mathf.Clamp01(v / ridge));
+                    // A quieter foreground gives the hero's silhouette clear contrast.
+                    if (v < .13f)
+                        sky = Color.Lerp(new Color32(94, 83, 77, 255),
+                            new Color32(117, 115, 95, 255), v / .13f);
+                }
+                // Restrained, symmetrical fantasy crest glints at the top corners.
+                float ornament = Mathf.Abs(u - .5f);
+                if (v > .88f && ornament > .34f && ornament < .38f)
+                    sky = Color.Lerp(sky, new Color32(255, 239, 176, 255), .40f);
+                return sky;
             }
 
             if (surface == Surface.CoinBadge)
