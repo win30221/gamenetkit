@@ -63,6 +63,15 @@ func (w *match) target(u *unit, units []*unit) (entity, bool) {
 			return tower, true
 		}
 	}
+	building := w.buildingObjective(u)
+	from := position(u.State)
+	forward := 1.0
+	if u.State.Seat == 1 {
+		forward = -1
+	}
+	approaching := building.ID != 0 && (building.Z-from.Z)*forward > 0
+	buildingInReach := approaching && contactDistance(u.State, building) <= definition.Range &&
+		w.attackLine(u.State, building, from, position(building))
 	var nearest entity
 	for _, enemy := range units {
 		state := enemy.State
@@ -72,6 +81,13 @@ func (w *match) target(u *unit, units []*unit) (entity, bool) {
 		if state.ID == u.LockedTarget {
 			return state, true
 		}
+		// A defender level with or behind the objective can be fought in place,
+		// but should not draw an approaching attacker around the building.
+		if approaching && (state.Z-building.Z)*forward >= 0 &&
+			(buildingInReach || contactDistance(u.State, state) > definition.Range ||
+				!w.attackLine(u.State, state, from, position(state))) {
+			continue
+		}
 		if nearerTarget(u.State, state, nearest) {
 			nearest = state
 		}
@@ -80,6 +96,5 @@ func (w *match) target(u *unit, units []*unit) (entity, bool) {
 	if nearest.ID != 0 {
 		return nearest, true
 	}
-	building := w.buildingObjective(u)
 	return building, building.ID != 0
 }

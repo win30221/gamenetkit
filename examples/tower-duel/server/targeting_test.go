@@ -31,7 +31,7 @@ func targetingFixture(t *testing.T, kind string, seat int, laneIndex int) (*matc
 }
 
 func TestTargetTowerAndNearbyDefenders(t *testing.T) {
-	for _, scenario := range []string{"behind", "front", "outside_aggro", "no_defender", "after_tower_lock"} {
+	for _, scenario := range []string{"behind", "beside", "front", "outside_aggro", "no_defender", "after_tower_lock"} {
 		for _, kind := range []string{"guard", "swords", "charger", "archer", "bomber", "siege"} {
 			for seat := range 2 {
 				for laneIndex := range 2 {
@@ -40,6 +40,9 @@ func TestTargetTowerAndNearbyDefenders(t *testing.T) {
 						forward := 1.0
 						if seat == 1 {
 							forward = -1
+						}
+						if scenario == "beside" {
+							u.State.Z = tower.Z - 3*forward
 						}
 						if scenario == "after_tower_lock" {
 							for wait := 0; wait < tickRate && u.LockedTarget == 0; wait++ {
@@ -54,6 +57,8 @@ func TestTargetTowerAndNearbyDefenders(t *testing.T) {
 							x, z := u.State.X, tower.Z+1.8*forward
 							if scenario == "front" {
 								x, z = tower.X+math.Copysign(1.5, tower.X), tower.Z-1.2*forward
+							} else if scenario == "beside" {
+								x, z = tower.X+math.Copysign(2, tower.X), tower.Z
 							} else if scenario == "outside_aggro" {
 								z = tower.Z + 6.8*forward
 							}
@@ -64,7 +69,7 @@ func TestTargetTowerAndNearbyDefenders(t *testing.T) {
 							// Hold the defender in place; attacker stats, tower damage,
 							// collision, navigation and attack timing remain canonical.
 							w.Units[ack.UnitID].Cooldown = 10000
-							if (scenario == "front" || scenario == "behind") && kind != "siege" {
+							if scenario == "front" && kind != "siege" {
 								want = ack.UnitID
 							}
 						}
@@ -196,7 +201,7 @@ func TestTargetReevaluatesBeforeFirstAttack(t *testing.T) {
 func TestTargetNearbyTowerAfterCrossLaneFight(t *testing.T) {
 	w, u, _ := targetingFixture(t, "swords", 0, 0)
 	u.LaneX = w.Map.Bridges[1]
-	enemy := testSoldier(201, 1, "archer", u.State.X, 9.5)
+	enemy := testSoldier(201, 1, "archer", u.State.X, 4.5)
 	goal, _ := w.target(u, []*unit{u, enemy})
 	if goal.ID != enemy.State.ID {
 		t.Fatal("nearby enemy should take priority while unlocked", goal)
