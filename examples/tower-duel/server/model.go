@@ -100,6 +100,7 @@ type unit struct {
 	GoalPoint        point
 	NextRoute        uint64
 	LaneX            float64
+	UseOuterTrack    bool
 	LockedTarget     uint64
 	Travelled        float64
 	SlowUntil        uint64
@@ -298,9 +299,17 @@ func (w *match) deploy(seat int, matchID string, action uint64, card string, x, 
 			if definition.DeployTicks > 0 {
 				readyTick = w.Tick + uint64(definition.DeployTicks)
 			}
-			for _, p := range spots {
+			lane := w.nearestBridge(seat, x)
+			splitSquad := card == "swords" && math.Abs(x) <= w.Map.DeploymentCellSize/2
+			for index, p := range spots {
+				unitLane := lane
+				// The two middle cells straddle the lane boundary even though
+				// the squad's .48-wide offsets stop just short of crossing it.
+				if splitSquad && index < 2 {
+					unitLane = w.Map.Bridges[index]
+				}
 				w.NextID++
-				w.Units[w.NextID] = &unit{State: entity{ID: w.NextID, Seat: seat, Kind: card, X: p.X, Z: p.Z, Radius: definition.bodyRadius(), Airborne: definition.InitialAir, TransformTick: definition.transformTick(w.Tick), HP: definition.HP, MaxHP: definition.HP, DZ: direction, ReadyTick: readyTick}, LaneX: w.nearestBridge(seat, x)}
+				w.Units[w.NextID] = &unit{State: entity{ID: w.NextID, Seat: seat, Kind: card, X: p.X, Z: p.Z, Radius: definition.bodyRadius(), Airborne: definition.InitialAir, TransformTick: definition.transformTick(w.Tick), HP: definition.HP, MaxHP: definition.HP, DZ: direction, ReadyTick: readyTick}, LaneX: unitLane, UseOuterTrack: splitSquad && index == 2}
 				if r.UnitID == 0 {
 					r.UnitID = w.NextID
 				}

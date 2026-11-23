@@ -278,6 +278,10 @@ func (w *match) routeToGoal(from point, goal entity, stop, lane float64, mover *
 	clearance := w.Map.barrierHalfWidth() + radius + .05
 	halfTrack := math.Max(0, w.Map.BridgeHalfWidth-radius-.1)
 	trackX := math.Max(lane-halfTrack, math.Min(lane+halfTrack, from.X))
+	if depth < -clearance && mover.UseOuterTrack && lane == mover.LaneX {
+		// Give the third swordsman room to pass the ally sharing this gate.
+		trackX = lane + math.Copysign(halfTrack, lane)
+	}
 	lateral := math.Abs(trackX - from.X)
 	var path []point
 	switch {

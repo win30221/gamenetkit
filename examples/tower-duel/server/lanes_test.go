@@ -10,6 +10,9 @@ func TestDeploymentLaneAfterFrontTowerDestroyed(t *testing.T) {
 	for _, card := range []string{"guard", "archer", "swords"} {
 		for seat := range 2 {
 			for _, x := range []float64{-.1, .1, -2.5, 2.5, -5, 5} {
+				if card == "swords" && math.Abs(x) < .5 {
+					continue // The central squad has a dedicated split-lane test.
+				}
 				t.Run(fmt.Sprintf("%s_seat%d_x%g", card, seat, x), func(t *testing.T) {
 					w := playingMatch(t)
 					w.Rules.TowerDamage = 0
@@ -63,25 +66,48 @@ func TestDeploymentLaneAfterFrontTowerDestroyed(t *testing.T) {
 	}
 }
 
-func TestSquadSharesLaneAtCentreLine(t *testing.T) {
+func TestSwordSquadSplitsAtCentreAndStaysTogetherOutsideIt(t *testing.T) {
 	for seat := range 2 {
-		for _, x := range []float64{-.1, .1} {
-			w := playingMatch(t)
-			z := -5.0
-			if seat == 1 {
-				z = -z
-			}
-			a := w.deploy(seat, w.ID, 1, "swords", x, z)
-			if !a.Accepted {
-				t.Fatal(a)
-			}
-			units := w.sortedUnits()
-			for _, u := range units {
-				goal, ok := w.target(u, units)
-				if !ok || goal.Kind != "tower" || goal.X != w.nearestBridge(seat, x) {
-					t.Fatalf("squad split across lanes near the centre: %+v", goal)
+		for _, x := range []float64{-1.5, -.5, 0, .5, 1.5} {
+			t.Run(fmt.Sprintf("seat%d/x%g", seat, x), func(t *testing.T) {
+				w := playingMatch(t)
+				w.Rules.TowerDamage = 0
+				forward := 1.0
+				if seat == 1 {
+					forward = -1
 				}
-			}
+				ack := w.deploy(seat, w.ID, 1, "swords", x, -5*forward)
+				if !ack.Accepted || ack.Count != 3 {
+					t.Fatal(ack)
+				}
+				primary := w.nearestBridge(seat, x)
+				want := map[float64]int{primary: 3}
+				if math.Abs(x) <= .5 {
+					want[w.Map.Bridges[0]], want[w.Map.Bridges[1]] = 1, 1
+					want[primary]++
+				}
+				crossed := map[uint64]bool{}
+				actual := map[float64]int{}
+				for i := 0; i < 30*tickRate && len(crossed) < 3; i++ {
+					w.step()
+					for id, unit := range w.Units {
+						if crossed[id] || unit.State.Z*forward < 0 {
+							continue
+						}
+						lane := w.nearestBridge(seat, unit.State.X)
+						if math.Abs(unit.State.X-lane) > w.Map.BridgeHalfWidth-unit.State.Radius {
+							t.Fatalf("unit crossed outside a gate: %+v", unit.State)
+						}
+						crossed[id] = true
+						actual[lane]++
+					}
+				}
+				for _, lane := range w.Map.Bridges {
+					if actual[lane] != want[lane] {
+						t.Fatalf("gate %g: crossed %d swordsmen, want %d; crossings=%v", lane, actual[lane], want[lane], actual)
+					}
+				}
+			})
 		}
 	}
 }
