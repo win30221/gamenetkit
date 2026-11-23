@@ -141,7 +141,7 @@ func TestMarchHugsAlliedBuildingBeforeRejoiningLane(t *testing.T) {
 		x    float64
 	}{
 		{"behind_keep", 0},
-		{"outer_rear_corner", -10},
+		{"outer_rear_corner", -9.5},
 	} {
 		for seat := range 2 {
 			t.Run(fmt.Sprintf("%s/seat%d", spawn.name, seat), func(t *testing.T) {

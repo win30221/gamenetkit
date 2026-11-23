@@ -30,7 +30,7 @@ func TestDestroyedEnemyTowerUnlocksOnlyItsPocket(t *testing.T) {
 						w.Towers[i].HP = 0
 					}
 				}
-				for i, p := range []point{{-lane, 3 * forward}, {lane, 0}, {lane, 6 * forward}, {11, 3 * forward}, {0, 11 * forward}} {
+				for i, p := range []point{{-lane, 3 * forward}, {0, 3 * forward}, {0, 0}, {lane, 0}, {lane, 6 * forward}, {11, 3 * forward}, {0, 11 * forward}} {
 					if r := w.deploy(seat, w.ID, uint64(i+3), "guard", p.X, p.Z); r.Accepted || r.Reason != "invalid_placement" {
 						t.Fatalf("pocket admitted forbidden position %+v: %+v", p, r)
 					}

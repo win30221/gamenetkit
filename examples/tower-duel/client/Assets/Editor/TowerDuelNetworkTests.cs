@@ -92,9 +92,9 @@ namespace TowerDuel.Editor
                 Require(f.Map.HasWall&&f.Map.id=="wall-gates-1","Canonical wall map was not imported");
                 float halfWidth=f.Map.width/2;
                 float gateHalf=f.Map.bridgeHalfWidth;
-                Require(f.Map.width==21&&f.Map.bridges[1]-f.Map.bridges[0]-2*gateHalf==10&&
-                        f.Map.bridges[0]-gateHalf+halfWidth==2.5f&&halfWidth-f.Map.bridges[1]-gateHalf==2.5f,
-                        "Expected ten central cells and two equal outer wall spans");
+                Require(f.Map.width==20&&gateHalf==1&&-f.Map.bridges[0]-gateHalf==5&&f.Map.bridges[1]-gateHalf==5&&
+                        f.Map.bridges[0]-gateHalf+halfWidth==3&&halfWidth-f.Map.bridges[1]-gateHalf==3,
+                        "Expected two-cell gates and five central wall cells on each side");
                 foreach(var tower in f.Map.towers)
                     if(tower.kind=="tower")Require(tower.x==f.Map.bridges[tower.x<0?0:1],"Front tower must line up with its gate");
                 var root=new GameObject("Fixed battlefield regression");DuelPresentation presentation=null;
@@ -297,27 +297,34 @@ namespace TowerDuel.Editor
                     Require(Mathf.Abs(p.x-targetX)<.001f&&Mathf.Abs(p.z-targetZ*forward)<.001f,"Wrong nearest destination for "+card.id+": "+p);
                     Require(f.Map.CanDeploy(seat,p,state,card),"Nearest destination contains an illegal formation member.");
                 }
-                Expect(-4.2f,-3.8f,guard,-4f,-3.5f);
-                Expect(-4.2f,.2f,guard,-4f,home);
-                Expect(-4.2f,3.2f,guard,-4f,home);
-                Expect(-6.7f,-7.7f,guard,-8f,-7.5f);
-                Expect(30,-3.2f,guard,10f,-3.5f);
-                Expect(30,-3.2f,squad,9f,-3.5f);
-                Expect(-4.2f,-1.7f,squad,-4f,Mathf.Min(-1.5f,home));
+                Expect(-4.2f,-3.8f,guard,-4.5f,-3.5f);
+                Require(!f.Map.TryNearestDeployment(seat,new Vector3(0,0,.2f*forward),state,guard,out _),
+                        "A troop dragged over the centre wall must stay invalid");
+                Require(!f.Map.TryNearestDeployment(seat,new Vector3(f.Map.bridges[0],0,0),state,guard,out _),
+                        "A troop dragged into a doorway must stay invalid");
+                Require(Mathf.Abs(f.Map.SnapDeployment(Vector3.zero,guard).x)==.5f,
+                        "A map with an even width must have no cell centred on the seam");
+                Expect(-4.2f,3.2f,guard,-4.5f,home);
+                Expect(-6.7f,-7.7f,guard,-7.5f,-7.5f);
+                Expect(30,-3.2f,guard,9.5f,-3.5f);
+                Expect(30,-3.2f,squad,8.5f,-3.5f);
+                Expect(-4.2f,-1.7f,squad,-4.5f,Mathf.Min(-1.5f,home));
                 foreach(var tower in state.towers)if(tower.seat==seat&&tower.kind=="tower"&&tower.x<0)tower.hp=0;
-                Expect(-4.2f,3.2f,guard,-4f,home);
+                Expect(-4.2f,3.2f,guard,-4.5f,home);
                 foreach(var tower in state.towers)if(tower.seat!=seat&&tower.kind=="tower"&&tower.x<0)tower.hp=0;
-                Expect(-4.2f,3.2f,guard,-4f,3.5f);
-                Expect(4.2f,3.2f,guard,f.Map.HasWall?4f:-.5f,f.Map.HasWall?home:3.5f);
-                Expect(-4.2f,5.4f,squad,-4f,f.Map.HasWall?3.5f:4.5f);
+                Expect(-4.2f,3.2f,guard,-4.5f,3.5f);
+                Require(!f.Map.CanDeploy(seat,new Vector3(0,0,3*forward),state,guard),
+                        "A single destroyed tower must not unlock the centre seam");
+                Expect(4.2f,3.2f,guard,f.Map.HasWall?4.5f:-.5f,f.Map.HasWall?home:3.5f);
+                Expect(-4.2f,5.4f,squad,-4.5f,f.Map.HasWall?3.5f:4.5f);
                 state=f.State(102);state.seat=seat;
-                Expect(-4.2f,3.2f,guard,-4f,home);
+                Expect(-4.2f,3.2f,guard,-4.5f,home);
                 Expect(-4.24f,3.16f,spell,-4.24f,3.16f);
-                Expect(30,40,spell,10.5f,15);
+                Expect(30,40,spell,10,15);
                 state.energy=0;
-                Expect(-4.2f,.2f,guard,-4f,home);
+                Expect(-4.2f,-.7f,guard,-4.5f,home);
                 f.Deliver(state);
-                Require(!f.Session.Deploy(new Vector3(-4f,0,-2.5f*forward)),"Nearest destination bypassed the energy check.");
+                Require(!f.Session.Deploy(new Vector3(-4.5f,0,-2.5f*forward)),"Nearest destination bypassed the energy check.");
                 Require(!f.Map.TryNearestDeployment(seat,new Vector3(float.NaN,0,0),state,guard,out _),"Nonfinite aim resolved to a cell.");
                 Require(!f.Map.TryNearestDeployment(seat,new Vector3(0,0,float.PositiveInfinity),state,spell,out _),"Nonfinite spell aim resolved to a point.");
                 var blocked=new DuelMap{width=1,length=1,deploymentCellSize=1,riverHalfWidth=1.5f};

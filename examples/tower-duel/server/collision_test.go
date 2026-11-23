@@ -68,3 +68,40 @@ func TestOpposingSoldiersAlsoSeparate(t *testing.T) {
 		t.Fatal("opponents did not collide", a.State, b.State)
 	}
 }
+
+func TestSiegePushesDefendersStraightThroughGate(t *testing.T) {
+	for seat := range 2 {
+		w := playingMatch(t)
+		w.Rules.TowerDamage = 0
+		direction := 1.0
+		if seat == 1 {
+			direction = -1
+		}
+		lane := w.Map.Bridges[seat]
+		siege := testSoldier(101, seat, "siege", lane, -2.5*direction)
+		siege.State.Radius = w.Rules.ByID["siege"].bodyRadius()
+		siege.LaneX = lane
+		front := testSoldier(102, 1-seat, "guard", lane, -1.7*direction)
+		front.State.Radius = w.Rules.ByID["guard"].bodyRadius()
+		front.Cooldown = 10000
+		back := testSoldier(103, 1-seat, "archer", lane, -.9*direction)
+		back.State.Radius, back.Cooldown = w.Rules.ByID["archer"].bodyRadius(), front.Cooldown
+		w.Units[101], w.Units[102], w.Units[103] = siege, front, back
+		for range 180 {
+			w.step()
+			for _, u := range []*unit{siege, front, back} {
+				if u.State.X != lane || !w.walkableFor(position(u.State), u.State.Radius, false) {
+					t.Fatalf("seat %d: ground unit sidestepped or entered terrain: %+v", seat, u.State)
+				}
+			}
+			if siege.State.Z*direction >= .5 {
+				break
+			}
+		}
+		if siege.State.Z*direction < .5 || front.State.Z*direction <= siege.State.Z*direction ||
+			back.State.Z*direction <= front.State.Z*direction || siege.State.HitTick != 0 {
+			t.Fatalf("seat %d: expected siege to push both defenders without attacking them: %v %v %v",
+				seat, position(siege.State), position(front.State), position(back.State))
+		}
+	}
+}

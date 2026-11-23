@@ -52,13 +52,16 @@ func (w *match) deploymentPointFor(seat int, p point, radius float64) bool {
 	if depth < bank || depth > w.Map.barrierHalfWidth()+w.Map.PocketDepth {
 		return false
 	}
+	// Each destroyed tower unlocks its own half. The seam belongs to both.
+	left, right := false, false
 	for _, tower := range w.Towers {
-		if tower.Seat != seat && tower.Kind == "tower" && tower.HP == 0 &&
-			((tower.X < 0 && p.X <= 0) || (tower.X > 0 && p.X >= 0)) {
-			return w.walkableFor(p, radius, false)
+		if tower.Seat != seat && tower.Kind == "tower" && tower.HP == 0 {
+			left = left || tower.X < 0
+			right = right || tower.X > 0
 		}
 	}
-	return false
+	annexed := (p.X < 0 && left) || (p.X > 0 && right) || (p.X == 0 && left && right)
+	return annexed && w.walkableFor(p, radius, false)
 }
 
 func (w *match) nearestBridge(seat int, x float64) float64 {
@@ -120,7 +123,7 @@ func (w *match) route(from, to point, stopDistance, laneX float64, mover *unit, 
 	}
 	occupied := make([]bool, cols*rows)
 	for _, other := range units {
-		if other == mover || other.State.Airborne != mover.State.Airborne || other.State.HP <= 0 || other.State.Seat == mover.State.Seat {
+		if !blocksMovement(mover, other) {
 			continue
 		}
 		centre := index(position(other.State))
@@ -217,11 +220,17 @@ func (w *match) route(from, to point, stopDistance, laneX float64, mover *unit, 
 	return nil
 }
 
+// Siege units let the weighted collision solver push defenders aside.
+func blocksMovement(mover, other *unit) bool {
+	return mover.State.Kind != "siege" && other != mover && other.State.HP > 0 &&
+		other.State.Seat != mover.State.Seat && other.State.Airborne == mover.State.Airborne
+}
+
 func clearUnits(from, to point, mover *unit, units []*unit) bool {
 	dx, dz := to.X-from.X, to.Z-from.Z
 	length := dx*dx + dz*dz
 	for _, other := range units {
-		if other == mover || other.State.Airborne != mover.State.Airborne || other.State.HP <= 0 || other.State.Seat == mover.State.Seat {
+		if !blocksMovement(mover, other) {
 			continue
 		}
 		p := position(other.State)
@@ -438,7 +447,7 @@ func (w *match) move(u *unit, goal entity, units []*unit) {
 				return false
 			}
 			for _, other := range units {
-				if other != u && !other.State.Airborne && other.State.Seat != u.State.Seat && other.State.HP > 0 && distance(v, position(other.State)) < u.State.Radius+other.State.Radius-.015 {
+				if blocksMovement(u, other) && distance(v, position(other.State)) < u.State.Radius+other.State.Radius-.015 {
 					return false
 				}
 			}

@@ -77,9 +77,14 @@ namespace TowerDuel
             if(depth>-bank)
             {
                 if(depth<bank||depth>BarrierHalfWidth+pocketDepth)return false;
-                bool annexed=false;
+                bool left=false,right=false;
                 foreach(var tower in state.towers)
-                    if(tower.seat!=seat&&tower.kind=="tower"&&tower.hp==0&&((tower.x<0&&point.x<=0)||(tower.x>0&&point.x>=0)))annexed=true;
+                {
+                    if(tower.seat==seat||tower.kind!="tower"||tower.hp!=0)continue;
+                    left|=tower.x<0;
+                    right|=tower.x>0;
+                }
+                bool annexed=(point.x<0&&left)||(point.x>0&&right)||(point.x==0&&left&&right);
                 if(!annexed)return false;
             }
             foreach (var tower in state.towers)
@@ -102,6 +107,8 @@ namespace TowerDuel
                 nearest=new Vector3(Mathf.Clamp(point.x,-width*.5f,width*.5f),point.y,Mathf.Clamp(point.z,-length*.5f,length*.5f));
                 return true;
             }
+            // Dropping a troop on the wall or in a doorway is invalid.
+            if(HasWall&&Mathf.Abs(point.z)<=wallHalfWidth)return false;
             var snapped=SnapDeployment(point,card);
             if(CanDeploy(seat,snapped,state,card)){nearest=snapped;return true;}
             // Measure from the original aim, including every member of a squad in legality checks.
