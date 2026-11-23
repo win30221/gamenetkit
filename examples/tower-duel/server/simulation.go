@@ -94,6 +94,10 @@ func (w *match) step() {
 				u.WindupTarget = 0
 				u.WindupProgress = 0
 			} else if u.Cooldown == 0 {
+				if u.Goal != target.ID {
+					// A defender can interrupt the march without a movement tick.
+					u.Goal, u.Path = 0, nil
+				}
 				u.LockedTarget = target.ID
 				u.WindupTarget = target.ID
 				u.WindupProgress = 0

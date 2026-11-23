@@ -255,6 +255,72 @@ func (w *match) clearSegment(from, to point, mover *unit, units []*unit) bool {
 	return clearUnits(from, to, mover, units)
 }
 
+// Building marches merge into their lane early. Combat routes and obstructed
+// approaches still use the grid, including recovery from a different gate.
+func (w *match) routeToGoal(from point, goal entity, stop, lane float64, mover *unit, units []*unit) []point {
+	to := position(goal)
+	if lane == 0 {
+		return w.route(from, to, stop, lane, mover, units)
+	}
+
+	forward := math.Copysign(1, goal.Z)
+	depth := from.Z * forward
+	radius := mover.State.Radius
+	clearance := w.Map.barrierHalfWidth() + radius + .05
+	halfTrack := math.Max(0, w.Map.BridgeHalfWidth-radius-.1)
+	trackX := math.Max(lane-halfTrack, math.Min(lane+halfTrack, from.X))
+	lateral := math.Abs(trackX - from.X)
+	var path []point
+	switch {
+	case depth < -clearance:
+		if lateral > .001 {
+			entry := point{trackX, math.Min(-clearance, depth+lateral) * forward}
+			path = append(path, entry)
+		}
+		path = append(path, point{trackX, clearance * forward})
+	case depth >= clearance && lateral > .001:
+		// A unit off its lane on the enemy bank rejoins it on the way to
+		// the front tower. Beyond the tower line it can advance on the keep.
+		mergeLimit := goal.Z*forward - stop
+		if goal.Kind == "keep" {
+			for _, tower := range w.Map.Towers {
+				if tower.Seat == goal.Seat && tower.Kind == "tower" && tower.X == lane {
+					mergeLimit = tower.Z * forward
+					break
+				}
+			}
+		}
+		if depth < mergeLimit {
+			entry := point{trackX, math.Min(mergeLimit, depth+lateral) * forward}
+			path = append(path, entry)
+		}
+	}
+	if len(path) == 0 {
+		return w.route(from, to, stop, lane, mover, units)
+	}
+
+	current := from
+	for _, next := range path {
+		if !w.clearSegment(current, next, mover, units) {
+			return w.route(from, to, stop, lane, mover, units)
+		}
+		current = next
+	}
+	if d := distance(current, to); d > stop {
+		fraction := (d - stop) / d
+		end := point{current.X + (to.X-current.X)*fraction, current.Z + (to.Z-current.Z)*fraction}
+		if w.wallClear(end, to) && w.clearSegment(current, end, mover, units) {
+			return append(path, end)
+		}
+	} else if w.wallClear(current, to) {
+		return path
+	}
+	if suffix := w.route(current, to, stop, lane, mover, units); len(suffix) > 0 {
+		return append(path, suffix...)
+	}
+	return w.route(from, to, stop, lane, mover, units)
+}
+
 func (w *match) move(u *unit, goal entity, units []*unit) {
 	definition := w.Rules.ByID[u.State.Kind]
 	stop := u.State.Radius + goal.Radius + definition.Range - .05
@@ -284,7 +350,7 @@ func (w *match) move(u *unit, goal entity, units []*unit) {
 	changed := u.Goal != goal.ID || (w.Tick >= u.NextRoute && distance(position(goal), u.GoalPoint) > .6)
 	if changed || (len(u.Path) == 0 && w.Tick >= u.NextRoute) {
 		u.Goal = goal.ID
-		u.Path = w.route(position(u.State), position(goal), stop, lane, u, units)
+		u.Path = w.routeToGoal(position(u.State), goal, stop, lane, u, units)
 		u.GoalPoint = position(goal)
 		u.NextRoute = w.Tick + 20
 	}
@@ -331,7 +397,7 @@ func (w *match) move(u *unit, goal entity, units []*unit) {
 		}
 		if !clear(candidate) {
 			if w.Tick >= u.NextRoute {
-				u.Path = w.route(p, position(goal), stop, lane, u, units)
+				u.Path = w.routeToGoal(p, goal, stop, lane, u, units)
 				u.NextRoute = w.Tick + 20
 				return
 			}

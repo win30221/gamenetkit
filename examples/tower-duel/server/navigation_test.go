@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"testing"
 )
 
@@ -54,6 +55,82 @@ func TestSwordSquadCrossesFromDeployment(t *testing.T) {
 					}
 				})
 			}
+		}
+	}
+}
+
+func TestMarchMergesDiagonallyBeforeGate(t *testing.T) {
+	for seat := range 2 {
+		w := playingMatch(t)
+		w.Rules.TowerDamage = 0
+		forward := 1.0
+		if seat == 1 {
+			forward = -1
+		}
+		lane := w.Map.Bridges[seat]
+		// Start inside the field and outside the lane, with a clear diagonal.
+		start := point{lane - 3*forward, -6 * forward}
+		ack := w.deploy(seat, w.ID, 1, "guard", start.X, start.Z)
+		if !ack.Accepted {
+			t.Fatal(ack)
+		}
+		u := w.Units[ack.UnitID]
+		for w.Tick < u.State.ReadyTick {
+			w.step()
+		}
+		if (u.State.X-start.X)*forward <= 0 || (u.State.Z-start.Z)*forward <= 0 {
+			t.Fatalf("seat %d did not advance diagonally on the first step: %+v", seat, u.State)
+		}
+		gateSteps := 0
+		for range 220 {
+			previous := position(u.State)
+			w.step()
+			if math.Abs(previous.Z) < w.Map.barrierHalfWidth()-.15 {
+				gateSteps++
+				if math.Abs(u.State.X-previous.X) > .001 || (u.State.Z-previous.Z)*forward <= 0 {
+					t.Fatalf("seat %d did not walk straight through the gate: %+v", seat, u.State)
+				}
+			}
+			if u.State.Z*forward >= 1 {
+				break
+			}
+		}
+		if gateSteps == 0 || u.State.Z*forward < 1 {
+			t.Fatalf("seat %d never crossed the gate: %+v", seat, u.State)
+		}
+	}
+}
+
+func TestMarchRejoinsLaneAfterFightingOnEnemySide(t *testing.T) {
+	for seat := range 2 {
+		w := playingMatch(t)
+		w.Rules.TowerDamage = 0
+		forward := 1.0
+		if seat == 1 {
+			forward = -1
+		}
+		lane := w.Map.Bridges[seat]
+		start := point{lane + 4*forward, 2.5 * forward}
+		u := testSoldier(101, seat, "guard", start.X, start.Z)
+		u.LaneX = lane
+		building := w.buildingObjective(u)
+		// The defender can interrupt an existing march from attack range,
+		// leaving behind a waypoint the unit must no longer follow.
+		u.Goal, u.NextRoute = building.ID, 100
+		u.Path = []point{{start.X, start.Z + forward}}
+		defender := testSoldier(102, 1-seat, "guard", start.X+forward, start.Z)
+		defender.State.HP, defender.Cooldown = 1, 999
+		w.Units[101], w.Units[102] = u, defender
+		for w.Units[102] != nil && w.Tick < 60 {
+			w.step()
+		}
+		if w.Units[102] != nil || u.State.HitTarget != 102 {
+			t.Fatal("defender was not defeated")
+		}
+		before := position(u.State)
+		w.step()
+		if u.State.Target != building.ID || (u.State.X-before.X)*forward >= 0 || (u.State.Z-before.Z)*forward <= 0 {
+			t.Fatalf("seat %d did not rejoin its deployment lane diagonally: %+v", seat, u.State)
 		}
 	}
 }
