@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02da9529fb2973a4da4e4cb50b8b25c8, type: 3}
+  m_Name: falcon
+  m_EditorClassIdentifier: Assembly-CSharp::TowerDuel.DuelSpriteSet
+  Kind: falcon
+  Idle: {fileID: 2800000, guid: 3b3feed79ee4541785dc8085e0de3489, type: 3}
+  Walk: {fileID: 2800000, guid: 5fb037af60795b30afba20ab6bc44fab, type: 3}
+  Attack: {fileID: 2800000, guid: 27e89d90a75352b1a70bf97f3012d2ec, type: 3}
+  TileSize: 144
+  Baseline: 118
+  ReferenceHeight: 97
+  WalkFrames: 6
+  AttackFrames: 6
+  ImpactFrame: 3
+  UnitHeight: 1.9
+  WorldHeight: 0.95
+  TeamMaskTop: 2
+  Baked: 1

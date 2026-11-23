@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -11,7 +12,7 @@ namespace TowerDuel.Editor
         private const string Root = "Assets/Resources/TowerDuel/B3";
         [Serializable] private sealed class Definition
         {
-            public string kind;
+            public string kind, groundKind;
             public int tileSize, baseline, referenceHeight, walkFrames, attackFrames, impactFrame;
             public float unitHeight, worldHeight, teamMaskTop;
             public bool baked;
@@ -45,17 +46,21 @@ namespace TowerDuel.Editor
             var bakedMaterial=AssetDatabase.LoadAssetAtPath<Material>(Root+"/BakedShadow.mat");
             if(!bakedMaterial){bakedMaterial=new Material(bakedShader){name="Baked ground shadow"};AssetDatabase.CreateAsset(bakedMaterial,Root+"/BakedShadow.mat");}
             bakedMaterial.shader=bakedShader;EditorUtility.SetDirty(bakedMaterial);
+            var rules = DuelRules.Load();
+            var groundSets = new Dictionary<string, DuelSpriteSet>();
+            var airborneSets = new Dictionary<string, DuelSpriteSet>();
             foreach (string file in Directory.GetFiles(Root + "/Units", "definition.json", SearchOption.AllDirectories))
             {
                 var definition = JsonUtility.FromJson<Definition>(File.ReadAllText(file));
-                if (DuelRules.Load().Find(definition.kind) == null) throw new InvalidOperationException("Unknown B3 unit " + definition.kind);
+                bool airborneVariant = !string.IsNullOrEmpty(definition.groundKind);
+                string cardKind = airborneVariant ? definition.groundKind : definition.kind;
+                if (rules.Find(cardKind) == null) throw new InvalidOperationException("Unknown B3 unit " + cardKind);
                 string folder = Root + "/Units/" + definition.kind;
                 string suffix=definition.baked?"-baked":"";
                 var idle = Import(folder + "/idle"+suffix+".png", true,definition.baked?4096:2048);
                 var walk = Import(folder + "/walk"+suffix+".png", true,definition.baked?4096:2048);
                 var attack = Import(folder + "/attack"+suffix+".png", true,definition.baked?4096:2048);
-                Import(Root + "/Cards/" + definition.kind + ".png", false);
-                Import(Root + "/UI/CardFrame.png", true);
+                if (!airborneVariant) Import(Root + "/Cards/" + cardKind + ".png", false);
                 string path = Root + "/" + definition.kind + ".asset";
                 var set = AssetDatabase.LoadAssetAtPath<DuelSpriteSet>(path);
                 if (!set) { set = ScriptableObject.CreateInstance<DuelSpriteSet>(); AssetDatabase.CreateAsset(set, path); }
@@ -68,13 +73,22 @@ namespace TowerDuel.Editor
                 EditorUtility.SetDirty(set);
                 // Validate the actual imported dimensions before exposing the new prefab.
                 set.Frame(DuelSpriteClip.Idle, 7, 0); set.Frame(DuelSpriteClip.Walk, 7, 5); set.Frame(DuelSpriteClip.Attack, 7, 5);
-                var root = new GameObject(definition.kind);
+                (airborneVariant ? airborneSets : groundSets).Add(cardKind, set);
+            }
+            Import(Root + "/UI/CardFrame.png", true);
+            foreach (var pair in groundSets)
+            {
+                var set = pair.Value;
+                airborneSets.TryGetValue(pair.Key, out var airborneSet);
+                if (airborneSet && airborneSet.Baked != set.Baked)
+                    throw new InvalidOperationException("Ground and airborne shadows must use the same format: " + pair.Key);
+                var root = new GameObject(pair.Key);
                 try
                 {
                     var facing = new GameObject("Facing"); facing.transform.SetParent(root.transform, false);
                     var renderer = facing.AddComponent<SpriteRenderer>(); renderer.sharedMaterial = material;
                     renderer.shadowCastingMode = ShadowCastingMode.Off; renderer.receiveShadows = true;
-                    var sprites = root.AddComponent<DuelSpriteUnit>(); sprites.Configure(set, renderer);
+                    var sprites = root.AddComponent<DuelSpriteUnit>(); sprites.Configure(set, renderer, airborneSet);
                     var marker = new GameObject("Team marker");
                     marker.transform.SetParent(root.transform, false);
                     marker.transform.localPosition = Vector3.up * .02f;
@@ -85,7 +99,7 @@ namespace TowerDuel.Editor
                     var art = root.AddComponent<DuelUnitArt>(); art.Sprites = sprites; art.Height = set.UnitHeight;
                     art.TeamMarker = marker.GetComponent<Renderer>();
                     art.TeamMarker.enabled = false;
-                    PrefabUtility.SaveAsPrefabAsset(root, Root + "/Prefabs/" + definition.kind + ".prefab");
+                    PrefabUtility.SaveAsPrefabAsset(root, Root + "/Prefabs/" + pair.Key + ".prefab");
                 }
                 finally { UnityEngine.Object.DestroyImmediate(root); }
             }

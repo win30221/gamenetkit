@@ -162,33 +162,9 @@ namespace TowerDuel
                 bool deploying=e.IsDeploying(session.RenderTick);
                 bool paused=session.RenderTick<e.pausedUntil;
                 Vector3 position=MirrorDepth(session.Sample(e),state.seat);
-                float travel=Vector3.Distance(position,v.Previous);
+                float travel=Vector3.ProjectOnPlane(position-v.Previous,Vector3.up).magnitude;
                 var direction=MirrorDepth(new Vector3(e.dx,0,e.dz),state.seat);
                 v.Art.transform.position=position;v.Previous=position;
-                if(!v.Art.Sprites&&!v.Art.Animator)
-                {
-                    var body=v.Art.transform.Find("Facing");
-                    if(body&&Camera.main)
-                    {
-                        var forward=Vector3.ProjectOnPlane(Camera.main.transform.forward,Vector3.up);
-                        body.rotation=Quaternion.LookRotation(forward);
-                        body.localScale=new Vector3(1,1/Mathf.Max(.15f,Camera.main.transform.up.y),1);
-                        float bob=paused?0:Mathf.Sin((float)session.RenderTick*.35f)*Mathf.Clamp01(travel*20)*.10f;
-                        body.localPosition=Vector3.up*bob;
-                        var renderer=body.GetComponent<SpriteRenderer>();
-                        bool flyingGriffin=e.airborne&&e.kind=="griffin";
-                        renderer.sprite=(flyingGriffin?DuelSpriteLibrary.SinglePose("griffin-air",v.Art.Height):null)
-                            ??DuelSpriteLibrary.SinglePose(e.kind,v.Art.Height);
-                        renderer.flipX=Vector3.Dot(direction,Camera.main.transform.right)<-.05f;
-                        renderer.color=e.seat==state.seat?Color.white:new Color(1,.75f,.72f);
-                        if(!paused&&e.attackTick>0&&session.RenderTick>=e.attackTick&&session.RenderTick<e.attackTick+definition.windupTicks)
-                        {
-                            float phase=(float)(session.RenderTick-e.attackTick)/definition.windupTicks;
-                            body.localPosition+=direction*Mathf.Sin(phase*Mathf.PI)*.18f;
-                        }
-                        v.Contact.SetOpacity(e.airborne?.55f:1f);
-                    }
-                }
                 if(v.Contact.Renderer)v.Contact.Renderer.transform.position=new Vector3(position.x,DuelMap.GroundHeight(position.z)+.003f,position.z);
                 if(v.Art.Animator&&!v.Art.Sprites&&direction.sqrMagnitude>.001f)v.Art.transform.rotation=Quaternion.Slerp(v.Art.transform.rotation,Quaternion.LookRotation(direction),15*Time.unscaledDeltaTime);
                 float speed=travel/Mathf.Max(.001f,Time.unscaledDeltaTime)/definition.speed;

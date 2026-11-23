@@ -1,0 +1,13 @@
+{
+  "kind": "spearman",
+  "tileSize": 192,
+  "baseline": 170,
+  "referenceHeight": 113,
+  "walkFrames": 6,
+  "attackFrames": 6,
+  "impactFrame": 3,
+  "unitHeight": 3.2,
+  "worldHeight": 1.6,
+  "teamMaskTop": 2,
+  "baked": true
+}

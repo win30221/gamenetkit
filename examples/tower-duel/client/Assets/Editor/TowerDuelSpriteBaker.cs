@@ -14,7 +14,7 @@ namespace TowerDuel.Editor
         private const float ShadowX=-.65f, ShadowZ=-.75055535f, ShadowOpacity=.26f;
         [Serializable] private sealed class Definition
         {
-            public string kind;
+            public string kind, groundKind;
             public int tileSize,baseline,referenceHeight,walkFrames,attackFrames,impactFrame;
             public float unitHeight,worldHeight,teamMaskTop;
             public bool baked;
@@ -33,11 +33,14 @@ namespace TowerDuel.Editor
                 definition.baked=true;
                 File.WriteAllText(path,JsonUtility.ToJson(definition,true)+"\n");
                 string config=Path.GetFullPath("../art/b3-production/"+definition.kind+".json");
-                string text=File.ReadAllText(config);
-                text=Regex.IsMatch(text,"\"baked\"\\s*:")
-                    ?Regex.Replace(text,"(\"baked\"\\s*:)\\s*(true|false)","$1 true")
-                    :text.Replace("\"kind\":","\"baked\": true, \"kind\":");
-                File.WriteAllText(config,text);
+                if (File.Exists(config))
+                {
+                    string text=File.ReadAllText(config);
+                    text=Regex.IsMatch(text,"\"baked\"\\s*:")
+                        ?Regex.Replace(text,"(\"baked\"\\s*:)\\s*(true|false)","$1 true")
+                        :text.Replace("\"kind\":","\"baked\": true, \"kind\":");
+                    File.WriteAllText(config,text);
+                }
                 count++;
             }
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);

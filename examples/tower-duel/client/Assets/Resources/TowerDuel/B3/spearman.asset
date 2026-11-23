@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02da9529fb2973a4da4e4cb50b8b25c8, type: 3}
+  m_Name: spearman
+  m_EditorClassIdentifier: Assembly-CSharp::TowerDuel.DuelSpriteSet
+  Kind: spearman
+  Idle: {fileID: 2800000, guid: 464503a53e2c59ea9e98e9b996e13e5b, type: 3}
+  Walk: {fileID: 2800000, guid: ae730517d63e575888e46102cd037d03, type: 3}
+  Attack: {fileID: 2800000, guid: 48ab21ea10f25368be9acc8fdb0ef729, type: 3}
+  TileSize: 192
+  Baseline: 170
+  ReferenceHeight: 113
+  WalkFrames: 6
+  AttackFrames: 6
+  ImpactFrame: 3
+  UnitHeight: 3.2
+  WorldHeight: 1.6
+  TeamMaskTop: 2
+  Baked: 1

@@ -70,7 +70,11 @@ try {
     foreach($report in @($a,$b)){if(-not $report.numericHealth -or -not $report.fractionalEnergy){throw 'Missing numeric health or fractional energy evidence'}}
     $expectedSprites=0;$catalog=Get-Content -LiteralPath (Join-Path $example 'client/Assets/Resources/TowerDuel/rules.json') -Raw -Encoding UTF8 | ConvertFrom-Json
     for($i=0;$i -lt $catalog.cards.Count;$i++){if(Test-Path -LiteralPath (Join-Path $example ('client/Assets/Resources/TowerDuel/B3/Prefabs/'+$catalog.cards[$i].id+'.prefab'))){$expectedSprites=$expectedSprites -bor (1 -shl $i)}}
-    foreach($report in @($a,$b)){if($report.sprites -ne $expectedSprites -or $report.b3Cards -ne $expectedSprites -or $report.b3Frames -ne $expectedSprites -or $report.spriteShadows -ne $expectedSprites -or -not $report.shadowsLowerLeft -or $report.visibleTeamDiscs -ne 0){throw 'B3 sprites, matching cards, frames, lower-left shadows or hidden team discs failed in the real Player'}}
+    # The match uses the default deck. The HUD creates buttons for the full catalog.
+    foreach($report in @($a,$b)){
+        $battleSprites=$expectedSprites -band $report.models
+        if($report.sprites -ne $battleSprites -or $report.b3Cards -ne $expectedSprites -or $report.b3Frames -ne $expectedSprites -or $report.spriteShadows -ne $battleSprites -or -not $report.shadowsLowerLeft -or $report.visibleTeamDiscs -ne 0){throw 'B3 sprites, matching cards, frames, lower-left shadows or hidden team discs failed in the real Player'}
+    }
     if([Math]::Abs($a.shadowX-$b.shadowX) -gt .02 -or [Math]::Abs($a.shadowY-$b.shadowY) -gt .02){throw 'The two players saw different screen-space shadow directions'}
     if(-not($a.fullEnergyReminder -or $b.fullEnergyReminder)){throw 'No static full-energy reminder was observed'}
     if($ExerciseRecovery -and $attacker.resumes -lt 1){throw 'No successful recovery was observed'}

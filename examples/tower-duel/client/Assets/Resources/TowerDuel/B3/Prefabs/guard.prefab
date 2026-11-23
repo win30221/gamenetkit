@@ -231,6 +231,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TowerDuel.DuelSpriteUnit
   set: {fileID: 11400000, guid: 9f9be568f3d19ca4d8074a170cacc476, type: 2}
   spriteRenderer: {fileID: 6547324916468511889}
+  airborneSet: {fileID: 0}
 --- !u!114 &8276934562006520215
 MonoBehaviour:
   m_ObjectHideFlags: 0

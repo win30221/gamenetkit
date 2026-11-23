@@ -38,7 +38,8 @@ namespace TowerDuel.Editor
                 int converted = 0;
                 foreach (var card in DuelRules.Load().cards)
                 {
-                    if (card.IsSpell || !DuelSpriteLibrary.Converted(card.id)) continue;
+                    if (card.IsSpell) continue;
+                    Require(DuelSpriteLibrary.Converted(card.id), "Missing B3 troop prefab: " + card.id);
                     converted++;
                     var model = UnityEngine.Object.Instantiate(DuelSpriteLibrary.Prefab(card.id), root.transform, false);
                     var art = model.GetComponent<DuelUnitArt>(); var unit = art.Sprites;
@@ -121,6 +122,20 @@ namespace TowerDuel.Editor
                         Require(unit.FrameIndex<unit.Set.ImpactFrame,"Ranged unit released before its projectile");
                         unit.Present(entity,card,released,0,false,1,0,released);
                         Require(unit.FrameIndex==unit.Set.ImpactFrame,"Ranged release waited for projectile impact");
+                    }
+                    if (card.initialAir || card.transformAfterTicks > 0)
+                    {
+                        var groundSet = unit.Set;
+                        entity.airborne = true;
+                        model.transform.position = entity.Position;
+                        unit.Present(entity, card, 450, 0, false, 1, 0);
+                        var hovering = unit.Renderer.sprite;
+                        unit.Present(entity, card, 454, 0, false, 1, 0);
+                        unit.AlignToCamera();
+                        Require(unit.Clip == DuelSpriteClip.Walk && unit.Renderer.sprite != hovering, "Stationary flyer did not flap: " + card.id);
+                        Require(card.transformAfterTicks == 0 || unit.Set != groundSet, "Airborne transition retained the ground sprite set: " + card.id);
+                        Require(unit.ShadowMatchesFrame && Mathf.Abs(unit.ShadowRenderer.transform.position.y
+                            - DuelMap.GroundHeight(model.transform.position.z) - .002f) < .0001f, "Airborne shadow floated above the battlefield");
                     }
                     unit.BeginDeath(500); unit.PresentDeath(500.4);
                     Require(unit.Opacity > .1f && unit.Opacity < .9f, "Death did not visibly dissolve");

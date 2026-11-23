@@ -1,0 +1,13 @@
+{
+  "kind": "griffin",
+  "tileSize": 192,
+  "baseline": 173,
+  "referenceHeight": 126,
+  "walkFrames": 6,
+  "attackFrames": 6,
+  "impactFrame": 3,
+  "unitHeight": 2.8,
+  "worldHeight": 1.4,
+  "teamMaskTop": 2,
+  "baked": true
+}

@@ -1,0 +1,13 @@
+{
+  "kind": "standard",
+  "tileSize": 192,
+  "baseline": 170,
+  "referenceHeight": 120,
+  "walkFrames": 6,
+  "attackFrames": 6,
+  "impactFrame": 3,
+  "unitHeight": 3.3,
+  "worldHeight": 1.65,
+  "teamMaskTop": 2,
+  "baked": true
+}

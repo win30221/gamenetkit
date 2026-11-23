@@ -1,0 +1,13 @@
+{
+  "kind": "falcon",
+  "tileSize": 144,
+  "baseline": 118,
+  "referenceHeight": 97,
+  "walkFrames": 6,
+  "attackFrames": 6,
+  "impactFrame": 3,
+  "unitHeight": 1.9,
+  "worldHeight": 0.95,
+  "teamMaskTop": 2,
+  "baked": true
+}

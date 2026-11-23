@@ -7,18 +7,19 @@ namespace TowerDuel
     {
         [SerializeField] private DuelSpriteSet set;
         [SerializeField] private SpriteRenderer spriteRenderer;
+        [SerializeField] private DuelSpriteSet airborneSet;
         private Camera view;
         private MaterialPropertyBlock properties;
         private SpriteRenderer projectedShadow;
         private MaterialPropertyBlock shadowProperties;
         private double lastTick = double.NaN, walkTicks, deathStarted = double.NaN;
         private long attackSeen = -1, attackTarget, cancelledAttack = -1;
-        private bool enemy, preview;
+        private bool enemy, preview, airborne;
         private Color tint = Color.white;
         private float alpha = 1;
         private float hit;
         private DuelSpriteClip shownClip;
-        public DuelSpriteSet Set => set;
+        public DuelSpriteSet Set => airborne && airborneSet ? airborneSet : set;
         public SpriteRenderer Renderer => spriteRenderer;
         public SpriteRenderer ShadowRenderer => projectedShadow;
         public int DirectionIndex { get; private set; } = 4;
@@ -26,11 +27,12 @@ namespace TowerDuel
         public DuelSpriteClip Clip { get; private set; }
         public float Opacity => alpha;
         public float PlaybackSpeed { get; private set; } = 1;
-        public bool ShadowMatchesFrame=>projectedShadow&&projectedShadow.sprite==set.ShadowFrame(shownClip,DirectionIndex,FrameIndex);
+        public bool ShadowMatchesFrame=>projectedShadow&&projectedShadow.sprite==Set.ShadowFrame(shownClip,DirectionIndex,FrameIndex);
 
-        public void Configure(DuelSpriteSet definition, SpriteRenderer renderer)
+        public void Configure(DuelSpriteSet definition, SpriteRenderer renderer, DuelSpriteSet airborneDefinition = null)
         {
             set = definition; spriteRenderer = renderer;
+            airborneSet = airborneDefinition;
         }
         private void Awake()
         {
@@ -52,6 +54,13 @@ namespace TowerDuel
                             bool deploying, float slow, float reaction, double? confirmedReleaseTick = null, int viewSeat = 0)
         {
             if (preview || !double.IsNaN(deathStarted)) return;
+            if (airborne != entity.airborne)
+            {
+                airborne = entity.airborne;
+                walkTicks = 0;
+                lastTick = double.NaN;
+            }
+            var currentSet = Set;
             PlaybackSpeed = slow;
             if (!view) view = Camera.main;
             var heading = new Vector3(entity.dx, 0, entity.dz);
@@ -76,15 +85,15 @@ namespace TowerDuel
                 if (entity.hitTick >= entity.attackTick && entity.hitTick > 0 && tick >= contact)
                 {
                     double recovery = Math.Max(1, cycle - (contact - entity.attackTick));
-                    frame = set.ImpactFrame + Mathf.FloorToInt((float)((tick - contact) / recovery * (set.AttackFrames - set.ImpactFrame)));
+                    frame = currentSet.ImpactFrame + Mathf.FloorToInt((float)((tick - contact) / recovery * (currentSet.AttackFrames - currentSet.ImpactFrame)));
                 }
-                else frame = Mathf.Clamp(Mathf.FloorToInt((float)(elapsed / Math.Max(1, windup) * set.ImpactFrame)), 0, set.ImpactFrame - 1);
-                Show(DuelSpriteClip.Attack, DirectionIndex, Mathf.Clamp(frame, 0, set.AttackFrames - 1));
+                else frame = Mathf.Clamp(Mathf.FloorToInt((float)(elapsed / Math.Max(1, windup) * currentSet.ImpactFrame)), 0, currentSet.ImpactFrame - 1);
+                Show(DuelSpriteClip.Attack, DirectionIndex, Mathf.Clamp(frame, 0, currentSet.AttackFrames - 1));
             }
-            else if (!deploying && movement > .06f)
+            else if (!deploying && (airborne || movement > .06f))
             {
-                walkTicks += step * Mathf.Clamp(movement, .15f, 2.5f);
-                Show(DuelSpriteClip.Walk, DirectionIndex, (int)(walkTicks * 8 / 30) % set.WalkFrames);
+                walkTicks += step * (airborne ? slow : Mathf.Clamp(movement, .15f, 2.5f));
+                Show(DuelSpriteClip.Walk, DirectionIndex, (int)(walkTicks * 8 / 30) % currentSet.WalkFrames);
             }
             else { walkTicks = 0; Show(DuelSpriteClip.Idle, DirectionIndex, 0); }
             tint = Color.white; hit = Mathf.Clamp01(reaction);
@@ -111,7 +120,7 @@ namespace TowerDuel
         private void Show(DuelSpriteClip clip, int direction, int frame)
         {
             Clip = clip; shownClip=clip; DirectionIndex = direction; FrameIndex = frame;
-            spriteRenderer.sprite = set.Frame(clip, direction, frame);
+            spriteRenderer.sprite = Set.Frame(clip, direction, frame);
         }
         private void ApplyProperties()
         {
@@ -119,9 +128,10 @@ namespace TowerDuel
             if (properties == null) properties = new MaterialPropertyBlock();
             properties.SetColor("_BaseColor", tint); properties.SetFloat("_Opacity", alpha);
             properties.SetFloat("_Enemy", enemy ? 1 : 0);
-            properties.SetFloat("_Baked",set.Baked?1:0);
-            properties.SetFloat("_TeamMaskTop", set.TeamMaskTop);
-            float height=set.ReferenceHeight/(float)set.TileSize;
+            var currentSet = Set;
+            properties.SetFloat("_Baked",currentSet.Baked?1:0);
+            properties.SetFloat("_TeamMaskTop", currentSet.TeamMaskTop);
+            float height=currentSet.ReferenceHeight/(float)currentSet.TileSize;
             properties.SetVector("_SpriteVolume",new Vector4(height*.31f,height*.46f,height*.55f,0));
             properties.SetFloat("_Hit", hit); spriteRenderer.SetPropertyBlock(properties);
         }
@@ -129,44 +139,49 @@ namespace TowerDuel
         public void AlignToCamera()
         {
             if (!view) view = Camera.main;
-            if (!view || !set || !spriteRenderer) return;
+            var currentSet = Set;
+            if (!view || !currentSet || !spriteRenderer) return;
             var billboard = spriteRenderer.transform;
             var forward = view.transform.forward; forward.y = 0;
             billboard.rotation = Quaternion.LookRotation(forward.normalized);
-            float scale = set.WorldHeight * set.TileSize / Mathf.Max(1, set.ReferenceHeight);
+            float scale = currentSet.WorldHeight * currentSet.TileSize / Mathf.Max(1, currentSet.ReferenceHeight);
             if (Clip == DuelSpriteClip.Idle && !preview && !double.IsNaN(lastTick))
                 scale *= 1 + .004f * Mathf.Sin((float)(lastTick / 30 * Math.PI * 2));
             if (Clip == DuelSpriteClip.Death) scale *= Mathf.Lerp(.84f, 1, alpha);
             // Stand the sprite upright for correct 3D occlusion, while preserving
             // its authored on-screen proportions at the fixed elevated camera.
             billboard.localScale = new Vector3(scale, scale / Mathf.Max(.15f, view.transform.up.y), scale);
-            if (!preview) AlignShadow();
+            if (!preview) AlignShadow(currentSet);
         }
-        private void AlignShadow()
+        private void AlignShadow(DuelSpriteSet currentSet)
         {
             if (!projectedShadow)
             {
                 var go=new GameObject("Animated ground shadow");go.transform.SetParent(transform,false);
                 projectedShadow=go.AddComponent<SpriteRenderer>();
-                projectedShadow.sharedMaterial=Resources.Load<Material>(set.Baked?"TowerDuel/B3/BakedShadow":"TowerDuel/B3/ProjectedShadow");
+                projectedShadow.sharedMaterial=Resources.Load<Material>(currentSet.Baked?"TowerDuel/B3/BakedShadow":"TowerDuel/B3/ProjectedShadow");
                 if(!projectedShadow.sharedMaterial)throw new InvalidOperationException("Prepare the projected sprite shadow material before building");
                 projectedShadow.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
                 projectedShadow.receiveShadows=false;shadowProperties=new MaterialPropertyBlock();
             }
-            projectedShadow.sprite=set.ShadowFrame(shownClip,DirectionIndex,FrameIndex);
-            if(set.Baked)
+            projectedShadow.sprite=currentSet.ShadowFrame(shownClip,DirectionIndex,FrameIndex);
+            var ground = transform.position;
+            if (airborne) ground.y = DuelMap.GroundHeight(ground.z);
+            ground.y += .002f;
+            shadowProperties.SetFloat("_Opacity", alpha * (airborne ? .55f : 1));
+            if(currentSet.Baked)
             {
                 var groundForward=Vector3.ProjectOnPlane(view.transform.forward,Vector3.up).normalized;
-                projectedShadow.transform.SetPositionAndRotation(transform.position+Vector3.up*.002f,Quaternion.LookRotation(Vector3.down,groundForward));
+                projectedShadow.transform.SetPositionAndRotation(ground,Quaternion.LookRotation(Vector3.down,groundForward));
                 float groundScale=spriteRenderer.transform.localScale.x*2;
                 projectedShadow.transform.localScale=new Vector3(groundScale,groundScale,1);
-                shadowProperties.SetFloat("_Opacity",alpha);projectedShadow.SetPropertyBlock(shadowProperties);
+                projectedShadow.SetPropertyBlock(shadowProperties);
                 return;
             }
             projectedShadow.transform.SetPositionAndRotation(spriteRenderer.transform.position,spriteRenderer.transform.rotation);
             projectedShadow.transform.localScale=spriteRenderer.transform.localScale;
-            shadowProperties.SetFloat("_GroundHeight",transform.position.y+.002f);
-            shadowProperties.SetFloat("_Opacity",alpha);projectedShadow.SetPropertyBlock(shadowProperties);
+            shadowProperties.SetFloat("_GroundHeight",ground.y);
+            projectedShadow.SetPropertyBlock(shadowProperties);
             // The shader flattens and shears the card beyond its upright bounds.
             // Keep its ground footprint inside the culling bounds as well.
             var bounds=spriteRenderer.bounds;
@@ -174,7 +189,7 @@ namespace TowerDuel
             if(sun)
             {
                 var ray=sun.transform.forward;
-                var offset=ray*Mathf.Max(0,bounds.max.y-transform.position.y)/Mathf.Max(.1f,-ray.y);
+                var offset=ray*Mathf.Max(0,bounds.max.y-ground.y)/Mathf.Max(.1f,-ray.y);
                 bounds.Encapsulate(bounds.min+offset);bounds.Encapsulate(bounds.max+offset);
             }
             projectedShadow.bounds=bounds;
