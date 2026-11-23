@@ -103,6 +103,7 @@ namespace TowerDuel
             world.RegisterCallback<PointerCancelEvent>(_=>CancelPointer());
             world.RegisterCallback<PointerCaptureOutEvent>(_=>{pointer=-1;client.HidePreview();});
             root.RegisterCallback<KeyDownEvent>(evt=>{if(evt.keyCode==KeyCode.Escape){CancelCardDrags();client.Selected=false;CancelPointer();}});
+            DuelCartoonSkin.Apply(root);
             Update();
         }
         private bool CanPlay()=>client.Session.CanAct&&(client.Session.State.phase=="playing"||client.Session.State.phase=="overtime")&&!client.Session.Pending;
