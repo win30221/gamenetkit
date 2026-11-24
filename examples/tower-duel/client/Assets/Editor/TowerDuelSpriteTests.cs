@@ -100,6 +100,20 @@ namespace TowerDuel.Editor
                     Require(hitBlock.GetFloat("_Hit")>.99f,"Damaged sprite did not flash red");
                     unit.Present(entity,card,39,0,false,1,0);unit.Renderer.GetPropertyBlock(hitBlock);
                     Require(hitBlock.GetFloat("_Hit")<.001f,"Damage flash did not return to normal");
+                    Require(unit.Renderer.sharedMaterial.HasProperty("_BuffOutline"),"Missing buff outline shader property");
+                    entity.buffedUntil=70;
+                    unit.SetBuffed(entity.IsBuffed(69));
+                    unit.Present(entity,card,69,0,false,1,0);
+                    unit.Renderer.GetPropertyBlock(hitBlock);
+                    Require(hitBlock.GetColor("_BuffOutline").a>.99f,"Buffed soldier has no outline");
+                    var aim=new Color(.25f,.85f,1f,1f);
+                    hitBlock.SetColor("_AimOutline",aim);unit.Renderer.SetPropertyBlock(hitBlock);
+                    unit.SetBuffed(entity.IsBuffed(70));
+                    unit.Present(entity,card,70,0,false,1,0);
+                    unit.Renderer.GetPropertyBlock(hitBlock);
+                    Require(hitBlock.GetColor("_BuffOutline").a<.001f,"Expired buff retained its outline");
+                    Require(hitBlock.GetColor("_AimOutline")==aim,"Buff update erased the spell aim outline");
+                    hitBlock.SetColor("_AimOutline",Color.clear);unit.Renderer.SetPropertyBlock(hitBlock);
                     for (int direction = 0; direction < 8; direction++)
                     {
                         entity.dx = headings[direction].x; entity.dz = headings[direction].z;

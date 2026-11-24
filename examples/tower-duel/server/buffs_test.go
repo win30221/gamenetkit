@@ -115,3 +115,36 @@ func TestCombatConsumesAttackSpeedDamageAndDamageTakenBuffs(t *testing.T) {
 		t.Fatalf("buffed attack: tick=%d, hit=%d, damage=%d, want=%d", w.Tick, u.State.HitTick, tower.MaxHP-tower.HP, want)
 	}
 }
+
+func TestBuffOutlineSnapshotTracksLingeringAura(t *testing.T) {
+	w := playingMatch(t)
+	w.Tick = 100
+	a := testSoldier(201, 0, "standard", 0, -5)
+	u := testSoldier(202, 0, "guard", 1, -5)
+	w.Units[a.State.ID], w.Units[u.State.ID] = a, u
+	units := w.sortedUnits()
+	check := func(want uint64) {
+		t.Helper()
+		for seat := 0; seat < 2; seat++ {
+			for _, state := range w.snapshot(seat, "snapshot").Units {
+				if state.ID == u.State.ID && state.BuffedUntil != want {
+					t.Fatalf("seat %d tick %d: buffedUntil=%d, want %d", seat, w.Tick, state.BuffedUntil, want)
+				}
+			}
+		}
+	}
+	w.refreshUnitAuras(units)
+	check(100 + tickRate)
+	u.State.X = 7
+	w.refreshUnitAuras(units)
+	w.Tick += tickRate - 1
+	check(100 + tickRate)
+	w.Tick++
+	check(0)
+	// A debuff alone must not produce a positive outline.
+	u.Buffs.apply(buffKey{Stat: buffMoveSpeed, SourceID: 900}, .5, 200, w.Tick)
+	check(0)
+	// Damage reduction is beneficial, although its multiplier is below one.
+	u.Buffs.apply(buffKey{Stat: buffDamageTaken, SourceID: 901}, .8, 210, w.Tick)
+	check(210)
+}

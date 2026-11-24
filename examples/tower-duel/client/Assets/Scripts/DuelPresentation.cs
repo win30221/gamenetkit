@@ -185,6 +185,7 @@ namespace TowerDuel
                 if(v.Pivot)v.Pivot.localPosition=v.PivotPosition+(v.Art.Sprites?Vector3.zero:new Vector3(0,.045f*reaction,-.065f*reaction));
                 if(v.Art.Sprites)
                 {
+                    v.Art.Sprites.SetBuffed(session.SampleBuffed(e));
                     if((e.kind=="archer"||e.kind=="bomber")&&e.hitTick>=e.attackTick&&e.hitTick>0&&e.hitTick!=v.ReleaseHit&&TryTarget(state,e.hitTarget,out var hitPoint))
                     {
                         // Match the confirmed projectile's presentation start,

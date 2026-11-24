@@ -7,12 +7,13 @@ namespace TowerDuel
 {
     [Serializable] public sealed class EntityState
     {
-        public long id, attackTick, hitTick, hitTarget, target, readyTick, pausedUntil, transformTick;
+        public long id, attackTick, hitTick, hitTarget, target, readyTick, pausedUntil, transformTick, buffedUntil;
         public int seat, hp, maxHP;
         public string kind;
         public float x,z,radius,dx,dz;
         public bool active,slowed,charging,airborne;
         public bool IsDeploying(double tick)=>readyTick>0&&tick<readyTick;
+        public bool IsBuffed(double tick)=>hp>0&&buffedUntil>0&&tick<buffedUntil;
         public Vector3 Position => new Vector3(x,DuelMap.GroundHeight(z)+(airborne?2.35f:0),z);
     }
     [Serializable] public sealed class PlayerState { public int seat; public string name; public bool ready,connected,rematch; public float reconnectRemaining; }

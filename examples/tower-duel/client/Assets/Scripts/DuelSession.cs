@@ -210,6 +210,14 @@ namespace TowerDuel
             return entity.Position;
         }
         private static bool SelectUnit(DuelFrame frame,long id,out EntityState entity)=>frame.Units.TryGetValue(id,out entity);
+        public bool SampleBuffed(EntityState entity)
+        {
+            // Use the authoritative state at the rendered tick, not distance
+            // to the standard. The buff may outlive contact and its source.
+            if(frames.TryBracket(RenderTick,entity.id,SelectUnit,out SnapshotBracket<EntityState> bracket))
+                return bracket.BeforeTick<=RenderTick&&bracket.Before.IsBuffed(RenderTick);
+            return State!=null&&State.tick<=RenderTick&&entity.IsBuffed(RenderTick);
+        }
         public bool SampleSlowed(EntityState entity)
         {
             // Match the ring and interpolated foot position, rather than a newer

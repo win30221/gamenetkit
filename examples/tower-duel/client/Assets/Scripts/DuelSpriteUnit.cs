@@ -16,6 +16,8 @@ namespace TowerDuel
         private long attackSeen = -1, attackTarget, cancelledAttack = -1;
         private bool enemy, preview, airborne;
         private Color tint = Color.white;
+        private bool buffed;
+        private static readonly Color BuffOutline = new Color(1f,.78f,.22f,1f);
         private float alpha = 1;
         private float hit;
         private DuelSpriteClip shownClip;
@@ -42,6 +44,7 @@ namespace TowerDuel
             Show(DuelSpriteClip.Idle, DirectionIndex, 0);
         }
         public void SetTeam(int seat) { enemy = seat == 1; ApplyProperties(); }
+        public void SetBuffed(bool value) { buffed = value && !preview && double.IsNaN(deathStarted); }
         public static int Direction(Vector3 heading, Camera camera, int previous = 4)
         {
             if (!camera || heading.sqrMagnitude < .0001f) return previous;
@@ -111,7 +114,7 @@ namespace TowerDuel
         }
         public void BeginDeath(double now)
         {
-            deathStarted = now; Clip = DuelSpriteClip.Death; alpha = 1; hit = 0;
+            deathStarted = now; Clip = DuelSpriteClip.Death; alpha = 1; hit = 0; buffed = false; ApplyProperties();
         }
         public void PresentDeath(double now)
         {
@@ -121,7 +124,7 @@ namespace TowerDuel
         }
         public void PresentPreview(int seat, bool valid)
         {
-            preview = true; enemy = false;
+            preview = true; enemy = false; buffed = false;
             if (!view) view = Camera.main;
             Show(DuelSpriteClip.Idle, Direction(seat == 0 ? Vector3.forward : Vector3.back, view), 0);
             tint = valid ? new Color(.78f, 1, 1) : new Color(1, .36f, .3f);
@@ -136,6 +139,9 @@ namespace TowerDuel
         {
             if (!spriteRenderer) return;
             if (properties == null) properties = new MaterialPropertyBlock();
+            // Preserve the independent spell aim outline set by presentation.
+            spriteRenderer.GetPropertyBlock(properties);
+            properties.SetColor("_BuffOutline", buffed ? BuffOutline : Color.clear);
             properties.SetColor("_BaseColor", tint); properties.SetFloat("_Opacity", alpha);
             properties.SetFloat("_Enemy", enemy ? 1 : 0);
             var currentSet = Set;

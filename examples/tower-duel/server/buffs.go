@@ -89,6 +89,29 @@ func (b *buffSet) hasPenalty(stat buffStat, tick uint64) bool {
 	return decrease < 1
 }
 
+// beneficialUntil exposes only the lifetime of an active beneficial effect.
+// It does not expose the internal source collection or grant gameplay authority
+// to the client. A simultaneous penalty does not hide an existing bonus.
+func (b *buffSet) beneficialUntil(tick uint64) uint64 {
+	var until uint64
+	for key, effect := range b.active {
+		if tick >= effect.ExpiresAt {
+			continue
+		}
+		beneficial := false
+		switch key.Stat {
+		case buffMoveSpeed, buffAttackSpeed, buffDamageDealt:
+			beneficial = effect.Multiplier > 1
+		case buffDamageTaken:
+			beneficial = effect.Multiplier < 1
+		}
+		if beneficial {
+			until = max(until, effect.ExpiresAt)
+		}
+	}
+	return until
+}
+
 func scaledDamage(amount int, multiplier float64) int {
 	return int(math.Round(float64(amount) * multiplier))
 }

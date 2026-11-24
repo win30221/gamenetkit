@@ -10,6 +10,7 @@ Shader "TowerDuel/B3Sprite"
         _Enemy("Red team", Float) = 0
         _TeamMaskTop("Team recolor upper limit", Float) = 2
         _AimOutline("Spell aim outline", Color) = (0,0,0,0)
+        [PerRendererData] _BuffOutline("Active beneficial buff outline", Color) = (0,0,0,0)
         _Hit("Red damage flash", Range(0,1)) = 0
         _Baked("Use authored fixed lighting",Float)=0
         _SpriteVolume("Body radius, center and height", Vector) = (.25,.38,.46,0)
@@ -36,7 +37,7 @@ Shader "TowerDuel/B3Sprite"
             TEXTURE2D(_MainTex); SAMPLER(sampler_MainTex);
             TEXTURE2D(_B3EnvironmentTex); SAMPLER(sampler_B3EnvironmentTex);
             CBUFFER_START(UnityPerMaterial)
-                half4 _BaseColor, _AimOutline;
+                half4 _BaseColor, _AimOutline, _BuffOutline;
                 float4 _MainTex_TexelSize, _B3EnvironmentTex_TexelSize;
                 float4 _SpriteVolume;
                 half _Opacity, _Enemy, _Cutoff, _Hit, _TeamMaskTop, _Baked, _B3UseEnvironmentTex;
@@ -66,14 +67,17 @@ Shader "TowerDuel/B3Sprite"
                 // retain the darkest ink rather than multiplying it into black.
                 color.rgb=lerp(color.rgb,half3(1,.10h,.08h)*max(.4h,value),_Hit*.8h*smoothstep(.07h,.18h,value));
                 color*=input.color*_BaseColor; color.a*=_Opacity;
-                if(color.a<_Cutoff && _AimOutline.a>.5h)
+                // Aiming takes priority; a buff outlines the silhouette without
+                // recoloring the team's equipment or the red damage flash.
+                half4 outline=_AimOutline.a>.5h?_AimOutline:_BuffOutline;
+                if(color.a<_Cutoff && outline.a>.5h)
                 {
-                    float2 stepUV=(_B3UseEnvironmentTex>.5h?_B3EnvironmentTex_TexelSize.xy:_MainTex_TexelSize.xy)*2;
+                    float2 stepUV=(_B3UseEnvironmentTex>.5h?_B3EnvironmentTex_TexelSize.xy:_MainTex_TexelSize.xy)*(_AimOutline.a>.5h?2:3);
                     half edge=max(max(SampleSprite(input.uv+float2(stepUV.x,0)).a,
                                       SampleSprite(input.uv-float2(stepUV.x,0)).a),
                                   max(SampleSprite(input.uv+float2(0,stepUV.y)).a,
                                       SampleSprite(input.uv-float2(0,stepUV.y)).a));
-                    if(edge>_Cutoff)return _AimOutline;
+                    if(edge>_Cutoff)return outline;
                 }
                 clip(color.a-_Cutoff);
                 color.rgb=lerp(color.rgb,_AimOutline.rgb,_AimOutline.a*.12h);
@@ -126,7 +130,7 @@ Shader "TowerDuel/B3Sprite"
             TEXTURE2D(_B3EnvironmentTex); SAMPLER(sampler_B3EnvironmentTex);
             float3 _LightDirection, _LightPosition;
             CBUFFER_START(UnityPerMaterial)
-                half4 _BaseColor, _AimOutline;
+                half4 _BaseColor, _AimOutline, _BuffOutline;
                 float4 _MainTex_TexelSize, _B3EnvironmentTex_TexelSize;
                 float4 _SpriteVolume;
                 half _Opacity, _Enemy, _Cutoff, _Hit, _TeamMaskTop, _Baked, _B3UseEnvironmentTex;

@@ -39,6 +39,7 @@ type entity struct {
 	LockedTarget  uint64  `json:"lockedTarget,omitempty"`
 	Active        bool    `json:"active"`
 	Slowed        bool    `json:"slowed"`
+	BuffedUntil   uint64  `json:"buffedUntil,omitempty"`
 	Airborne      bool    `json:"airborne,omitempty"`
 	PausedUntil   uint64  `json:"pausedUntil,omitempty"`
 	TransformTick uint64  `json:"transformTick,omitempty"`
@@ -352,6 +353,7 @@ func (w *match) snapshot(seat int, kind string) stateMessage {
 	for _, u := range w.sortedUnits() {
 		state := u.State
 		state.LockedTarget = u.LockedTarget
+		state.BuffedUntil = u.Buffs.beneficialUntil(w.Tick)
 		units = append(units, state)
 	}
 	towers := append([]entity(nil), w.Towers...)
