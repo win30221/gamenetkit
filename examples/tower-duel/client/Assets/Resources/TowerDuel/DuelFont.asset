@@ -110,8 +110,8 @@ MonoBehaviour:
     italicTypeface: {fileID: 0}
   m_RegularStyleWeight: 0
   m_RegularStyleSpacing: 0
-  m_BoldStyleWeight: 0.75
-  m_BoldStyleSpacing: 7
+  m_BoldStyleWeight: 0.18
+  m_BoldStyleSpacing: 0
   m_ItalicStyleSlant: 35
   m_TabMultiple: 10
 --- !u!28 &6315282475294389104
@@ -209,7 +209,7 @@ Material:
     - _UnderlaySoftness: 0
     - _VertexOffsetX: 0
     - _VertexOffsetY: 0
-    - _WeightBold: 0.75
+    - _WeightBold: 0.18
     - _WeightNormal: 0
     m_Colors:
     - _FaceColor: {r: 1, g: 1, b: 1, a: 1}

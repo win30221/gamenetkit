@@ -37,9 +37,9 @@ func TestRealWebSocketResumeRestoresHandAndWatermark(t *testing.T) {
 	for _, c := range []*websocket.Conn{a, b} {
 		sendTest(t, c, map[string]string{"type": "ready", "match": first.Match})
 	}
-	readStateTest(t, a, "playing")
+	playing := readStateTest(t, a, "playing")
 	readStateTest(t, b, "playing")
-	command := deployMessage{"deploy", first.Match, 1, "guard", -5, -3}
+	command := deployMessage{"deploy", first.Match, 1, playableUnitCard(t, config, playing.Hand), -5, -3}
 	sendTest(t, a, command)
 	var accepted actionResult
 	readTest(t, a, func(data []byte) bool { _ = json.Unmarshal(data, &accepted); return accepted.Type == "action" })
@@ -66,7 +66,7 @@ func TestRealWebSocketResumeRestoresHandAndWatermark(t *testing.T) {
 		t.Fatal("retry after a real reconnect changed result")
 	}
 	state := readStateTest(t, resumed, "playing")
-	if len(state.Units) != 1 {
+	if len(state.Units) != config.ByID[command.Card].Count {
 		t.Fatal("reconnect duplicated soldier")
 	}
 }

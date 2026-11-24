@@ -36,6 +36,7 @@ namespace TowerDuel
         private double copyFeedbackUntil;
         private string copyRoom="";
         private bool wasLobby=true;
+        private bool hudMenuOpen;
         private Rect appliedSafeArea;
         private int layoutScreenWidth=-1,layoutScreenHeight=-1;
 #if UNITY_WEBGL && !UNITY_EDITOR
@@ -83,7 +84,9 @@ namespace TowerDuel
                 root.Q("energyPips").Add(pip);pips.Add(fill);
             }
             client.Session.StateChanged+=ObserveEnergy;client.Session.ActionConfirmed+=ObserveActionEnergy;
-            root.Q<Button>("leaveButton").clicked+=client.Leave;
+            root.Q<Button>("hudMenuButton").clicked+=()=>SetHudMenu(!hudMenuOpen);
+            SetHudMenu(false);
+            root.Q<Button>("leaveButton").clicked+=()=>{SetHudMenu(false);client.Leave();};
             root.Q<Button>("waitingLeaveButton").clicked+=client.Leave;
             root.Q<Button>("backButton").clicked+=client.Leave;
             copy=root.Q<Button>("copyButton");copy.clicked+=CopyRoomCode;
@@ -91,6 +94,7 @@ namespace TowerDuel
             root.Q<Button>("rematchButton").clicked+=()=>client.Session.Rematch();
             root.Q<Button>("audioButton").clicked+=()=>client.Audio.Toggle();
             world.RegisterCallback<PointerDownEvent>(evt=>{
+                if(hudMenuOpen){SetHudMenu(false);evt.StopPropagation();return;}
                 if(!evt.isPrimary||evt.button!=0||!client.Selected||client.Session.Pending)return;
                 if(!WorldPoint(evt.position,out var p))return;
                 pointer=evt.pointerId;world.CapturePointer(pointer);client.ShowPreview(p,true);evt.StopPropagation();
@@ -105,10 +109,13 @@ namespace TowerDuel
             world.RegisterCallback<PointerCaptureOutEvent>(_=>{pointer=-1;client.HidePreview();});
             root.RegisterCallback<KeyDownEvent>(evt=>{if(evt.keyCode==KeyCode.Escape){CancelCardDrags();client.Selected=false;CancelPointer();}});
             DuelCartoonSkin.Apply(root);
-            // ShowCards(false) selects the battle page during DuelMenu construction.
-            // Reapply that selected texture after skinning all generic menu buttons.
             DuelCartoonSkin.SetMenuTab(root.Q<Button>("battleTab"), true);
             Update();
+        }
+        private void SetHudMenu(bool open)
+        {
+            hudMenuOpen=open;
+            Display(root.Q("hudMenuPanel"),open);
         }
         private bool CanPlay()=>client.Session.CanAct&&(client.Session.State.phase=="playing"||client.Session.State.phase=="overtime")&&!client.Session.Pending;
         private static VisualElement CardFrame(bool small=false)
@@ -144,7 +151,8 @@ namespace TowerDuel
         {
             worldPoint=default;
             return root.worldBound.Contains(point)&&!root.Q("dockFrame").worldBound.Contains(point)
-                &&!root.Q("audioButton").worldBound.Contains(point)&&!root.Q("leaveButton").worldBound.Contains(point)&&WorldPoint(point,out worldPoint);
+                &&!root.Q("hudMenuButton").worldBound.Contains(point)
+                &&!(hudMenuOpen&&root.Q("hudMenuPanel").worldBound.Contains(point))&&WorldPoint(point,out worldPoint);
         }
         private bool DragOnBattlefield(Vector2 point)
         {
@@ -265,36 +273,28 @@ namespace TowerDuel
             float availableWidth=Mathf.Max(1f,safeWidth-16f);
             // Hand occupies only the reserved 14.5% lower edge.
             const float dockFraction=.145f;
-            float scale=Mathf.Min(.9f,availableWidth/600f,height*dockFraction/234f);
+            float scale=Mathf.Min(.9f,availableWidth/600f,height*dockFraction/220f);
             var frame=root.Q("dockFrame");
             frame.style.left=appliedSafeArea.center.x*unitsPerPixel-300f*scale;
             frame.style.width=600f*scale;
             frame.style.height=height*dockFraction;
             frame.style.bottom=appliedSafeArea.yMin*unitsPerPixel;
             dock.style.left=300f*scale-300f;
-            dock.style.bottom=height*dockFraction-234f*scale;
+            dock.style.bottom=height*dockFraction-220f*scale;
             dock.style.scale=new Scale(new Vector3(scale,scale,1));
 
-            // Fixed physical-pixel HUD. PanelSettings scales USS pixels with the
-            // viewport; using scale=1 leaves the header visibly larger on a wide
-            // monitor. Compensate with panel-units-per-screen-pixel instead.
-            const float leftBadgeWidth=196f, rightBadgeWidth=204f;
-            const float edgeInset=8f;
-            bool stacked=appliedSafeArea.width<leftBadgeWidth+rightBadgeWidth+16f+2f*edgeInset;
+            // Fixed physical-pixel header: centered timer, top-right menu.
+            const float edgeInset=8f, timerWidth=100f;
             var top=root.Q("topHud");
             top.style.top=(7f+Screen.height-appliedSafeArea.yMax)*unitsPerPixel;
             top.style.left=(edgeInset+appliedSafeArea.xMin)*unitsPerPixel;
             top.style.right=(edgeInset+Screen.width-appliedSafeArea.xMax)*unitsPerPixel;
-            top.style.height=(stacked?92f:44f)*unitsPerPixel;
-            // Each badge has an absolute anchor and an appropriate transform
-            // origin in Duel.uss (top-left for info, top-right for controls).
-            // Text, buttons and border art all retain their physical pixel size.
-            var info=top.Q(className:"header-copy");
-            var actions=top.Q(className:"hud-actions");
+            top.style.height=44f*unitsPerPixel;
+            var timer=top.Q("timerLabel");
+            timer.style.left=Mathf.Max(0,(safeWidth-(2f*edgeInset+timerWidth)*unitsPerPixel)/2f);
             var pixelScale=new Scale(new Vector3(unitsPerPixel,unitsPerPixel,1f));
-            info.style.scale=pixelScale;
-            actions.style.scale=pixelScale;
-            actions.style.top=(stacked?48f:0f)*unitsPerPixel;
+            timer.style.scale=pixelScale;
+            top.Q("hudActions").style.scale=pixelScale;
         }
         public void Update()
         {
@@ -307,9 +307,11 @@ namespace TowerDuel
             if(draggingCard!=null)MoveDrag(dragPosition);
             if(copyRoom!=""&&(state?.room!=copyRoom||(state.phase!="waiting"&&state.phase!="countdown")))ResetCopy();
             if(copyFeedbackUntil>0&&DuelSession.Now>=copyFeedbackUntil){copyFeedbackUntil=0;copy.text="複製房間碼";}
-            Display(lobby,state==null);Display(waiting,state!=null&&(state.phase=="waiting"||state.phase=="countdown"));Display(result,state!=null&&state.phase=="ended");Display(dock,state!=null);Display(health,state!=null);
+            bool playing=state!=null&&(state.phase=="playing"||state.phase=="overtime");
+            Display(lobby,state==null);Display(waiting,state!=null&&(state.phase=="waiting"||state.phase=="countdown"));Display(result,state!=null&&state.phase=="ended");Display(dock,playing);Display(health,state!=null);
             if(state==null)menu.Update();
-            Display(root.Q("topHud"),state!=null);Display(root.Q("dockFrame"),state!=null);
+            if(!playing&&hudMenuOpen)SetHudMenu(false);
+            Display(root.Q("topHud"),playing);Display(root.Q("dockFrame"),playing);
             if(state!=null&&state.phase=="ended")
             {
                 Text("resultTitle",state.winner<0?"平手":state.winner==state.seat?"勝利！":"再接再厲");Text("resultReason",DuelText.Reason(state.reason));
@@ -326,8 +328,9 @@ namespace TowerDuel
                     Text("roomLabel","房間 "+state.room+" · "+state.players[state.seat].name);
                     int seconds=Mathf.CeilToInt(state.remaining);Text("timerLabel",(state.phase=="overtime"?"加時 ":"")+seconds/60+":"+(seconds%60).ToString("00"));
                     var opponent=state.players[1-state.seat];
-                    Text("noticeLabel",client.Session.Recovering?"正在恢復連線，對戰持續進行…":!opponent.connected&&opponent.reconnectRemaining>0?"等待對手返回　"+Mathf.CeilToInt(opponent.reconnectRemaining)+" 秒":client.Session.Pending?"正在確認出牌…":client.Session.Status);
-                    Text("nextCardLabel","下一張\n"+client.Rules.Find(state.nextCard).name);
+                    Text("noticeLabel",client.Session.Recovering?"正在恢復連線，對戰持續進行…":!opponent.connected&&opponent.reconnectRemaining>0?"等待對手返回　"+Mathf.CeilToInt(opponent.reconnectRemaining)+" 秒":client.Session.Pending?"正在確認出牌…":"");
+                    Text("nextCardLabel","下一張");
+                    root.Q("nextCardArt").tooltip=client.Rules.Find(state.nextCard).name;
                     var next=root.Q("nextCardArt");next.style.backgroundImage=DuelSpriteLibrary.Card(state.nextCard);
                     bool nextB3=DuelSpriteLibrary.Converted(state.nextCard);next.EnableInClassList("b3-next",nextB3);Display(nextFrame,nextB3);
                     Text("inviteCode",state.room);
@@ -372,8 +375,9 @@ namespace TowerDuel
             for(int i=0;i<pips.Count;i++)pips[i].style.width=Length.Percent(100*Mathf.Clamp01(displayedEnergy-i));
             bool full=targetEnergy>=9.999f&&CanPlay();
             energyRow.EnableInClassList("energy-full",full);
-            Text("energyLabel","能量 "+displayedEnergy.ToString("0.0")+" / 10");
-            Text("energyMode",state.phase=="overtime"?(full?"能量已滿・雙倍回能":"雙倍回能"):full?"能量已滿":"");
+            Text("energyLabel",displayedEnergy.ToString("0.0"));
+            Text("energyMode",state.phase=="overtime"?"×2":"");
+            Display(root.Q("energyMode"),state.phase=="overtime");
         }
         private void UpdateHealth(DuelMessage state)
         {
@@ -395,7 +399,8 @@ namespace TowerDuel
                 }
                 bar.EnableInClassList("enemy",e.seat!=state.seat);
                 bool unit=client.Rules.Find(e.kind)!=null;
-                healthLabels[e.id].text=e.hp.ToString();
+                healthLabels[e.id].text=unit?"":e.hp.ToString();
+                Display(healthLabels[e.id],!unit);
                 if(e.kind=="keep")bar.Q<Label>(className:"keep-status").text=e.active?"主堡啟動":"主堡待命";
                 else if(unit)
                 {

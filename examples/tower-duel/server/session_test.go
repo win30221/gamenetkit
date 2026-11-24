@@ -84,9 +84,9 @@ func TestRealWebSocketRoomAndAction(t *testing.T) {
 	for _, c := range []*websocket.Conn{a, b} {
 		sendTest(t, c, map[string]string{"type": "ready", "match": first.Match})
 	}
-	readStateTest(t, a, "playing")
+	playing := readStateTest(t, a, "playing")
 	readStateTest(t, b, "playing")
-	command := deployMessage{"deploy", first.Match, 1, "guard", -5, -2.2}
+	command := deployMessage{"deploy", first.Match, 1, playableUnitCard(t, config, playing.Hand), -5, -2.2}
 	sendTest(t, a, command)
 	sendTest(t, a, command)
 	var firstAck actionResult
@@ -112,7 +112,7 @@ func TestRealWebSocketRoomAndAction(t *testing.T) {
 	for len(state.Units) == 0 {
 		state = readStateTest(t, b, "playing")
 	}
-	if len(state.Units) != 1 || state.Units[0].ID != firstAck.UnitID || state.Energy < 5 {
+	if len(state.Units) != config.ByID[command.Card].Count || state.Units[0].ID != firstAck.UnitID || state.Energy < 5 {
 		t.Fatal("replication/private energy failed")
 	}
 }
