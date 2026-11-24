@@ -16,7 +16,7 @@ Shader "Hidden/TowerDuel/CharacterIdlePreview"
             #pragma fragment frag
             #include "UnityCG.cginc"
             sampler2D _MainTex;
-            float4 _FrameRect, _Pose;
+            float4 _FrameRect, _Pose, _MainTex_TexelSize;
             fixed4 frag(v2f_img i) : SV_Target
             {
                 float t=_Pose.x;
@@ -38,7 +38,15 @@ Shader "Hidden/TowerDuel/CharacterIdlePreview"
                 uv.x-=sway+sin(t*4.0+uv.x*5.0)*.008*top;
                 uv.y-=breathe+sin(t*2.4+uv.x*3.0)*.004*top;
                 if(any(uv<.002)||any(uv>.998))return fixed4(0,0,0,0);
-                return tex2D(_MainTex,_FrameRect.xy+uv*_FrameRect.zw);
+                // Sharper, subpixel-smoothed sampling of the authored tile.
+                // Clamp within the chosen frame so neighboring atlas cells cannot bleed.
+                float2 atlasSize=_MainTex_TexelSize.zw;
+                float2 p=(_FrameRect.xy+uv*_FrameRect.zw)*atlasSize-.5;
+                float2 f=frac(p);
+                float2 sampleUV=(floor(p)+smoothstep(.18,.82,f)+.5)*_MainTex_TexelSize.xy;
+                float2 halfTexel=_MainTex_TexelSize.xy*.5;
+                sampleUV=clamp(sampleUV,_FrameRect.xy+halfTexel,_FrameRect.xy+_FrameRect.zw-halfTexel);
+                return tex2D(_MainTex,sampleUV);
             }
             ENDCG
         }

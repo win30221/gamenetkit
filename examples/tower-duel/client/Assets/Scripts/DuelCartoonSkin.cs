@@ -31,7 +31,8 @@ namespace TowerDuel
             if(crestArt)crest.style.backgroundImage=crestArt;
             else SetSurface(crest,Surface.Title);
             Paint(root,"catalog-header",Surface.Title);
-            Paint(root,"menu-tabs",Surface.Dark);
+            // Tabs already have their own frames; do not nest them inside another gold frame.
+            Paint(root,"catalog-filter-panel",Surface.Inset);
             Paint(root,"menu-button",Surface.Gold);
             Paint(root,"menu-primary",Surface.Green);
             Paint(root,"menu-friend-button",Surface.SmallGold);
@@ -73,10 +74,10 @@ namespace TowerDuel
             AttachAction(root.Q<Button>("changeCardButton"),"plus","加入牌池");
             AttachAction(root.Q<Button>("detailBackButton"),"back","返回");
             AttachAction(root.Q<Button>("detailChangeButton"),"plus","加入牌池");
-            var filter=root.Q("catalogFilter");
-            var arrow=filter?.Q(className:"unity-base-popup-field__arrow")??filter?.Q(className:"unity-popup-field__arrow");
+            var arrow=root.Q("catalogFilterArrow");
             var arrowArt=Resources.Load<Texture2D>("TowerDuel/B3/FantasyUI/icon_chevron_down");
             if(arrow!=null&&arrowArt)arrow.style.backgroundImage=arrowArt;
+            if(arrow!=null&&!arrowArt)arrow.AddToClassList("catalog-filter-arrow-fallback");
         }
 
         public static void SetMenuTab(Button tab,bool selected)
@@ -84,6 +85,11 @@ namespace TowerDuel
             if(tab==null)return;
             tab.EnableInClassList("menu-tab-selected",selected);
             SetSurface(tab,selected?Surface.SmallGreen:Surface.SmallGold);
+        }
+        public static void SetFilterOption(Button button,bool selected)
+        {
+            SetSurface(button,selected?Surface.SmallGreen:Surface.SmallGold);
+            button.EnableInClassList("filter-option-selected",selected);
         }
         public static void SetChangeButton(Button button,bool remove)
         {
@@ -112,12 +118,15 @@ namespace TowerDuel
         }
         public static void PaintStatIcon(VisualElement element,string title)
         {
+            // Match special cases before generic "attack" and "damage".
             string icon=title.Contains("生命")?"heart":
-                title.Contains("距離")||title.Contains("半徑")?"target":
-                title.Contains("傷害")||title.Contains("攻擊")&&!title.Contains("間隔")?"sword":
-                title.Contains("速度")||title.Contains("移速")?"move":
+                title.Contains("空中")?"target":
+                title.Contains("數量")?"users":
                 title.Contains("時間")||title.Contains("延遲")||title.Contains("間隔")?"hourglass":
-                title.Contains("空中")?"shield":"info";
+                title.Contains("半徑")||title.Contains("範圍")?"area":
+                title.Contains("距離")?"target":
+                title.Contains("速度")||title.Contains("移速")?"move":
+                title.Contains("傷害")||title.Contains("攻擊")?"sword":"info";
             var texture=Resources.Load<Texture2D>("TowerDuel/B3/FantasyUI/icon_"+icon);
             if(texture)element.style.backgroundImage=texture;
             else element.style.display=DisplayStyle.None;

@@ -78,7 +78,10 @@
             </ui:VisualElement>
             <ui:VisualElement class="catalog-header">
               <ui:Label text="可加入卡牌" class="menu-title menu-catalog-title" />
-              <ui:DropdownField name="catalogFilter" class="catalog-filter" />
+              <ui:Button name="catalogFilter" class="menu-button compact-button catalog-filter" tooltip="篩選可加入卡牌">
+                <ui:Label name="catalogFilterValue" text="全部" class="catalog-filter-value" picking-mode="Ignore" />
+                <ui:VisualElement name="catalogFilterArrow" class="catalog-filter-arrow" picking-mode="Ignore" />
+              </ui:Button>
             </ui:VisualElement>
             <ui:VisualElement name="catalogCards" class="menu-catalog" />
             <ui:Label name="catalogEmpty" text="目前沒有可加入的卡牌" class="menu-details" />
@@ -102,6 +105,13 @@
             <ui:TextField name="roomField" label="房間碼" max-length="6" class="menu-field menu-code" />
             <ui:Button name="joinConfirmButton" text="加入" class="menu-button menu-primary modal-primary" />
             <ui:Button name="joinCancelButton" text="取消" class="menu-button" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="catalogFilterLayer" class="catalog-filter-layer">
+          <ui:VisualElement name="catalogFilterPanel" class="catalog-filter-panel">
+            <ui:Button name="filterAllButton" text="全部" class="menu-button compact-button filter-option" />
+            <ui:Button name="filterTroopButton" text="兵種" class="menu-button compact-button filter-option" />
+            <ui:Button name="filterSpellButton" text="法術" class="menu-button compact-button filter-option" />
           </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="cardActionLayer" class="card-action-layer">

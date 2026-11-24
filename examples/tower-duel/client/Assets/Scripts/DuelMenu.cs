@@ -19,7 +19,12 @@ namespace TowerDuel
             resetDeck, inspectButton, changeButton, detailChangeButton;
         private readonly TextField nameField, serverField, roomField;
         private readonly Label deckCount, deckGuide, status, catalogEmpty, replaceHint;
-        private readonly DropdownField catalogFilter;
+        private readonly Button catalogFilter;
+        private readonly Label catalogFilterValue;
+        private readonly VisualElement catalogFilterLayer, catalogFilterPanel;
+        private readonly Button[] filterOptions;
+        private readonly string[] filterValues={"全部","兵種","法術"};
+        private string currentFilter="全部";
         private readonly Image detailSprite;
         private readonly DuelCharacterIdlePreview idlePreview;
         private readonly Button detailFormButton;
@@ -57,9 +62,26 @@ namespace TowerDuel
             resetDeck=lobby.Q<Button>("defaultDeckButton");
             inspectButton=lobby.Q<Button>("inspectCardButton"); changeButton=lobby.Q<Button>("changeCardButton");
             detailChangeButton=lobby.Q<Button>("detailChangeButton");
-            catalogFilter=lobby.Q<DropdownField>("catalogFilter");
-            catalogFilter.choices=new List<string>{"全部","兵種","法術"};
-            catalogFilter.SetValueWithoutNotify("全部");
+            catalogFilter=lobby.Q<Button>("catalogFilter");
+            catalogFilterValue=lobby.Q<Label>("catalogFilterValue");
+            catalogFilterLayer=lobby.Q("catalogFilterLayer");
+            catalogFilterPanel=lobby.Q("catalogFilterPanel");
+            filterOptions=new[]{lobby.Q<Button>("filterAllButton"),lobby.Q<Button>("filterTroopButton"),lobby.Q<Button>("filterSpellButton")};
+            catalogFilter.clicked+=OpenFilter;
+            for(int i=0;i<filterOptions.Length;i++)
+            {
+                string value=filterValues[i];
+                filterOptions[i].clicked+=()=>SelectFilter(value);
+            }
+            catalogFilterLayer.RegisterCallback<PointerDownEvent>(evt=>{
+                if(evt.target==catalogFilterLayer){CloseFilter();evt.StopPropagation();}
+            });
+            shell.RegisterCallback<KeyDownEvent>(evt=>{
+                if(evt.keyCode==KeyCode.Escape&&catalogFilterLayer.style.display.value==DisplayStyle.Flex)
+                {
+                    CloseFilter();catalogFilter.Focus();evt.StopPropagation();
+                }
+            });
             nameField.value="玩家"+UnityEngine.Random.Range(10,99);
             serverField.value=client.Server;
 #if UNITY_WEBGL && !UNITY_EDITOR
@@ -68,7 +90,6 @@ namespace TowerDuel
             for(int i=0;i<defaults.Length;i++)defaults[i]=client.Rules.cards[i].id;
             LoadDeck();
             BuildDeck();
-            catalogFilter.RegisterValueChangedCallback(_=>{CloseActions(); RebuildCatalogue();});
             battleTab.clicked+=()=>ShowCards(false); cardsTab.clicked+=()=>ShowCards(true);
             resetDeck.clicked+=()=>{if(busy)return;deck.Clear();deck.AddRange(defaults);CompleteChange();};
             lobby.Q<Button>("settingsButton").clicked+=()=>ShowModal(settingsPanel);
@@ -89,7 +110,7 @@ namespace TowerDuel
             detailLayer.RegisterCallback<PointerDownEvent>(evt=>{if(evt.target==detailLayer){CloseDetail();evt.StopPropagation();}});
             RefreshDeck();
             Display(settingsPanel,false); Display(joinPanel,false); Display(actionLayer,false);
-            Display(detailLayer,false); Display(replaceBar,false);
+            Display(detailLayer,false); Display(replaceBar,false); CloseFilter();
             Display(deckPage,false); Display(battlePage,true);
             DuelCartoonSkin.SetMenuTab(cardsTab,false); DuelCartoonSkin.SetMenuTab(battleTab,true);
         }
@@ -107,8 +128,9 @@ namespace TowerDuel
             foreach(var row in deckCards.Children())SizeRow(row,cardWidth);
             foreach(var row in catalogueRoot.Children())SizeRow(row,cardWidth);
             // A compact header and a substantial illustration, without compressing the room actions.
-            shell.Q(className:"menu-hero").style.height=420f;
+            shell.Q(className:"menu-hero").style.height=468f;
             if(actionLayer.style.display.value==DisplayStyle.Flex)CloseActions();
+            if(catalogFilterLayer.style.display.value==DisplayStyle.Flex)CloseFilter();
         }
 
         public void BlurInputs()
@@ -136,7 +158,8 @@ namespace TowerDuel
         {
             bool full=deck.Count==DuelRules.DeckSize;
             deckCards.SetEnabled(!busy); catalogueRoot.SetEnabled(!busy);
-            resetDeck.SetEnabled(!busy);
+            resetDeck.SetEnabled(!busy); catalogFilter.SetEnabled(!busy);
+            if(busy&&catalogFilterLayer.style.display.value==DisplayStyle.Flex)CloseFilter();
             quickMatch.SetEnabled(client.Session.Searching||(!busy&&full));
             createRoom.SetEnabled(!busy&&full); joinRoom.SetEnabled(!busy&&full);
             joinConfirm.SetEnabled(!busy&&full&&!string.IsNullOrWhiteSpace(roomField.value));
@@ -145,14 +168,46 @@ namespace TowerDuel
         private static void Display(VisualElement element,bool show)=>element.style.display=show?DisplayStyle.Flex:DisplayStyle.None;
         private void ShowCards(bool show)
         {
-            CloseModals(); CloseActions(); CloseDetail(); CancelReplace();
+            CloseModals(); CloseFilter(); CloseActions(); CloseDetail(); CancelReplace();
             Display(deckPage,show); Display(battlePage,!show);
             DuelCartoonSkin.SetMenuTab(cardsTab,show); DuelCartoonSkin.SetMenuTab(battleTab,!show);
+        }
+        // Use an in-panel menu instead of the unthemed runtime DropdownField
+        // popup. All coordinates are in the same scaled menu shell as the cards.
+        private void OpenFilter()
+        {
+            if(busy)return;
+            CloseActions();
+            for(int i=0;i<filterOptions.Length;i++)
+                DuelCartoonSkin.SetFilterOption(filterOptions[i],filterValues[i]==currentFilter);
+            Display(catalogFilterLayer,true);catalogFilterLayer.BringToFront();
+            Rect anchor=catalogFilter.worldBound;
+            var topRight=shell.WorldToLocal(new Vector2(anchor.xMax,anchor.yMin));
+            var bottomRight=shell.WorldToLocal(new Vector2(anchor.xMax,anchor.yMax));
+            float width=Mathf.Min(154f,Mathf.Max(1f,shell.resolvedStyle.width-24f));
+            const float height=156f;
+            float bottom=DesignHeight-100f;
+            catalogFilterPanel.style.width=width;
+            catalogFilterPanel.style.left=Mathf.Clamp(topRight.x-width,12f,Mathf.Max(12f,shell.resolvedStyle.width-width-12f));
+            catalogFilterPanel.style.top=bottomRight.y+5f+height<=bottom
+                ?bottomRight.y+5f:Mathf.Max(12f,topRight.y-height-5f);
+            catalogFilter.EnableInClassList("catalog-filter-open",true);
+            filterOptions[Array.IndexOf(filterValues,currentFilter)].Focus();
+        }
+        private void CloseFilter()
+        {
+            Display(catalogFilterLayer,false);
+            catalogFilter.EnableInClassList("catalog-filter-open",false);
+        }
+        private void SelectFilter(string value)
+        {
+            currentFilter=value;catalogFilterValue.text=value;CloseFilter();RebuildCatalogue();
+            catalogFilter.Focus();
         }
         private void ShowModal(VisualElement modal)
         {
             if(busy)return;
-            CloseModals(); CloseActions(); CloseDetail(); Display(modal,true); modal.BringToFront();
+            CloseModals(); CloseFilter(); CloseActions(); CloseDetail(); Display(modal,true); modal.BringToFront();
         }
         private void CloseModals()
         {
@@ -207,8 +262,8 @@ namespace TowerDuel
             foreach(var card in client.Rules.cards)
             {
                 if(deck.Contains(card.id))continue;
-                if(catalogFilter.value=="兵種"&&card.IsSpell)continue;
-                if(catalogFilter.value=="法術"&&!card.IsSpell)continue;
+                if(currentFilter=="兵種"&&card.IsSpell)continue;
+                if(currentFilter=="法術"&&!card.IsSpell)continue;
                 if(count++%4==0)row=NewRow(catalogueRoot);
                 row.Add(catalogue[card.id].Button);
             }
@@ -380,6 +435,11 @@ namespace TowerDuel
                 var label=new Label(stats[i].Key);label.AddToClassList("stat-label");
                 var value=new Label(stats[i].Value);value.AddToClassList("stat-value");
                 copy.Add(label);copy.Add(value);cell.Add(icon);cell.Add(copy);row.Add(cell);
+            }
+            if(stats.Count%2!=0&&row!=null)
+            {
+                var spacer=new VisualElement{pickingMode=PickingMode.Ignore};
+                spacer.AddToClassList("stat-cell");spacer.AddToClassList("stat-cell-spacer");row.Add(spacer);
             }
             UpdateChangeButtons(id);
             Display(detailLayer,true);detailLayer.BringToFront();detailScroll.scrollOffset=Vector2.zero;

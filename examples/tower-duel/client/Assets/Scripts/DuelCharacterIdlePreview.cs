@@ -41,7 +41,8 @@ namespace TowerDuel
             if(shader&&shader.isSupported)
             {
                 material=new Material(shader){hideFlags=HideFlags.DontSave};
-                target=new RenderTexture(320,320,0,RenderTextureFormat.ARGB32)
+                // Preserve fine sprite linework before UI Toolkit resamples the preview.
+                target=new RenderTexture(512,512,0,RenderTextureFormat.ARGB32)
                 {
                     name="TowerDuel/CharacterPreview", filterMode=FilterMode.Bilinear,
                     wrapMode=TextureWrapMode.Clamp, useMipMap=false, autoGenerateMips=false,
