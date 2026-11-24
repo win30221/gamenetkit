@@ -19,9 +19,12 @@ MonoBehaviour:
   TileSize: 224
   Baseline: 208
   ReferenceHeight: 160
+  IdleFrames: 1
   WalkFrames: 6
   AttackFrames: 6
   ImpactFrame: 3
+  IdleFps: 8
+  WalkFps: 8
   UnitHeight: 2.92
   WorldHeight: 1.46
   TeamMaskTop: 0.4

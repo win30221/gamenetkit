@@ -20,11 +20,11 @@ MonoBehaviour:
   Baseline: 224
   ReferenceHeight: 160
   IdleFrames: 1
-  IdleFps: 8
-  WalkFps: 16
   WalkFrames: 12
   AttackFrames: 6
   ImpactFrame: 3
+  IdleFps: 8
+  WalkFps: 16
   UnitHeight: 2.8
   WorldHeight: 1.4
   TeamMaskTop: 2
