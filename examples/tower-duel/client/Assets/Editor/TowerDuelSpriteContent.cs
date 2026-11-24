@@ -161,7 +161,10 @@ namespace TowerDuel.Editor
             importer.sRGBTexture = true; importer.alphaSource = alpha ? TextureImporterAlphaSource.FromInput : TextureImporterAlphaSource.None;
             importer.alphaIsTransparency = alpha; importer.mipmapEnabled = false; importer.isReadable = false;
             importer.maxTextureSize = maxSize; importer.filterMode = FilterMode.Bilinear; importer.wrapMode = TextureWrapMode.Clamp;
-            importer.textureCompression = TextureImporterCompression.Uncompressed; importer.SaveAndReimport();
+            importer.textureCompression = TextureImporterCompression.Uncompressed;
+            importer.ClearPlatformTextureSettings("Standalone");
+            importer.ClearPlatformTextureSettings("WebGL");
+            importer.SaveAndReimport();
             return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
     }
