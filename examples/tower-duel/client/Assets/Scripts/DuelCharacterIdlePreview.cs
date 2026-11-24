@@ -36,7 +36,7 @@ namespace TowerDuel
             }
             flying=flight;
             shadow.style.display=DisplayStyle.Flex;
-            shadow.style.opacity=flying?.55f:1f;
+            shadow.style.opacity=flying ? .55f : 1f;
             var shader=Resources.Load<Shader>("TowerDuel/CharacterIdlePreview");
             if(shader&&shader.isSupported)
             {

@@ -69,6 +69,14 @@ namespace TowerDuel
             Attach(root.Q<Button>("createButton"),"plus","建立房間");
             Attach(root.Q<Button>("joinButton"),"users","加入房間");
             Attach(root.Q<Button>("quickMatchButton"),"swords","快速配對");
+            AttachAction(root.Q<Button>("inspectCardButton"),"inspect","檢視");
+            AttachAction(root.Q<Button>("changeCardButton"),"plus","加入牌池");
+            AttachAction(root.Q<Button>("detailBackButton"),"back","返回");
+            AttachAction(root.Q<Button>("detailChangeButton"),"plus","加入牌池");
+            var filter=root.Q("catalogFilter");
+            var arrow=filter?.Q(className:"unity-base-popup-field__arrow")??filter?.Q(className:"unity-popup-field__arrow");
+            var arrowArt=Resources.Load<Texture2D>("TowerDuel/B3/FantasyUI/icon_chevron_down");
+            if(arrow!=null&&arrowArt)arrow.style.backgroundImage=arrowArt;
         }
 
         public static void SetMenuTab(Button tab,bool selected)
@@ -77,7 +85,31 @@ namespace TowerDuel
             tab.EnableInClassList("menu-tab-selected",selected);
             SetSurface(tab,selected?Surface.SmallGreen:Surface.SmallGold);
         }
-        public static void SetChangeButton(Button button,bool remove)=>SetSurface(button,remove?Surface.SmallRed:Surface.SmallGreen);
+        public static void SetChangeButton(Button button,bool remove)
+        {
+            SetSurface(button,remove?Surface.SmallRed:Surface.SmallGreen);
+            var icon=button.Q(className:"action-icon");
+            var label=button.Q<Label>(className:"action-copy");
+            if(icon!=null&&label!=null)
+            {
+                button.text="";
+                label.text=remove?"移出牌池":"加入牌池";
+                var art=Resources.Load<Texture2D>("TowerDuel/B3/FantasyUI/icon_"+(remove?"minus":"plus"));
+                if(art)icon.style.backgroundImage=art;
+            }
+        }
+        private static void AttachAction(Button button,string key,string text)
+        {
+            if(button==null)return;
+            var art=Resources.Load<Texture2D>("TowerDuel/B3/FantasyUI/icon_"+key);
+            if(!art)return;
+            button.text="";
+            var icon=new VisualElement{pickingMode=PickingMode.Ignore};
+            icon.AddToClassList("action-icon");icon.style.backgroundImage=art;
+            var label=new Label(text){pickingMode=PickingMode.Ignore};
+            label.AddToClassList("action-copy");
+            button.Add(icon);button.Add(label);
+        }
         public static void PaintStatIcon(VisualElement element,string title)
         {
             string icon=title.Contains("生命")?"heart":
@@ -101,7 +133,7 @@ namespace TowerDuel
             if(e==null)return;
             foreach(var name in new[]{"skin-slice","skin-small-slice","skin-frame-slice","skin-badge"})
                 e.RemoveFromClassList(name);
-            foreach(var name in new[]{"asset-panel","asset-dark","asset-inset","asset-title","asset-button","asset-compact","asset-frame","asset-count","asset-dock"})
+            foreach(var name in new[]{"asset-panel","asset-dark","asset-inset","asset-title","asset-button","asset-compact","asset-frame","asset-count","asset-dock","asset-popover","asset-timer"})
                 e.RemoveFromClassList(name);
             string assetName=AssetName(surface);
             if(e.ClassListContains("dock"))assetName="hud_dock";
@@ -110,8 +142,8 @@ namespace TowerDuel
             var asset=Resources.Load<Texture2D>("TowerDuel/B3/FantasyUI/"+assetName);
             if(asset)
             {
-                string style=assetName=="hud_dock"?"asset-dock":assetName=="hud_timer"?"asset-title":
-                    assetName=="action_popover"?"asset-inset":
+                string style=assetName=="hud_dock"?"asset-dock":assetName=="hud_timer"?"asset-timer":
+                    assetName=="action_popover"?"asset-popover":
                     surface==Surface.Paper?"asset-panel":surface==Surface.Dark?"asset-dark":
                     surface==Surface.Inset?"asset-inset":surface==Surface.Title?"asset-title":
                     surface==Surface.Frame?"asset-frame":surface==Surface.Badge?"skin-badge":
