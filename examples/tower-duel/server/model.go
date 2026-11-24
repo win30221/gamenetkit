@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math"
+	"math/rand/v2"
 	"os"
 	"sort"
 )
@@ -233,6 +234,12 @@ func (w *match) ready(seat int) {
 	}
 	w.Players[seat].Ready = true
 	if w.Players[0].Connected && w.Players[1].Connected && w.Players[0].Ready && w.Players[1].Ready {
+		for i := range w.Decks {
+			deck := w.Decks[i]
+			rand.Shuffle(len(deck), func(a, b int) { deck[a], deck[b] = deck[b], deck[a] })
+			copy(w.Hands[i][:], deck[:4])
+			copy(w.Queues[i][:], deck[4:])
+		}
 		w.Phase = "countdown"
 		w.Countdown = 2 * tickRate
 	}

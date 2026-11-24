@@ -10,6 +10,44 @@ namespace TowerDuel.Editor
         {
             if (!value) throw new InvalidOperationException(reason);
         }
+        private static void CheckVariableClips()
+        {
+            var set=ScriptableObject.CreateInstance<DuelSpriteSet>();
+            Texture2D idle=null,walk=null,attack=null;
+            try
+            {
+                set.Kind="variable-clips-test";set.TileSize=8;set.Baseline=6;set.ReferenceHeight=4;set.Baked=true;
+                set.IdleFrames=3;set.WalkFrames=5;set.AttackFrames=8;set.ImpactFrame=4;
+                set.IdleFps=5;set.WalkFps=10;
+                set.Idle=idle=new Texture2D(24,128,TextureFormat.RGBA32,false);
+                set.Walk=walk=new Texture2D(40,128,TextureFormat.RGBA32,false);
+                set.Attack=attack=new Texture2D(64,128,TextureFormat.RGBA32,false);
+                foreach(var clip in new[]{DuelSpriteClip.Idle,DuelSpriteClip.Walk,DuelSpriteClip.Attack})
+                {
+                    int count=set.FrameCount(clip);
+                    for(int direction=0;direction<8;direction++)for(int frame=0;frame<count;frame++)
+                    {
+                        var body=set.Frame(clip,direction,frame);var shadow=set.ShadowFrame(clip,direction,frame);
+                        Require(body.rect.x==frame*8&&shadow.rect.x==body.rect.x,"Variable clip lost a column");
+                        Require(body.rect.y-shadow.rect.y==64,"Variable clip lost its shadow pairing");
+                    }
+                    if(clip==DuelSpriteClip.Attack)continue;
+                    float fps=set.LoopFps(clip);
+                    Require(set.LoopFrame(clip,0)==0&&set.LoopFrame(clip,1.01/fps)==1,"Configured loop FPS ignored");
+                    Require(set.LoopFrame(clip,(count+.01)/fps)==0,"Configured loop count did not wrap");
+                }
+                Require(set.FrameCount(DuelSpriteClip.Idle)==3&&set.FrameCount(DuelSpriteClip.Attack)==8,
+                    "Independent clip frame counts were lost");
+            }
+            finally
+            {
+                set.ClearFrames();UnityEngine.Object.DestroyImmediate(set);
+                if(idle)UnityEngine.Object.DestroyImmediate(idle);
+                if(walk)UnityEngine.Object.DestroyImmediate(walk);
+                if(attack)UnityEngine.Object.DestroyImmediate(attack);
+            }
+        }
+
         public static string Run()
         {
             Require(Application.isPlaying, "Run B3 sprite tests in an empty Play Mode scene");
@@ -35,6 +73,7 @@ namespace TowerDuel.Editor
                 camera.transform.rotation=Quaternion.Euler(60,0,0);
                 var headings = new[] { Vector3.back, new Vector3(-1,0,-1), Vector3.left, new Vector3(-1,0,1),
                     Vector3.forward, new Vector3(1,0,1), Vector3.right, new Vector3(1,0,-1) };
+                CheckVariableClips();
                 int converted = 0;
                 foreach (var card in DuelRules.Load().cards)
                 {
@@ -87,10 +126,11 @@ namespace TowerDuel.Editor
                     entity.dx = 0; entity.dz = 1;
                     unit.Present(entity, card, 60, 1, false, 1, 0);
                     var walk = unit.Renderer.sprite;
-                    unit.Present(entity, card, 64, 1, false, 1, 0);
+                    double nextWalkTick=60+30d/unit.Set.LoopFps(DuelSpriteClip.Walk)+.001;
+                    unit.Present(entity, card, nextWalkTick, 1, false, 1, 0);
                     Require(unit.Clip == DuelSpriteClip.Walk && walk != unit.Renderer.sprite, "Walk frames did not advance");
                     walk = unit.Renderer.sprite;
-                    unit.Present(entity, card, 64, 1, false, 1, 0);
+                    unit.Present(entity, card, nextWalkTick, 1, false, 1, 0);
                     Require(walk == unit.Renderer.sprite, "A stalled render tick advanced a sprite");
 
                     entity.attackTick = 100; entity.target = 200; entity.hitTick = 0;
@@ -130,9 +170,10 @@ namespace TowerDuel.Editor
                         model.transform.position = entity.Position;
                         unit.Present(entity, card, 450, 0, false, 1, 0);
                         var hovering = unit.Renderer.sprite;
-                        unit.Present(entity, card, 454, 0, false, 1, 0);
+                        var hoverClip=unit.Set.FrameCount(DuelSpriteClip.Idle)>1?DuelSpriteClip.Idle:DuelSpriteClip.Walk;
+                        unit.Present(entity, card, 450+30d/unit.Set.LoopFps(hoverClip)+.001, 0, false, 1, 0);
                         unit.AlignToCamera();
-                        Require(unit.Clip == DuelSpriteClip.Walk && unit.Renderer.sprite != hovering, "Stationary flyer did not flap: " + card.id);
+                        Require(unit.Clip == hoverClip && unit.Renderer.sprite != hovering, "Stationary flyer did not flap: " + card.id);
                         Require(card.transformAfterTicks == 0 || unit.Set != groundSet, "Airborne transition retained the ground sprite set: " + card.id);
                         Require(unit.ShadowMatchesFrame && Mathf.Abs(unit.ShadowRenderer.transform.position.y
                             - DuelMap.GroundHeight(model.transform.position.z) - .002f) < .0001f, "Airborne shadow floated above the battlefield");
@@ -157,7 +198,7 @@ namespace TowerDuel.Editor
                     Require(block.GetColor("_BaseColor").r > block.GetColor("_BaseColor").g, "Invalid deployment was not marked red");
                     preview.Hide(); Require(preview.ActiveGhosts == 0, "Hidden sprite preview remained active");
                 }
-                return "TOWER_DUEL_B3_TESTS PASS: " + converted + " converted units; eight directions, both cameras, anchors, walk/stall, authority contact, frost, deployment, cancellation, death and matching cards";
+                return "TOWER_DUEL_B3_TESTS PASS: " + converted + " converted units; eight directions, both cameras, anchors, independent clip counts and loop FPS, walk/stall, authority contact, frost, deployment, cancellation, death and matching cards";
             }
             finally { UnityEngine.Object.DestroyImmediate(root); }
         }

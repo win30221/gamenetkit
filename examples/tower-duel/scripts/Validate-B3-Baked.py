@@ -15,8 +15,9 @@ def validate():
         d=json.loads((folder/'definition.json').read_text());tile=d['tileSize'];reference=d['referenceHeight']
         assert d.get('baked'),f'{folder.name}: not enabled'
         clips=[]
-        for clip,columns in (('idle',1),('walk',6),('attack',6)):
+        for clip,columns in (('idle',d.get('idleFrames',1)),('walk',d['walkFrames']),('attack',d['attackFrames'])):
             source=Image.open(folder/(clip+'.png')).convert('RGBA')
+            assert source.size==(tile*columns,tile*8),f'{folder.name}/{clip}: wrong source grid'
             sheet=Image.open(folder/(clip+'-baked.png')).convert('RGBA')
             assert sheet.size==(tile*columns,tile*16),f'{folder.name}/{clip}: wrong grid'
             body=sheet.crop((0,0,sheet.width,tile*8));shadows=sheet.crop((0,tile*8,sheet.width,tile*16))

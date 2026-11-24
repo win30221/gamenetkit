@@ -1,13 +1,16 @@
 {
   "kind": "griffin",
-  "tileSize": 192,
-  "baseline": 173,
-  "referenceHeight": 126,
-  "walkFrames": 6,
-  "attackFrames": 6,
-  "impactFrame": 3,
+  "tileSize": 256,
+  "baseline": 224,
+  "referenceHeight": 136,
+  "walkFrames": 16,
+  "attackFrames": 16,
+  "impactFrame": 8,
   "unitHeight": 2.8,
   "worldHeight": 1.4,
   "teamMaskTop": 2,
-  "baked": true
+  "baked": true,
+  "idleFrames": 16,
+  "idleFps": 16,
+  "walkFps": 21.333333333333332
 }

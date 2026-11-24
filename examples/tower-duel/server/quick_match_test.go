@@ -46,9 +46,18 @@ func TestQuickMatchDealsEachDeckAndStartsAutomatically(t *testing.T) {
 	if !a.Quick || !b.Quick || a.Match != b.Match || a.Seat != 0 || b.Seat != 1 {
 		t.Fatalf("invalid quick match: first=%+v second=%+v", a, b)
 	}
-	if a.Hand[0] != defaultDeck[0] || a.NextCard != defaultDeck[4] ||
-		b.Hand[0] != customDeck[0] || b.NextCard != customDeck[4] {
-		t.Fatalf("incorrect private decks: %v %v", a.Hand, b.Hand)
+	for i, state := range []stateMessage{a, b} {
+		deck := [2][deckSize]string{defaultDeck, customDeck}[i]
+		allowed := make(map[string]bool, deckSize)
+		for _, id := range deck {
+			allowed[id] = true
+		}
+		for _, id := range append(state.Hand[:], state.NextCard) {
+			if !allowed[id] {
+				t.Fatalf("invalid or duplicate dealt card: %q", id)
+			}
+			delete(allowed, id)
+		}
 	}
 	readStateTest(t, first, "playing")
 	readStateTest(t, second, "playing")

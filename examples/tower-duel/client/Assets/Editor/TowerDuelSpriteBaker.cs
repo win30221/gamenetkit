@@ -12,13 +12,6 @@ namespace TowerDuel.Editor
         private const string Root="Assets/Resources/TowerDuel/B3/Units";
         public const float ShadowScale=2f;
         private const float ShadowX=-.65f, ShadowZ=-.75055535f, ShadowOpacity=.26f;
-        [Serializable] private sealed class Definition
-        {
-            public string kind, groundKind;
-            public int tileSize,baseline,referenceHeight,walkFrames,attackFrames,impactFrame;
-            public float unitHeight,worldHeight,teamMaskTop;
-            public bool baked;
-        }
         [MenuItem("Tower Duel/Bake fixed-light sprite sheets")]
         public static string BakeAll()
         {
@@ -28,7 +21,7 @@ namespace TowerDuel.Editor
             {
                 string path=folder+"/definition.json";
                 if(!File.Exists(path))continue;
-                var definition=JsonUtility.FromJson<Definition>(File.ReadAllText(path));
+                var definition=B3SpriteDefinition.Read(path);
                 foreach(string clip in new[]{"idle","walk","attack"})Bake(folder,clip,definition);
                 definition.baked=true;
                 File.WriteAllText(path,JsonUtility.ToJson(definition,true)+"\n");
@@ -46,7 +39,7 @@ namespace TowerDuel.Editor
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             return "Baked "+count+" characters: upper eight rows are lit bodies; lower eight rows are matching ground shadows";
         }
-        private static void Bake(string folder,string clip,Definition definition)
+        private static void Bake(string folder,string clip,B3SpriteDefinition definition)
         {
             var source=new Texture2D(2,2,TextureFormat.RGBA32,false,true);
             Texture2D output=null;
@@ -54,7 +47,7 @@ namespace TowerDuel.Editor
             {
                 if(!source.LoadImage(File.ReadAllBytes(folder+"/"+clip+".png")))throw new InvalidOperationException("Cannot read source atlas");
                 int tile=definition.tileSize,w=source.width,h=source.height;
-                if(h!=tile*8||w%tile!=0)throw new InvalidOperationException("Unexpected source grid: "+folder+"/"+clip);
+                if(h!=tile*8||w!=tile*definition.Columns(clip))throw new InvalidOperationException("Unexpected source grid: "+folder+"/"+clip);
                 var original=source.GetPixels32();var pixels=new Color32[w*h*2];
                 for(int y=0;y<h;y++)for(int x=0;x<w;x++)
                     pixels[(y+h)*w+x]=Lit(original[y*w+x],x%tile,y%tile,definition);
@@ -86,7 +79,7 @@ namespace TowerDuel.Editor
             }
             finally { UnityEngine.Object.DestroyImmediate(source);if(output)UnityEngine.Object.DestroyImmediate(output); }
         }
-        private static Color32 Lit(Color32 color,int x,int y,Definition d)
+        private static Color32 Lit(Color32 color,int x,int y,B3SpriteDefinition d)
         {
             if(color.a==0)return color;
             float nx=Mathf.Clamp((x+.5f-d.tileSize*.5f)/(d.referenceHeight*.31f),-1,1);

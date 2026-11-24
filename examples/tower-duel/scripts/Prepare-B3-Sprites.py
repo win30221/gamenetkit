@@ -178,24 +178,44 @@ def prepare(kind: str) -> None:
         # then restores a clean antialiased outline around the real silhouette.
         return read_rgba(source[name],cutoffs.get(name,24))
     report["sourceAlphaCutoff"]=cutoffs
-    idle_cells = cells(read_source("idle"), 4, 2, config.get("rowGutters",False))
-    idle_images = [image for row in idle_cells for image in row]
-    source_directions = config.get("idleSourceDirections", config["directions"])
-    if len(source_directions) != 8 or set(source_directions) != set(config["directions"]):
-        raise ValueError("Idle source directions must contain each of the eight facings once")
-    idle_rows = [[idle_images[source_directions.index(direction)]] for direction in config["directions"]]
+    counts = {clip: config.get(clip+"Frames", default) for clip, default in
+              (("idle", 1), ("walk", 6), ("attack", 6))}
+    rates = {clip: config.get(clip+"Fps", 8) for clip in ("idle", "walk")}
+    impact = config["impactFrame"]
+    if (any(type(n) is not int or n < (1 if clip == "idle" else 2)
+            for clip, n in counts.items()) or not 1 <= impact < counts["attack"]
+            or any(not 0 < fps <= 60 for fps in rates.values())
+            or tile*16 > 4096 or tile*max(counts.values()) > 4096):
+        raise ValueError("Invalid clip counts, impact, FPS or atlas dimensions")
+
+    def action_rows(clip):
+        n = counts[clip]
+        gutters = config.get("rowGutters", False)
+        if clip == "idle" and n == 1 and "idle" in source:
+            # Original eight-facing layout: 4 columns x 2 rows.
+            rows = [[im] for row in cells(read_source("idle"), 4, 2, gutters) for im in row]
+        elif clip in source:
+            rows = cells(read_source(clip), n, 8, gutters)
+        else:
+            rows = (cells(read_source(f"{clip}-a"), n, 4, gutters)
+                    + cells(read_source(f"{clip}-b"), n, 4, gutters))
+        if clip == "idle":
+            source_directions = config.get("idleSourceDirections", config["directions"])
+            if len(source_directions) != 8 or set(source_directions) != set(config["directions"]):
+                raise ValueError("Idle source directions must contain each of the eight facings once")
+            rows = [rows[source_directions.index(direction)] for direction in config["directions"]]
+        return rows
+
     offsets = []
     for clip in ("idle", "walk", "attack"):
-        raw_rows = idle_rows if clip == "idle" else (
-            cells(read_source(f"{clip}-a"), 6, 4, config.get("rowGutters",False))
-            + cells(read_source(f"{clip}-b"), 6, 4, config.get("rowGutters",False)))
+        raw_rows = action_rows(clip)
         normalized, row_reports = [], []
         for direction_index, row in enumerate(raw_rows):
             frames, row_report = normalize_row(row, tile, baseline, reference,
                                               None if clip == "idle" else offsets[direction_index],
                                               config.get("headLandmark","silver"),config.get("anchorFeet",False),config.get("bootPalette",""))
             if clip == "idle": offsets.append(row_report["headOffset"])
-            if clip != "idle" and row_report["distinctFrames"] < 4:
+            if row_report["distinctFrames"] < min(4, counts[clip]):
                 raise ValueError(f"Too few distinct {clip} poses: {row_report}")
             normalized.append(frames)
             row_reports.append(row_report)
@@ -212,7 +232,7 @@ def prepare(kind: str) -> None:
                 background.alpha_composite(frame)
                 backgrounds.append(background.convert("RGB"))
             backgrounds[0].save(preview, save_all=True, append_images=backgrounds[1:],
-                                duration=120 if clip == "walk" else 150, loop=0)
+                                duration=round(1000/rates[clip]) if clip in rates else 150, loop=0)
 
     cards = RESOURCES / "Cards"
     cards.mkdir(parents=True, exist_ok=True)
@@ -229,14 +249,17 @@ def prepare(kind: str) -> None:
 
     definition = {"kind": kind, "tileSize": tile, "baseline": baseline,
                   "referenceHeight": reference, "unitHeight": config["unitHeight"],
-                  "worldHeight": config["worldHeight"], "walkFrames": 6,
-                  "attackFrames": 6, "impactFrame": config["impactFrame"]}
+                  "worldHeight": config["worldHeight"], "idleFrames": counts["idle"],
+                  "walkFrames": counts["walk"], "attackFrames": counts["attack"],
+                  "idleFps": rates["idle"], "walkFps": rates["walk"], "impactFrame": impact}
+    if "groundKind" in config:
+        definition["groundKind"] = config["groundKind"]
     definition["teamMaskTop"] = config.get("teamMaskTop",2.0)
     definition["baked"] = config.get("baked",False)
     (target/"definition.json").write_text(json.dumps(definition, indent=2)+"\n", encoding="utf-8")
     report_path = REPO / f"artifacts/tower-duel/sprites-b3/{kind}/normalization.json"
     report_path.write_text(json.dumps(report, indent=2)+"\n", encoding="utf-8")
-    print(json.dumps({"kind": kind, "frames": 104, "target": str(target), "report": str(report_path)}))
+    print(json.dumps({"kind": kind, "frames": 8*sum(counts.values()), "target": str(target), "report": str(report_path)}))
 
 
 if __name__ == "__main__":

@@ -7,16 +7,44 @@ using UnityEngine.Rendering;
 
 namespace TowerDuel.Editor
 {
+    [Serializable] internal sealed class B3SpriteDefinition
+    {
+        public string kind, groundKind;
+        public int tileSize, baseline, referenceHeight, walkFrames, attackFrames, impactFrame;
+        public int idleFrames = 1;
+        public float idleFps = 8f, walkFps = 8f;
+        public float unitHeight, worldHeight, teamMaskTop;
+        public bool baked;
+
+        internal static B3SpriteDefinition Read(string path)
+        {
+            // Overwrite a constructed object: old definitions omit the new optional fields.
+            var definition = new B3SpriteDefinition();
+            JsonUtility.FromJsonOverwrite(File.ReadAllText(path), definition);
+            if (definition.tileSize <= 0 || definition.idleFrames < 1 ||
+                definition.walkFrames < 2 || definition.attackFrames < 2 ||
+                definition.impactFrame < 1 || definition.impactFrame >= definition.attackFrames ||
+                !ValidFps(definition.idleFps) || !ValidFps(definition.walkFps))
+                throw new InvalidOperationException("Invalid B3 animation settings: " + path);
+            // The baked atlas doubles the height. Validate before importing or allocating.
+            foreach (string clip in new[] { "idle", "walk", "attack" }) definition.AtlasImportSize(clip, true);
+            return definition;
+        }
+
+        private static bool ValidFps(float fps) => fps > 0f && fps <= 60f && !float.IsNaN(fps) && !float.IsInfinity(fps);
+        internal int Columns(string clip) => clip == "idle" ? idleFrames : clip == "walk" ? walkFrames : attackFrames;
+        internal int AtlasImportSize(string clip, bool withShadows)
+        {
+            long width = (long)tileSize * Columns(clip), height = (long)tileSize * (withShadows ? 16 : 8);
+            if (width > 4096 || height > 4096)
+                throw new InvalidOperationException("B3 atlas exceeds the 4096px platform budget: " + kind + "/" + clip);
+            return Mathf.Max(2048, Mathf.NextPowerOfTwo((int)Math.Max(width, height)));
+        }
+    }
+
     public static class TowerDuelSpriteContent
     {
         private const string Root = "Assets/Resources/TowerDuel/B3";
-        [Serializable] private sealed class Definition
-        {
-            public string kind, groundKind;
-            public int tileSize, baseline, referenceHeight, walkFrames, attackFrames, impactFrame;
-            public float unitHeight, worldHeight, teamMaskTop;
-            public bool baked;
-        }
         [MenuItem("Tower Duel/Prepare B3 sprite characters")]
         public static void Prepare()
         {
@@ -51,15 +79,15 @@ namespace TowerDuel.Editor
             var airborneSets = new Dictionary<string, DuelSpriteSet>();
             foreach (string file in Directory.GetFiles(Root + "/Units", "definition.json", SearchOption.AllDirectories))
             {
-                var definition = JsonUtility.FromJson<Definition>(File.ReadAllText(file));
+                var definition = B3SpriteDefinition.Read(file);
                 bool airborneVariant = !string.IsNullOrEmpty(definition.groundKind);
                 string cardKind = airborneVariant ? definition.groundKind : definition.kind;
                 if (rules.Find(cardKind) == null) throw new InvalidOperationException("Unknown B3 unit " + cardKind);
                 string folder = Root + "/Units/" + definition.kind;
                 string suffix=definition.baked?"-baked":"";
-                var idle = Import(folder + "/idle"+suffix+".png", true,definition.baked?4096:2048);
-                var walk = Import(folder + "/walk"+suffix+".png", true,definition.baked?4096:2048);
-                var attack = Import(folder + "/attack"+suffix+".png", true,definition.baked?4096:2048);
+                var idle = Import(folder + "/idle"+suffix+".png", true,definition.AtlasImportSize("idle",definition.baked));
+                var walk = Import(folder + "/walk"+suffix+".png", true,definition.AtlasImportSize("walk",definition.baked));
+                var attack = Import(folder + "/attack"+suffix+".png", true,definition.AtlasImportSize("attack",definition.baked));
                 if (!airborneVariant) Import(Root + "/Cards/" + cardKind + ".png", false);
                 string path = Root + "/" + definition.kind + ".asset";
                 var set = AssetDatabase.LoadAssetAtPath<DuelSpriteSet>(path);
@@ -67,12 +95,18 @@ namespace TowerDuel.Editor
                 set.ClearFrames();set.Baked=definition.baked;
                 set.Kind = definition.kind; set.Idle = idle; set.Walk = walk; set.Attack = attack;
                 set.TileSize = definition.tileSize; set.Baseline = definition.baseline; set.ReferenceHeight = definition.referenceHeight;
-                set.WalkFrames = definition.walkFrames; set.AttackFrames = definition.attackFrames; set.ImpactFrame = definition.impactFrame;
+                set.IdleFrames = definition.idleFrames; set.WalkFrames = definition.walkFrames; set.AttackFrames = definition.attackFrames; set.ImpactFrame = definition.impactFrame;
+                set.IdleFps = definition.idleFps; set.WalkFps = definition.walkFps;
                 set.UnitHeight = definition.unitHeight; set.WorldHeight = definition.worldHeight;
                 set.TeamMaskTop = definition.teamMaskTop > 0 ? definition.teamMaskTop : 2;
                 EditorUtility.SetDirty(set);
                 // Validate the actual imported dimensions before exposing the new prefab.
-                set.Frame(DuelSpriteClip.Idle, 7, 0); set.Frame(DuelSpriteClip.Walk, 7, 5); set.Frame(DuelSpriteClip.Attack, 7, 5);
+                foreach (var clip in new[] { DuelSpriteClip.Idle, DuelSpriteClip.Walk, DuelSpriteClip.Attack })
+                {
+                    int last = set.FrameCount(clip) - 1;
+                    set.Frame(clip, 7, last);
+                    if (set.Baked) set.ShadowFrame(clip, 7, last);
+                }
                 (airborneVariant ? airborneSets : groundSets).Add(cardKind, set);
             }
             Import(Root + "/UI/CardFrame.png", true);
@@ -127,7 +161,10 @@ namespace TowerDuel.Editor
             importer.sRGBTexture = true; importer.alphaSource = alpha ? TextureImporterAlphaSource.FromInput : TextureImporterAlphaSource.None;
             importer.alphaIsTransparency = alpha; importer.mipmapEnabled = false; importer.isReadable = false;
             importer.maxTextureSize = maxSize; importer.filterMode = FilterMode.Bilinear; importer.wrapMode = TextureWrapMode.Clamp;
-            importer.textureCompression = TextureImporterCompression.Uncompressed; importer.SaveAndReimport();
+            importer.textureCompression = TextureImporterCompression.Uncompressed;
+            importer.ClearPlatformTextureSettings("Standalone");
+            importer.ClearPlatformTextureSettings("WebGL");
+            importer.SaveAndReimport();
             return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
     }

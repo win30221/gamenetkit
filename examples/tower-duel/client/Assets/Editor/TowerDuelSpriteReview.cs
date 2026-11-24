@@ -207,19 +207,22 @@ namespace TowerDuel.Editor
             var models=new[] {Spawn(parent,camera,kind,Ground(-5.7f,-3.5f),Vector3.forward,0,90),
                 Spawn(parent,camera,kind,Ground(-4.3f,-3.5f),Vector3.back,1,90)};
             string folder=output+"/motion";Directory.CreateDirectory(folder);
+            var set=models[0].GetComponent<DuelSpriteUnit>().Set;
+            double walkFps=set.LoopFps(DuelSpriteClip.Walk);
             foreach(string clip in new[]{"walk","attack"})
             {
                 for(int i=0;i<models.Length;i++)
                     models[i].GetComponent<DuelSpriteUnit>().Present(new EntityState{kind=kind,seat=i,dz=i==0?1:-1},definition,1000,0,false,1,0);
-                for(int frame=0;frame<6;frame++)
+                int count=clip=="walk"?set.WalkFrames:set.AttackFrames;
+                for(int frame=0;frame<count;frame++)
                 {
-                    double tick=clip=="walk"?1000+frame*3.751:
-                        frame<3?1100+frame*definition.windupTicks/3.0+.001:
-                        1100+definition.windupTicks+(frame-3)*(definition.cooldown-definition.windupTicks)/3.0+.001;
+                    double tick=clip=="walk"?1000+frame*30d/walkFps+.001:
+                        frame<set.ImpactFrame?1100+frame*Math.Max(1,definition.windupTicks)/(double)set.ImpactFrame+.001:
+                        1100+definition.windupTicks+(frame-set.ImpactFrame)*Math.Max(1,definition.cooldown-definition.windupTicks)/(double)(set.AttackFrames-set.ImpactFrame)+.001;
                     for(int i=0;i<models.Length;i++)
                     {
                         var entity=new EntityState {kind=kind,seat=i,dz=i==0?1:-1,target=clip=="attack"?99:0,
-                            attackTick=clip=="attack"?1100:0,hitTick=clip=="attack"&&frame>=3?1100+definition.windupTicks:0};
+                            attackTick=clip=="attack"?1100:0,hitTick=clip=="attack"&&frame>=set.ImpactFrame?1100+definition.windupTicks:0};
                         var unit=models[i].GetComponent<DuelSpriteUnit>();
                         unit.Present(entity,definition,tick,clip=="walk"?1:0,false,1,0);unit.AlignToCamera();
                         if(unit.FrameIndex!=frame)throw new InvalidOperationException("Review motion missed "+clip+" frame "+frame);
@@ -227,7 +230,9 @@ namespace TowerDuel.Editor
                     Save(camera,folder+"/"+clip+"-"+frame+".png",720,600);
                 }
             }
-            File.WriteAllText(folder+"/timing.json","{\"windupTicks\":"+definition.windupTicks+",\"cooldownTicks\":"+definition.cooldown+"}");
+            File.WriteAllText(folder+"/timing.json","{\"windupTicks\":"+definition.windupTicks+",\"cooldownTicks\":"+definition.cooldown+
+                ",\"walkFrames\":"+set.WalkFrames+",\"attackFrames\":"+set.AttackFrames+
+                ",\"impactFrame\":"+set.ImpactFrame+",\"walkFps\":"+walkFps.ToString(System.Globalization.CultureInfo.InvariantCulture)+"}");
         }
         private static GameObject Spawn(Transform parent, Camera camera, string kind, Vector3 position, Vector3 heading, int seat, long tick)
         {
