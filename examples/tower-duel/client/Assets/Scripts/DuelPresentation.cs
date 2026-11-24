@@ -11,6 +11,7 @@ namespace TowerDuel
         {
             public DuelUnitArt Art;
             public DuelContactShadow Contact;
+            public LineRenderer AuraGlow,AuraRing;
             public Vector3 Previous;
             public Quaternion Leg,Arm,Hip;
             public long Attack,Hit;
@@ -166,6 +167,7 @@ namespace TowerDuel
                 float travel=Vector3.ProjectOnPlane(position-v.Previous,Vector3.up).magnitude;
                 var direction=MirrorDepth(new Vector3(e.dx,0,e.dz),state.seat);
                 v.Art.transform.position=position;v.Previous=position;
+                PresentAura(v,definition,position,e.seat==state.seat,e.hp>0&&!deploying);
                 if(v.Contact.Renderer)v.Contact.Renderer.transform.position=new Vector3(position.x,DuelMap.GroundHeight(position.z)+.003f,position.z);
                 if(v.Art.Animator&&!v.Art.Sprites&&direction.sqrMagnitude>.001f)v.Art.transform.rotation=Quaternion.Slerp(v.Art.transform.rotation,Quaternion.LookRotation(direction),15*Time.unscaledDeltaTime);
                 float speed=travel/Mathf.Max(.001f,Time.unscaledDeltaTime)/definition.speed;
@@ -245,6 +247,8 @@ namespace TowerDuel
             foreach(long id in removed)
             {
                 var v=units[id];units.Remove(id);
+                if(v.AuraGlow)v.AuraGlow.enabled=false;
+                if(v.AuraRing)v.AuraRing.enabled=false;
                 if(v.Art.Sprites)v.Art.Sprites.BeginDeath(DuelSession.Now);
                 else if(v.Art.Animator){v.Art.Animator.ResetTrigger(StrikeHash);v.Art.Animator.SetBool(DeadHash,true);v.Art.Animator.SetFloat(SpeedHash,0);v.Art.Animator.speed=1;}
                 effects.Death(v.Art.transform.position);
@@ -304,6 +308,39 @@ namespace TowerDuel
                 float arc=a.Bomb?1.6f:.18f;
                 a.Root.position=Vector3.Lerp(a.From,a.To,t)+Vector3.up*Mathf.Sin(t*Mathf.PI)*arc;
                 a.Root.rotation=Quaternion.LookRotation(a.To-a.From+Vector3.up*(Mathf.Cos(t*Mathf.PI)*arc*Mathf.PI));
+            }
+        }
+        // Pure presentation: the radius comes from the same canonical card
+        // definition the server uses. Never grant buffs from Unity colliders.
+        private void PresentAura(UnitVisual visual,CardDefinition definition,Vector3 position,bool friendly,bool active)
+        {
+            if(definition.auraRadius<=0||definition.moveMultiplier<=1)return;
+            const int segments=64;
+            if(!visual.AuraRing)
+            {
+                var material=trailMaterial?trailMaterial:lineMaterial;
+                visual.AuraGlow=NewLine("Aura glow",material,.22f);
+                visual.AuraRing=NewLine("Aura boundary",material,.065f);
+                foreach(var line in new[]{visual.AuraGlow,visual.AuraRing})
+                {
+                    line.transform.SetParent(visual.Art.transform,false);
+                    line.loop=true;line.positionCount=segments;
+                }
+            }
+            visual.AuraGlow.enabled=visual.AuraRing.enabled=active;
+            if(!active)return;
+            var color=friendly?new Color(1f,.78f,.28f,1):new Color(1f,.40f,.18f,1);
+            visual.AuraRing.startColor=visual.AuraRing.endColor=color;
+            color.a=.20f+.04f*Mathf.Sin(Time.unscaledTime*3f);
+            visual.AuraGlow.startColor=visual.AuraGlow.endColor=color;
+            for(int i=0;i<segments;i++)
+            {
+                float angle=i*Mathf.PI*2/segments;
+                float x=position.x+Mathf.Cos(angle)*definition.auraRadius;
+                float z=position.z+Mathf.Sin(angle)*definition.auraRadius;
+                float y=DuelMap.GroundHeight(z)+.055f;
+                visual.AuraGlow.SetPosition(i,new Vector3(x,y,z));
+                visual.AuraRing.SetPosition(i,new Vector3(x,y+.005f,z));
             }
         }
         private static float RangedFlightDuration(Vector3 from,Vector3 target)=>Mathf.Clamp(Vector3.Distance(from,target)/24,.08f,.24f);

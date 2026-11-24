@@ -66,11 +66,68 @@ func TestStandardAuraIncludesSelfAndDoesNotStack(t *testing.T) {
 	a, b := testSoldier(201, 0, "standard", 0, -5), testSoldier(202, 0, "standard", 1, -5)
 	f := testSoldier(203, 0, "falcon", 2, -5)
 	f.State.Airborne = true
+	units := []*unit{a, b, f}
+	w.refreshUnitAuras(units)
+	want := w.Rules.ByID["standard"].MoveMultiplier
 	for _, u := range []*unit{a, f} {
-		if got := w.movementFactor(u, []*unit{a, b, f}); math.Abs(got-1.2) > 1e-9 {
+		if got := w.movementFactor(u); math.Abs(got-want) > 1e-9 {
 			t.Fatalf("expected one aura on %s, got %v", u.State.Kind, got)
 		}
 	}
+}
+
+func TestStandardAuraContactRefreshAndExpiry(t *testing.T) {
+	w := playingMatch(t)
+	w.Tick = 100
+	card := w.Rules.ByID["standard"]
+	a := testSoldier(201, 0, "standard", 0, -5)
+	f := testSoldier(202, 0, "falcon", card.AuraRadius+.2, -5)
+	f.State.Airborne = true
+	f.State.Radius = .32
+	enemy := testSoldier(203, 1, "guard", 0, -5)
+	units := []*unit{a, f, enemy}
+	check := func(u *unit, want float64) {
+		t.Helper()
+		if got := w.movementFactor(u); math.Abs(got-want) > 1e-9 {
+			t.Fatalf("tick %d, %s: factor %v, want %v", w.Tick, u.State.Kind, got, want)
+		}
+	}
+	a.State.ReadyTick = w.Tick + 1
+	w.refreshUnitAuras(units)
+	check(f, 1)
+	w.Tick++
+	w.refreshUnitAuras(units)
+	check(f, card.MoveMultiplier)
+	check(a, card.MoveMultiplier)
+	check(enemy, 1)
+
+	// Remaining in contact for longer than one second continuously renews it.
+	for range 2 * tickRate {
+		w.Tick++
+		w.refreshUnitAuras(units)
+		check(f, card.MoveMultiplier)
+	}
+	f.State.X = card.AuraRadius + f.State.Radius + .1
+	w.refreshUnitAuras(units)
+	w.Tick += tickRate - 1
+	w.refreshUnitAuras(units)
+	check(f, card.MoveMultiplier)
+	w.Tick++
+	w.refreshUnitAuras(units)
+	check(f, 1)
+
+	// Re-entry applies immediately; loss of the source does not cancel it.
+	f.State.X = card.AuraRadius
+	w.refreshUnitAuras(units)
+	check(f, card.MoveMultiplier)
+	a.State.HP = 0
+	w.refreshUnitAuras(units)
+	w.Tick += tickRate - 1
+	w.refreshUnitAuras(units)
+	check(f, card.MoveMultiplier)
+	w.Tick++
+	w.refreshUnitAuras(units)
+	check(f, 1)
 }
 
 func TestMeteorDirectHitUsesSameDamageOnFortifications(t *testing.T) {

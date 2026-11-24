@@ -106,6 +106,7 @@ type unit struct {
 	Travelled        float64
 	SlowUntil        uint64
 	SlowFactor       float64
+	AuraUntil        map[float64]uint64
 	CooldownProgress float64
 	WindupTarget     uint64
 	WindupProgress   float64

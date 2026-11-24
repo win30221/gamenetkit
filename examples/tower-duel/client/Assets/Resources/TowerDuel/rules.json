@@ -397,7 +397,7 @@
         {
             "id": "standard",
             "name": "戰旗手",
-            "description": "加速附近友軍與自身",
+            "description": "加速範圍內友軍與自身，離開後維持1秒",
             "type": "troop",
             "target": "any",
             "count": 1,

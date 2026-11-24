@@ -38,6 +38,7 @@ func (w *match) step() {
 	w.stepEffects(units, damage)
 	w.resolvePush(units)
 	w.refreshUnitSlows(units)
+	w.refreshUnitAuras(units)
 	type movement struct {
 		unit   *unit
 		target entity
@@ -123,6 +124,7 @@ func (w *match) step() {
 	// Publish status for the final foot positions, including boundary crossings
 	// caused by walking or collision pushes during this simulation step.
 	w.refreshUnitSlows(units)
+	w.refreshUnitAuras(units)
 	// Keep activation is permanent, including the tick that damages it or
 	// destroys either front tower. A sleeping keep is still a valid target.
 	for i := range w.Towers {

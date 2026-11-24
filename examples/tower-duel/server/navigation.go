@@ -386,7 +386,7 @@ func (w *match) buildingBypass(from, blockedFrom, blockedTo point, forward, lane
 func (w *match) move(u *unit, goal entity, units []*unit) {
 	definition := w.Rules.ByID[u.State.Kind]
 	stop := u.State.Radius + goal.Radius + definition.Range - .05
-	remaining := definition.Speed * w.movementFactor(u, units) / tickRate
+	remaining := definition.Speed * w.movementFactor(u) / tickRate
 	if u.State.Charging {
 		remaining *= 1.45
 	}

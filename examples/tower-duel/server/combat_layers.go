@@ -90,12 +90,40 @@ func (w *match) advanceKnockback(u *unit) {
 	u.KnockbackSteps = 0
 }
 
-func (w *match) movementFactor(u *unit, units []*unit) float64 {
-	boost := 1.0
+// refreshUnitAuras renews a one-second movement buff whenever a friendly
+// unit's footprint touches an active aura. Refresh before movement and after
+// movement/pushes so all units use the same positions, regardless of ID order.
+func (w *match) refreshUnitAuras(units []*unit) {
+	for _, u := range units {
+		for multiplier, until := range u.AuraUntil {
+			if w.Tick >= until {
+				delete(u.AuraUntil, multiplier)
+			}
+		}
+	}
 	for _, ally := range units {
 		card := w.Rules.ByID[ally.State.Kind]
-		if ally.State.HP > 0 && w.Tick >= ally.State.ReadyTick && ally.State.Seat == u.State.Seat && card.AuraRadius > 0 && distance(position(ally.State), position(u.State)) <= card.AuraRadius {
-			boost = max(boost, card.MoveMultiplier)
+		if ally.State.HP <= 0 || w.Tick < ally.State.ReadyTick || card.AuraRadius <= 0 || card.MoveMultiplier <= 1 {
+			continue
+		}
+		for _, u := range units {
+			if u.State.HP <= 0 || u.State.Seat != ally.State.Seat || distance(position(ally.State), position(u.State)) > card.AuraRadius+u.State.Radius+1e-9 {
+				continue
+			}
+			if u.AuraUntil == nil {
+				u.AuraUntil = make(map[float64]uint64)
+			}
+			u.AuraUntil[card.MoveMultiplier] = w.Tick + tickRate
+		}
+	}
+}
+
+func (w *match) movementFactor(u *unit) float64 {
+	boost := 1.0
+	// Overlapping sources refresh their durations, never stack multipliers.
+	for multiplier, until := range u.AuraUntil {
+		if w.Tick < until {
+			boost = max(boost, multiplier)
 		}
 	}
 	return w.speedFactor(u) * boost
