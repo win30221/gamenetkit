@@ -16,9 +16,12 @@ MonoBehaviour:
   Idle: {fileID: 2800000, guid: 464503a53e2c59ea9e98e9b996e13e5b, type: 3}
   Walk: {fileID: 2800000, guid: ae730517d63e575888e46102cd037d03, type: 3}
   Attack: {fileID: 2800000, guid: 48ab21ea10f25368be9acc8fdb0ef729, type: 3}
-  TileSize: 192
-  Baseline: 170
-  ReferenceHeight: 113
+  TileSize: 256
+  Baseline: 224
+  ReferenceHeight: 136
+  IdleFrames: 1
+  IdleFps: 8
+  WalkFps: 8
   WalkFrames: 6
   AttackFrames: 6
   ImpactFrame: 3

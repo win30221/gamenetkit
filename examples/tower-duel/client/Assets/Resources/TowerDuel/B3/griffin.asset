@@ -16,12 +16,15 @@ MonoBehaviour:
   Idle: {fileID: 2800000, guid: e7954889a1405c98be9db01116dd6795, type: 3}
   Walk: {fileID: 2800000, guid: ffae8f24cd1c5ac0b26adf452d8bb0bb, type: 3}
   Attack: {fileID: 2800000, guid: eb324469b1f85f0f9a3503aa1956ae1c, type: 3}
-  TileSize: 192
-  Baseline: 173
-  ReferenceHeight: 126
-  WalkFrames: 6
-  AttackFrames: 6
-  ImpactFrame: 3
+  TileSize: 256
+  Baseline: 224
+  ReferenceHeight: 136
+  IdleFrames: 16
+  IdleFps: 16
+  WalkFps: 21.333333333333332
+  WalkFrames: 16
+  AttackFrames: 16
+  ImpactFrame: 8
   UnitHeight: 2.8
   WorldHeight: 1.4
   TeamMaskTop: 2

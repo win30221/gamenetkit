@@ -1,14 +1,17 @@
 {
   "kind": "griffin-air",
-  "tileSize": 192,
-  "baseline": 170,
-  "referenceHeight": 132,
-  "walkFrames": 6,
+  "tileSize": 256,
+  "baseline": 224,
+  "referenceHeight": 160,
+  "walkFrames": 12,
   "attackFrames": 6,
   "impactFrame": 3,
   "unitHeight": 2.8,
   "worldHeight": 1.4,
   "teamMaskTop": 2,
   "baked": true,
-  "groundKind": "griffin"
+  "groundKind": "griffin",
+  "idleFrames": 1,
+  "idleFps": 8,
+  "walkFps": 16
 }
