@@ -3,31 +3,31 @@
     <ui:VisualElement name="worldInput" class="world-input" focusable="true" />
     <ui:VisualElement name="healthLayer" class="full-layer" picking-mode="Ignore" />
     <ui:VisualElement name="topHud" class="top-hud" picking-mode="Ignore">
-      <ui:VisualElement class="header-copy" picking-mode="Ignore">
-        <ui:Label text="雙塔對決" class="brand" picking-mode="Ignore" />
-        <ui:Label name="roomLabel" class="small" picking-mode="Ignore" />
-      </ui:VisualElement>
-      <ui:VisualElement class="hud-actions" picking-mode="Ignore">
-        <ui:Label name="timerLabel" text="3:00" class="timer" picking-mode="Ignore" />
-        <ui:Button name="audioButton" text="音效開" class="small-button" />
-        <ui:Button name="leaveButton" text="離開" class="small-button" />
+      <ui:Label name="timerLabel" text="3:00" class="timer" picking-mode="Ignore" />
+      <ui:VisualElement name="hudActions" class="hud-actions" picking-mode="Ignore">
+        <ui:Button name="hudMenuButton" text="•••" class="hud-menu-button" tooltip="對戰選單" />
+        <ui:VisualElement name="hudMenuPanel" class="hud-menu-panel">
+          <ui:Label name="roomLabel" class="small" picking-mode="Ignore" />
+          <ui:Button name="audioButton" text="音效開" class="small-button" />
+          <ui:Button name="leaveButton" text="離開對戰" class="small-button danger-button" />
+        </ui:VisualElement>
       </ui:VisualElement>
     </ui:VisualElement>
     <ui:VisualElement name="dockFrame" class="dock-frame">
      <ui:VisualElement name="dock" class="dock">
-      <ui:VisualElement name="energyRow" class="energy-row">
-        <ui:Label name="energyLabel" text="能量 5 / 10" class="energy-label" />
-        <ui:VisualElement name="energyPips" class="energy-pips" />
-        <ui:Label name="energyMode" class="energy-mode" />
-      </ui:VisualElement>
+      <ui:Label name="noticeLabel" text="" class="notice" picking-mode="Ignore" />
       <ui:VisualElement class="hand-layout">
         <ui:VisualElement name="cardRow" class="card-row" />
         <ui:VisualElement class="next-card">
+          <ui:Label name="nextCardLabel" text="下一張" class="next-card-label" />
           <ui:VisualElement name="nextCardArt" class="next-card-art" />
-          <ui:Label name="nextCardLabel" class="next-card-label" />
         </ui:VisualElement>
       </ui:VisualElement>
-      <ui:Label name="noticeLabel" text="拖曳卡牌到己方半場，放開出兵。" class="notice" />
+      <ui:VisualElement name="energyRow" class="energy-row">
+        <ui:Label name="energyLabel" text="5.0" class="energy-label" />
+        <ui:VisualElement name="energyPips" class="energy-pips" />
+        <ui:Label name="energyMode" class="energy-mode" />
+      </ui:VisualElement>
      </ui:VisualElement>
     </ui:VisualElement>
     <ui:VisualElement name="dragPreview" class="drag-card" picking-mode="Ignore">
@@ -38,46 +38,98 @@
     <ui:VisualElement name="lobbyLayer" class="menu-overlay">
       <ui:VisualElement name="menuShell" class="menu-shell">
         <ui:ScrollView name="battlePage" class="menu-page">
-          <ui:VisualElement class="menu-body">
-            <ui:Label text="雙塔對決" class="menu-title" />
+          <ui:VisualElement class="menu-body home-body">
+            <ui:VisualElement class="home-header">
+              <ui:VisualElement class="menu-title-row">
+                <ui:Label text="雙塔對決" class="menu-title home-title" />
+                <ui:Button name="settingsButton" text="設定" class="settings-button" tooltip="遊戲設定" />
+              </ui:VisualElement>
+              <ui:VisualElement class="home-title-accent" picking-mode="Ignore" />
+              <ui:Label text="即時卡牌對戰" class="menu-subtitle" />
+            </ui:VisualElement>
             <ui:VisualElement class="menu-hero" picking-mode="Ignore">
               <ui:VisualElement name="menuBattlefield" class="menu-hero-art" picking-mode="Ignore" />
             </ui:VisualElement>
             <ui:Button name="quickMatchButton" text="快速配對" class="menu-button menu-primary" />
-            <ui:Label name="lobbyStatus" class="menu-status" />
-            <ui:TextField name="nameField" label="暱稱" max-length="20" class="menu-field menu-name-field" />
-            <ui:VisualElement name="friendRoom" class="menu-panel">
-              <ui:Label text="好友房" class="menu-heading" />
-              <ui:TextField name="serverField" label="伺服器" class="menu-field" />
+            <ui:VisualElement name="friendRoom" class="menu-room-row">
               <ui:Button name="createButton" text="建立房間" class="menu-button menu-friend-button" />
-              <ui:VisualElement class="menu-room-row">
-                <ui:TextField name="roomField" label="房間碼" max-length="6" class="menu-field menu-code" />
-                <ui:Button name="joinButton" text="加入房間" class="menu-button menu-join" />
-              </ui:VisualElement>
+              <ui:Button name="joinButton" text="加入房間" class="menu-button menu-join" />
             </ui:VisualElement>
+            <ui:Label name="lobbyStatus" class="menu-status" />
           </ui:VisualElement>
         </ui:ScrollView>
         <ui:ScrollView name="deckPage" class="menu-page">
-          <ui:VisualElement class="menu-body">
-            <ui:Label text="上場牌組" class="menu-title" />
-            <ui:VisualElement class="menu-panel">
-              <ui:VisualElement class="menu-deck-header">
-                <ui:Label text="起手四張" class="menu-heading" />
-                <ui:Label name="deckCount" class="menu-deck-count" />
-              </ui:VisualElement>
-              <ui:VisualElement name="deckHand" class="menu-card-row" />
-              <ui:Label text="候補四張" class="menu-heading menu-reserve-heading" />
-              <ui:VisualElement name="deckReserve" class="menu-card-row" />
-              <ui:Button name="defaultDeckButton" text="恢復預設" class="menu-button menu-reset" />
+          <ui:VisualElement class="menu-body deck-body">
+            <ui:VisualElement class="menu-title-row deck-title-row">
+              <ui:Label text="上場牌組" class="menu-title" />
+              <ui:Label name="deckCount" class="menu-deck-count" />
             </ui:VisualElement>
-            <ui:Label name="deckDetails" class="menu-details" />
-            <ui:Label text="所有卡牌" class="menu-title menu-catalog-title" />
+            <ui:VisualElement class="menu-panel deck-panel">
+              <ui:VisualElement name="deckCards" class="deck-cards" />
+              <ui:VisualElement class="deck-footer">
+                <ui:Label name="deckGuide" text="每場對戰隨機洗牌" class="deck-guide" />
+                <ui:Button name="defaultDeckButton" text="恢復預設" class="menu-button menu-reset" />
+              </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="replaceBar" class="replace-bar">
+              <ui:Label name="replaceHint" class="deck-guide" />
+              <ui:Button name="cancelReplace" text="取消" class="menu-button compact-button" />
+            </ui:VisualElement>
+            <ui:VisualElement class="catalog-header">
+              <ui:Label text="可加入卡牌" class="menu-title menu-catalog-title" />
+              <ui:DropdownField name="catalogFilter" class="catalog-filter" />
+            </ui:VisualElement>
             <ui:VisualElement name="catalogCards" class="menu-catalog" />
+            <ui:Label name="catalogEmpty" text="目前沒有可加入的卡牌" class="menu-details" />
           </ui:VisualElement>
         </ui:ScrollView>
         <ui:VisualElement name="menuTabs" class="menu-tabs">
           <ui:Button name="cardsTab" text="卡牌" class="menu-button menu-tab" />
           <ui:Button name="battleTab" text="對戰" class="menu-button menu-tab" />
+        </ui:VisualElement>
+        <ui:VisualElement name="settingsPanel" class="menu-modal">
+          <ui:VisualElement class="menu-modal-panel">
+            <ui:Label text="遊戲設定" class="menu-heading" />
+            <ui:TextField name="nameField" label="暱稱" max-length="20" class="menu-field menu-name-field" />
+            <ui:TextField name="serverField" label="伺服器" class="menu-field" />
+            <ui:Button name="settingsCloseButton" text="完成" class="menu-button menu-primary modal-primary" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="joinPanel" class="menu-modal">
+          <ui:VisualElement class="menu-modal-panel">
+            <ui:Label text="加入房間" class="menu-heading" />
+            <ui:TextField name="roomField" label="房間碼" max-length="6" class="menu-field menu-code" />
+            <ui:Button name="joinConfirmButton" text="加入" class="menu-button menu-primary modal-primary" />
+            <ui:Button name="joinCancelButton" text="取消" class="menu-button" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="cardActionLayer" class="card-action-layer">
+          <ui:VisualElement name="cardActionPanel" class="card-action-panel">
+            <ui:Button name="inspectCardButton" text="檢視" class="menu-button compact-button info-button" />
+            <ui:Button name="changeCardButton" text="加入牌池" class="menu-button compact-button add-button" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="cardDetailLayer" class="menu-modal">
+          <ui:VisualElement name="cardDetailPanel" class="menu-modal-panel card-detail-panel">
+            <ui:VisualElement class="detail-header">
+              <ui:Label text="卡牌詳情" class="detail-title" />
+              <ui:Button name="detailCloseButton" text="×" class="menu-button compact-button close-button" />
+            </ui:VisualElement>
+            <ui:ScrollView name="detailScroll" class="detail-scroll">
+              <ui:VisualElement name="detailStage" class="detail-stage">
+                <ui:Image name="detailSprite" class="detail-sprite" />
+                <ui:Label name="detailCost" class="detail-cost" />
+              </ui:VisualElement>
+              <ui:Label name="detailName" class="detail-name" />
+              <ui:Label name="detailType" class="detail-type" />
+              <ui:Label name="detailDescription" class="detail-description" />
+              <ui:VisualElement name="detailStats" class="detail-stats" />
+            </ui:ScrollView>
+            <ui:VisualElement class="detail-footer">
+              <ui:Button name="detailBackButton" text="返回" class="menu-button compact-button info-button" />
+              <ui:Button name="detailChangeButton" text="加入牌池" class="menu-button compact-button add-button" />
+            </ui:VisualElement>
+          </ui:VisualElement>
         </ui:VisualElement>
       </ui:VisualElement>
     </ui:VisualElement>

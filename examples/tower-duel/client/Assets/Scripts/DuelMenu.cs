@@ -7,310 +7,385 @@ namespace TowerDuel
 {
     internal sealed class DuelMenu
     {
-        private const float DesignHeight = 1000;
-        private const float MaxWidth = 676;
+        private const float DesignHeight = 1000f;
+        private const float MaxWidth = 520f;
         private const string DeckKey = "TowerDuel.Deck.v1";
-        private const string DeckGuide = "點選兩張上場牌即可互換順序。";
-
         private readonly TowerDuelClient client;
         private readonly Action closeKeyboard;
-        private readonly VisualElement shell, battlePage, deckPage, deckHand, deckReserve;
+        private readonly VisualElement shell, deckCards, catalogueRoot, settingsPanel, joinPanel,
+            actionLayer, actionPanel, detailLayer, detailStage, detailStats, replaceBar;
+        private readonly ScrollView battlePage, deckPage, detailScroll;
+        private readonly Button battleTab, cardsTab, quickMatch, createRoom, joinRoom, joinConfirm,
+            resetDeck, inspectButton, changeButton, detailChangeButton;
         private readonly TextField nameField, serverField, roomField;
-        private readonly Button battleTab, cardsTab, quickMatch, createRoom, joinRoom, resetDeck;
-        private readonly Label details, status;
+        private readonly Label deckCount, deckGuide, status, catalogEmpty, replaceHint;
+        private readonly DropdownField catalogFilter;
+        private readonly Image detailSprite;
         private readonly CardTile[] slots = new CardTile[DuelRules.DeckSize];
         private readonly Dictionary<string, CardTile> catalogue = new Dictionary<string, CardTile>();
+        private readonly List<string> deck = new List<string>(DuelRules.DeckSize);
         private readonly string[] defaults = new string[DuelRules.DeckSize];
-        private string[] deck;
-        private int selectedSlot = -1;
-        private string cardToAdd;
+        private string selectedCard, pendingAdd;
         private bool busy;
-
-        [Serializable]
-        private sealed class SavedDeck
-        {
-            public string[] cards;
-        }
+        private float cardWidth = 108f;
+        [Serializable] private sealed class SavedDeck { public string[] cards; }
 
         public DuelMenu(VisualElement lobby, TowerDuelClient client, Action closeKeyboard)
         {
-            this.client = client;
-            this.closeKeyboard = closeKeyboard;
-            shell = lobby.Q("menuShell");
-            battlePage = lobby.Q<ScrollView>("battlePage");
-            deckPage = lobby.Q<ScrollView>("deckPage");
-            deckHand = lobby.Q("deckHand");
-            deckReserve = lobby.Q("deckReserve");
-            details = lobby.Q<Label>("deckDetails");
-            status = lobby.Q<Label>("lobbyStatus");
-            nameField = lobby.Q<TextField>("nameField");
-            serverField = lobby.Q<TextField>("serverField");
-            roomField = lobby.Q<TextField>("roomField");
-            battleTab = lobby.Q<Button>("battleTab");
-            cardsTab = lobby.Q<Button>("cardsTab");
-            quickMatch = lobby.Q<Button>("quickMatchButton");
-            createRoom = lobby.Q<Button>("createButton");
-            joinRoom = lobby.Q<Button>("joinButton");
-            resetDeck = lobby.Q<Button>("defaultDeckButton");
-            nameField.value = "玩家" + UnityEngine.Random.Range(10, 99);
-            serverField.value = client.Server;
+            this.client=client; this.closeKeyboard=closeKeyboard;
+            shell=lobby.Q("menuShell");
+            battlePage=lobby.Q<ScrollView>("battlePage"); deckPage=lobby.Q<ScrollView>("deckPage");
+            deckCards=lobby.Q("deckCards"); catalogueRoot=lobby.Q("catalogCards");
+            settingsPanel=lobby.Q("settingsPanel"); joinPanel=lobby.Q("joinPanel");
+            actionLayer=lobby.Q("cardActionLayer"); actionPanel=lobby.Q("cardActionPanel");
+            detailLayer=lobby.Q("cardDetailLayer"); detailStage=lobby.Q("detailStage");
+            detailStats=lobby.Q("detailStats"); detailSprite=lobby.Q<Image>("detailSprite");
+            detailScroll=lobby.Q<ScrollView>("detailScroll");
+            replaceBar=lobby.Q("replaceBar"); replaceHint=lobby.Q<Label>("replaceHint");
+            deckCount=lobby.Q<Label>("deckCount"); deckGuide=lobby.Q<Label>("deckGuide");
+            catalogEmpty=lobby.Q<Label>("catalogEmpty"); status=lobby.Q<Label>("lobbyStatus");
+            nameField=lobby.Q<TextField>("nameField"); serverField=lobby.Q<TextField>("serverField"); roomField=lobby.Q<TextField>("roomField");
+            battleTab=lobby.Q<Button>("battleTab"); cardsTab=lobby.Q<Button>("cardsTab");
+            quickMatch=lobby.Q<Button>("quickMatchButton"); createRoom=lobby.Q<Button>("createButton");
+            joinRoom=lobby.Q<Button>("joinButton"); joinConfirm=lobby.Q<Button>("joinConfirmButton");
+            resetDeck=lobby.Q<Button>("defaultDeckButton");
+            inspectButton=lobby.Q<Button>("inspectCardButton"); changeButton=lobby.Q<Button>("changeCardButton");
+            detailChangeButton=lobby.Q<Button>("detailChangeButton");
+            catalogFilter=lobby.Q<DropdownField>("catalogFilter");
+            catalogFilter.choices=new List<string>{"全部","兵種","法術"};
+            catalogFilter.SetValueWithoutNotify("全部");
+            nameField.value="玩家"+UnityEngine.Random.Range(10,99);
+            serverField.value=client.Server;
 #if UNITY_WEBGL && !UNITY_EDITOR
-            serverField.style.display = DisplayStyle.None;
+            serverField.style.display=DisplayStyle.None;
 #endif
-            for (int i = 0; i < defaults.Length; i++)
-                defaults[i] = client.Rules.cards[i].id;
-            deck = LoadDeck();
-            lobby.Q<Label>("deckCount").text = deck.Length + "/" + DuelRules.DeckSize;
-            BuildDeckView(lobby.Q("catalogCards"));
-            RefreshDeck();
-            details.text = DeckGuide;
-            battleTab.clicked += () => { closeKeyboard(); ShowCards(false); };
-            cardsTab.clicked += () => { closeKeyboard(); ShowCards(true); };
-            resetDeck.clicked += ResetDeck;
-            createRoom.clicked += () => Connect("create");
-            joinRoom.clicked += () => Connect("join");
-            quickMatch.clicked += () =>
-            {
-                if (client.Session.Searching) client.Leave();
-                else Connect("quick");
-            };
-            ShowCards(false);
+            for(int i=0;i<defaults.Length;i++)defaults[i]=client.Rules.cards[i].id;
+            LoadDeck();
+            BuildDeck();
+            catalogFilter.RegisterValueChangedCallback(_=>{CloseActions(); RebuildCatalogue();});
+            battleTab.clicked+=()=>ShowCards(false); cardsTab.clicked+=()=>ShowCards(true);
+            resetDeck.clicked+=()=>{if(busy)return;deck.Clear();deck.AddRange(defaults);CompleteChange();};
+            lobby.Q<Button>("settingsButton").clicked+=()=>ShowModal(settingsPanel);
+            lobby.Q<Button>("settingsCloseButton").clicked+=CloseModals;
+            lobby.Q<Button>("joinCancelButton").clicked+=CloseModals;
+            createRoom.clicked+=()=>Connect("create");
+            joinRoom.clicked+=()=>ShowModal(joinPanel);
+            joinConfirm.clicked+=()=>Connect("join");
+            roomField.RegisterValueChangedCallback(_=>RefreshControls());
+            quickMatch.clicked+=()=>{if(client.Session.Searching)client.Leave();else Connect("quick");};
+            lobby.Q<Button>("cancelReplace").clicked+=CancelReplace;
+            inspectButton.clicked+=()=>{if(selectedCard!=null)ShowDetail(selectedCard);};
+            changeButton.clicked+=ChangeSelected;
+            detailChangeButton.clicked+=ChangeSelected;
+            lobby.Q<Button>("detailCloseButton").clicked+=CloseDetail;
+            lobby.Q<Button>("detailBackButton").clicked+=CloseDetail;
+            actionLayer.RegisterCallback<PointerDownEvent>(evt=>{if(evt.target==actionLayer){CloseActions();evt.StopPropagation();}});
+            detailLayer.RegisterCallback<PointerDownEvent>(evt=>{if(evt.target==detailLayer){CloseDetail();evt.StopPropagation();}});
+            RefreshDeck(); ShowCards(false);
         }
 
-        public void Layout(Rect safeArea, float unitsPerPixel)
+        public void Layout(Rect safeArea,float unitsPerPixel)
         {
-            float scale = safeArea.height * unitsPerPixel / DesignHeight;
-            if (scale <= 0) return;
-            float width = Mathf.Min(safeArea.width * unitsPerPixel / scale, MaxWidth);
-            shell.style.width = width;
-            shell.style.height = DesignHeight;
-            shell.style.scale = new Scale(new Vector3(scale, scale, 1));
-            shell.style.left = safeArea.center.x * unitsPerPixel - width * scale / 2;
-            shell.style.top = (Screen.height - safeArea.yMax) * unitsPerPixel;
+            float scale=safeArea.height*unitsPerPixel/DesignHeight;
+            if(scale<=0)return;
+            float width=Mathf.Min(safeArea.width*unitsPerPixel/scale,MaxWidth);
+            shell.style.width=width; shell.style.height=DesignHeight;
+            shell.style.scale=new Scale(new Vector3(scale,scale,1));
+            shell.style.left=safeArea.center.x*unitsPerPixel-width*scale/2;
+            shell.style.top=(Screen.height-safeArea.yMax)*unitsPerPixel;
+            cardWidth=Mathf.Min(154f,Mathf.Max(1f,(width-54f-32f)/4f));
+            foreach(var row in deckCards.Children())SizeRow(row,cardWidth);
+            foreach(var row in catalogueRoot.Children())SizeRow(row,cardWidth);
+            // A compact header and a substantial illustration, without compressing the room actions.
+            shell.Q(className:"menu-hero").style.height=450f;
+            if(actionLayer.style.display.value==DisplayStyle.Flex)CloseActions();
         }
 
         public void BlurInputs()
         {
-            foreach (var field in new[] { nameField, serverField, roomField })
+            foreach(var field in new[]{nameField,serverField,roomField})
             {
-                if (field.touchScreenKeyboard != null) field.touchScreenKeyboard.active = false;
+                if(field.touchScreenKeyboard!=null)field.touchScreenKeyboard.active=false;
                 field.Blur();
             }
         }
-
         public void Update()
         {
-            var session = client.Session;
-            bool blocked = session.Searching || session.Connecting || session.Recovering;
-            if (busy != blocked)
-            {
-                busy = blocked;
-                deckHand.SetEnabled(!busy);
-                deckReserve.SetEnabled(!busy);
-                resetDeck.SetEnabled(!busy);
-                createRoom.SetEnabled(!busy);
-                joinRoom.SetEnabled(!busy);
-                nameField.SetEnabled(!busy);
-                roomField.SetEnabled(!busy);
-                serverField.SetEnabled(!busy);
-            }
-            quickMatch.SetEnabled(!busy || session.Searching);
-            string quickText = session.Searching ? "取消配對" : "快速配對";
-            if (quickMatch.text != quickText) quickMatch.text = quickText;
-            if (status.text != session.Status) status.text = session.Status;
+            var session=client.Session;
+            busy=session.Searching||session.Connecting||session.Recovering;
+            RefreshControls();
+            string message=deck.Count!=DuelRules.DeckSize?"請選滿 8 張卡牌後再開始對戰。":session.Status;
+            status.text=message; status.style.display=string.IsNullOrEmpty(message)?DisplayStyle.None:DisplayStyle.Flex;
+            string text=session.Searching?"取消配對":"快速配對";
+            if(quickMatch.text!=text)quickMatch.text=text;
         }
-
+        private void RefreshControls()
+        {
+            bool full=deck.Count==DuelRules.DeckSize;
+            deckCards.SetEnabled(!busy); catalogueRoot.SetEnabled(!busy);
+            resetDeck.SetEnabled(!busy);
+            quickMatch.SetEnabled(client.Session.Searching||(!busy&&full));
+            createRoom.SetEnabled(!busy&&full); joinRoom.SetEnabled(!busy&&full);
+            joinConfirm.SetEnabled(!busy&&full&&!string.IsNullOrWhiteSpace(roomField.value));
+            nameField.SetEnabled(!busy); roomField.SetEnabled(!busy); serverField.SetEnabled(!busy);
+        }
+        private static void Display(VisualElement element,bool show)=>element.style.display=show?DisplayStyle.Flex:DisplayStyle.None;
         private void ShowCards(bool show)
         {
-            deckPage.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
-            battlePage.style.display = show ? DisplayStyle.None : DisplayStyle.Flex;
-            cardsTab.EnableInClassList("menu-tab-selected", show);
-            battleTab.EnableInClassList("menu-tab-selected", !show);
-            DuelCartoonSkin.SetMenuTab(cardsTab, show);
-            DuelCartoonSkin.SetMenuTab(battleTab, !show);
+            CloseModals(); CloseActions(); CloseDetail(); CancelReplace();
+            Display(deckPage,show); Display(battlePage,!show);
+            DuelCartoonSkin.SetMenuTab(cardsTab,show); DuelCartoonSkin.SetMenuTab(battleTab,!show);
         }
-
+        private void ShowModal(VisualElement modal)
+        {
+            if(busy)return;
+            CloseModals(); CloseActions(); CloseDetail(); Display(modal,true); modal.BringToFront();
+        }
+        private void CloseModals()
+        {
+            Display(settingsPanel,false); Display(joinPanel,false); closeKeyboard();
+        }
         private void Connect(string mode)
         {
-            if (busy) return;
-            closeKeyboard();
-            client.Connect(serverField.value, mode, mode == "join" ? roomField.value : "", nameField.value, deck);
+            if(busy||deck.Count!=DuelRules.DeckSize)return;
+            if(mode=="join"&&string.IsNullOrWhiteSpace(roomField.value))return;
+            CloseModals(); client.Connect(serverField.value,mode,mode=="join"?roomField.value.Trim():"",nameField.value,deck.ToArray());
         }
 
-        private void BuildDeckView(VisualElement catalogueRoot)
+        private VisualElement NewRow(VisualElement parent)
         {
-            for (int i = 0; i < slots.Length; i++)
+            var row=new VisualElement();row.AddToClassList("menu-card-row");
+            row.style.flexShrink=0; row.style.height=cardWidth*4f/3f; row.style.minHeight=cardWidth*4f/3f;
+            row.RegisterCallback<GeometryChangedEvent>(evt=>{
+                if(evt.newRect.width<=0||Mathf.Abs(evt.newRect.width-evt.oldRect.width)<.1f)return;
+                SizeRow(row,Mathf.Min(154f,Mathf.Max(1f,(evt.newRect.width-32f)/4f)));
+            });
+            parent.Add(row);return row;
+        }
+        private static void SizeRow(VisualElement row,float width)
+        {
+            float height=width*4f/3f;
+            row.style.height=height;row.style.minHeight=height;row.style.flexShrink=0;
+            foreach(var tile in row.Children())
             {
-                int index = i;
-                var tile = new CardTile(() => ChooseSlot(index));
-                slots[i] = tile;
-                (i < 4 ? deckHand : deckReserve).Add(tile.Button);
-            }
-            VisualElement row = null;
-            for (int i = 0; i < client.Rules.cards.Length; i++)
-            {
-                if (i % 4 == 0)
-                {
-                    row = new VisualElement();
-                    row.AddToClassList("menu-card-row");
-                    catalogueRoot.Add(row);
-                }
-                CardDefinition card = client.Rules.cards[i];
-                var tile = new CardTile(() => ChooseCard(card));
-                tile.Show(card);
-                catalogue.Add(card.id, tile);
-                row.Add(tile.Button);
+                tile.style.width=width;tile.style.height=height;tile.style.minHeight=height;tile.style.flexShrink=0;
             }
         }
-
-        private string[] LoadDeck()
+        private void BuildDeck()
         {
-            string json = PlayerPrefs.GetString(DeckKey, "");
-            if (!string.IsNullOrEmpty(json))
+            VisualElement row=null;
+            for(int i=0;i<slots.Length;i++)
+            {
+                if(i%4==0)row=NewRow(deckCards);
+                int index=i;var tile=new CardTile(()=>ChooseSlot(index));slots[i]=tile;
+                row.Add(tile.Button);SizeRow(row,cardWidth);
+            }
+            foreach(var card in client.Rules.cards)
+            {
+                CardTile tile=null;string id=card.id;
+                tile=new CardTile(()=>ChooseAvailable(id,tile.Button));tile.Show(card);
+                catalogue.Add(id,tile);
+            }
+        }
+        private void RebuildCatalogue()
+        {
+            foreach(var tile in catalogue.Values)tile.Button.RemoveFromHierarchy();
+            catalogueRoot.Clear();VisualElement row=null;int count=0;
+            foreach(var card in client.Rules.cards)
+            {
+                if(deck.Contains(card.id))continue;
+                if(catalogFilter.value=="兵種"&&card.IsSpell)continue;
+                if(catalogFilter.value=="法術"&&!card.IsSpell)continue;
+                if(count++%4==0)row=NewRow(catalogueRoot);
+                row.Add(catalogue[card.id].Button);
+            }
+            foreach(var item in catalogueRoot.Children())SizeRow(item,cardWidth);
+            Display(catalogEmpty,count==0);
+        }
+        private void LoadDeck()
+        {
+            string json=PlayerPrefs.GetString(DeckKey,"");
+            if(!string.IsNullOrEmpty(json))
             {
                 try
                 {
-                    var saved = JsonUtility.FromJson<SavedDeck>(json)?.cards;
-                    if (saved != null && saved.Length == DuelRules.DeckSize)
+                    var saved=JsonUtility.FromJson<SavedDeck>(json)?.cards;
+                    if(saved!=null&&saved.Length<=DuelRules.DeckSize)
                     {
-                        var seen = new HashSet<string>();
-                        foreach (string id in saved)
-                            if (client.Rules.Find(id) == null || !seen.Add(id))
-                                return (string[])defaults.Clone();
-                        return saved;
+                        var seen=new HashSet<string>();
+                        bool valid=true;
+                        foreach(string id in saved)if(client.Rules.Find(id)==null||!seen.Add(id)){valid=false;break;}
+                        if(valid){deck.AddRange(saved);return;}
                     }
                 }
-                catch (ArgumentException) { }
+                catch(ArgumentException){}
             }
-            return (string[])defaults.Clone();
+            deck.AddRange(defaults);
         }
-
-        private void ResetDeck()
+        private void RefreshDeck()
         {
-            deck = (string[])defaults.Clone();
-            CompleteChange();
-            details.text = DeckGuide;
+            for(int i=0;i<slots.Length;i++)
+            {
+                slots[i].Show(i<deck.Count?client.Rules.Find(deck[i]):null);
+                slots[i].Button.EnableInClassList("replace-target",pendingAdd!=null&&i<deck.Count);
+            }
+            deckCount.text=deck.Count+" / "+DuelRules.DeckSize;
+            deckGuide.text=deck.Count==DuelRules.DeckSize?"每場對戰隨機洗牌":"還需加入 "+(DuelRules.DeckSize-deck.Count)+" 張卡牌";
+            RebuildCatalogue(); RefreshControls();
+        }
+        private void CompleteChange()
+        {
+            PlayerPrefs.SetString(DeckKey,JsonUtility.ToJson(new SavedDeck{cards=deck.ToArray()}));PlayerPrefs.Save();
+            CancelReplace(); CloseActions(); CloseDetail(); RefreshDeck();
         }
 
         private void ChooseSlot(int index)
         {
-            if (cardToAdd != null)
+            if(busy)return;
+            if(index>=deck.Count){CloseActions();return;}
+            if(pendingAdd!=null)
             {
-                deck[index] = cardToAdd;
-                CompleteChange();
-            }
-            else if (selectedSlot >= 0 && selectedSlot != index)
-            {
-                SwapSlots(selectedSlot, index);
-                CompleteChange();
-            }
-            else
-            {
-                selectedSlot = selectedSlot == index ? -1 : index;
-                RefreshDeck();
-            }
-            ShowDetails(client.Rules.Find(deck[index]));
-        }
-
-        private void ChooseCard(CardDefinition card)
-        {
-            if (busy)
-            {
-                ShowDetails(card);
+                if(!deck.Contains(pendingAdd)){deck[index]=pendingAdd;CompleteChange();}
+                else CancelReplace();
                 return;
             }
-            int index = Array.IndexOf(deck, card.id);
-            if (selectedSlot >= 0)
+            OpenActions(deck[index],slots[index].Button);
+        }
+        private void ChooseAvailable(string id,Button tile)
+        {
+            if(busy||deck.Contains(id))return;
+            CancelReplace();OpenActions(id,tile);
+        }
+        private void OpenActions(string id,VisualElement tile)
+        {
+            CloseActions(); selectedCard=id;
+            tile.AddToClassList("menu-card-selected");
+            UpdateChangeButtons(id);
+            Display(actionLayer,true); actionLayer.BringToFront();
+            var center=shell.WorldToLocal(tile.worldBound.center);
+            float width=shell.resolvedStyle.width;
+            float panelWidth=Mathf.Min(248f,width-20f);
+            actionPanel.style.width=panelWidth;
+            actionPanel.style.left=Mathf.Clamp(center.x-panelWidth/2,10f,Mathf.Max(10f,width-panelWidth-10f));
+            var bottom=shell.WorldToLocal(new Vector2(tile.worldBound.center.x,tile.worldBound.yMax)).y;
+            var top=shell.WorldToLocal(new Vector2(tile.worldBound.center.x,tile.worldBound.yMin)).y;
+            actionPanel.style.top=bottom+82f<DesignHeight-100f?bottom+4f:Mathf.Max(8f,top-82f);
+        }
+        private void CloseActions()
+        {
+            Display(actionLayer,false);
+            foreach(var tile in slots)if(tile!=null)tile.Button.RemoveFromClassList("menu-card-selected");
+            foreach(var tile in catalogue.Values)tile.Button.RemoveFromClassList("menu-card-selected");
+        }
+        private void UpdateChangeButtons(string id)
+        {
+            bool remove=deck.Contains(id);
+            foreach(var button in new[]{changeButton,detailChangeButton})
             {
-                if (index >= 0) SwapSlots(selectedSlot, index);
-                else deck[selectedSlot] = card.id;
-                CompleteChange();
+                button.text=remove?"移出牌池":"加入牌池";
+                button.EnableInClassList("remove-button",remove);
+                button.EnableInClassList("add-button",!remove);
+                DuelCartoonSkin.SetChangeButton(button,remove);
+            }
+        }
+        private void ChangeSelected()
+        {
+            if(busy||selectedCard==null)return;
+            string id=selectedCard;
+            if(deck.Remove(id)){CompleteChange();return;}
+            if(deck.Count<DuelRules.DeckSize){deck.Add(id);CompleteChange();return;}
+            CloseActions(); CloseDetail();
+            pendingAdd=id;
+            replaceHint.text="選擇要替換的上場卡牌："+client.Rules.Find(id).name;
+            Display(replaceBar,true);
+            foreach(var tile in slots)tile.Button.AddToClassList("replace-target");
+            deckPage.scrollOffset=Vector2.zero;
+        }
+        private void CancelReplace()
+        {
+            pendingAdd=null;Display(replaceBar,false);
+            foreach(var tile in slots)if(tile!=null)tile.Button.RemoveFromClassList("replace-target");
+        }
+        private void CloseDetail(){Display(detailLayer,false);}
+        private static string Number(float v)=>v.ToString("0.##");
+        private static string Seconds(int ticks)=>Number(ticks/30f)+" 秒";
+        private void ShowDetail(string id)
+        {
+            var card=client.Rules.Find(id);if(card==null)return;
+            CloseActions(); selectedCard=id;
+            detailLayer.Q<Label>("detailName").text=card.name;
+            detailLayer.Q<Label>("detailCost").text=Number(card.cost);
+            detailLayer.Q<Label>("detailType").text=card.IsSpell?"法術":(card.initialAir?"飛行兵種":card.target=="buildings"?"攻城兵種":"地面兵種");
+            detailLayer.Q<Label>("detailDescription").text=card.description;
+            detailStage.style.backgroundImage=DuelCartoonSkin.CharacterBackdrop(card.id,card.IsSpell);
+            detailSprite.sprite=null;detailSprite.image=null;detailSprite.scaleMode=ScaleMode.ScaleToFit;
+            if(!card.IsSpell)
+            {
+                var prefab=DuelSpriteLibrary.Prefab(id);
+                var art=prefab?prefab.GetComponent<DuelUnitArt>():null;
+                var set=art!=null&&art.Sprites?art.Sprites.Set:null;
+                if(set)detailSprite.sprite=set.Frame(DuelSpriteClip.Idle,0,0);
+            }
+            // Spells have no physical unit or idle atlas; use their original spell illustration.
+            if(detailSprite.sprite==null)detailSprite.image=DuelSpriteLibrary.Card(id);
+            var stats=new List<KeyValuePair<string,string>>();
+            void Add(string title,string value)=>stats.Add(new KeyValuePair<string,string>(title,value));
+            Add("能量",Number(card.cost));
+            if(card.IsSpell)
+            {
+                if(card.damage>0)Add("傷害",card.damage.ToString());
+                Add("作用半徑",Number(card.radius)+" 格");
+                if(card.delayTicks>0)Add("落地延遲",Seconds(card.delayTicks));
+                if(card.durationTicks>0)Add("持續時間",Seconds(card.durationTicks));
+                if(card.knockbackDistance>0)Add("擊退距離",Number(card.knockbackDistance)+" 格");
+                Add("可作用空中",card.hitAir?"是":"否");
             }
             else
             {
-                cardToAdd = index < 0 && cardToAdd != card.id ? card.id : null;
-                RefreshDeck();
+                Add("單位生命",card.hp.ToString());Add("單位攻擊",card.damage.ToString());
+                Add("移動速度",Number(card.speed)+" 格/秒");Add("攻擊距離",Number(card.range)+" 格");
+                Add("攻擊間隔",Seconds(card.cooldown));Add("出兵數量",card.count.ToString());
+                Add("部署時間",Seconds(card.deployTicks));Add("攻擊空中",card.hitAir?"是":"否");
+                if(card.splash>0)Add("範圍傷害",Number(card.splash)+" 格");
+                if(card.transformAfterTicks>0)Add("升空時間",Seconds(card.transformAfterTicks));
+                if(card.hpMultiplier>1)Add("生命倍率","×"+card.hpMultiplier);
+                if(card.auraRadius>0)Add("增益半徑",Number(card.auraRadius)+" 格");
+                if(card.moveMultiplier>1)Add("移速倍率","×"+Number(card.moveMultiplier));
             }
-            ShowDetails(card);
-        }
-
-        private void SwapSlots(int first, int second)
-        {
-            string card = deck[first];
-            deck[first] = deck[second];
-            deck[second] = card;
-        }
-
-        private void CompleteChange()
-        {
-            selectedSlot = -1;
-            cardToAdd = null;
-            PlayerPrefs.SetString(DeckKey, JsonUtility.ToJson(new SavedDeck { cards = deck }));
-            PlayerPrefs.Save();
-            RefreshDeck();
-        }
-
-        private void ShowDetails(CardDefinition card)
-        {
-            string description = card.name + " · " + card.cost.ToString("0") + " 能量\n" + card.description;
-            if (cardToAdd != null) description += "\n點選上場欄位以替換。";
-            else if (selectedSlot >= 0) description += "\n選擇另一張牌以交換。";
-            details.text = description;
-        }
-
-        private void RefreshDeck()
-        {
-            for (int i = 0; i < slots.Length; i++)
+            detailStats.Clear();VisualElement row=null;
+            for(int i=0;i<stats.Count;i++)
             {
-                slots[i].Show(client.Rules.Find(deck[i]));
-                slots[i].Button.EnableInClassList("menu-card-selected", i == selectedSlot);
+                if(i%2==0){row=new VisualElement();row.AddToClassList("stat-row");detailStats.Add(row);}
+                var cell=new VisualElement();cell.AddToClassList("stat-cell");
+                var label=new Label(stats[i].Key);label.AddToClassList("stat-label");
+                var value=new Label(stats[i].Value);value.AddToClassList("stat-value");
+                cell.Add(label);cell.Add(value);row.Add(cell);DuelCartoonSkin.PaintStat(cell);
             }
-            foreach (var pair in catalogue)
-            {
-                pair.Value.Button.EnableInClassList("menu-card-selected", pair.Key == cardToAdd);
-                pair.Value.SetInDeck(Array.IndexOf(deck, pair.Key) >= 0);
-            }
+            UpdateChangeButtons(id);
+            Display(detailLayer,true);detailLayer.BringToFront();detailScroll.scrollOffset=Vector2.zero;
         }
 
         private sealed class CardTile
         {
             public readonly Button Button;
             private readonly VisualElement art;
-            private readonly Label name, cost, inDeck;
-
+            private readonly Label cost,empty,name;
             public CardTile(Action click)
             {
-                Button = new Button(click);
-                Button.AddToClassList("menu-card");
-                art = new VisualElement { pickingMode = PickingMode.Ignore };
-                art.AddToClassList("menu-card-art");
-                Button.Add(art);
-                name = AddLabel("menu-card-name");
-                cost = AddLabel("menu-card-cost");
-                inDeck = AddLabel("menu-card-in-deck");
-                inDeck.text = "已選";
-                SetInDeck(false);
+                Button=new Button(click);Button.AddToClassList("menu-card");
+                art=new VisualElement{pickingMode=PickingMode.Ignore};art.AddToClassList("menu-card-art");Button.Add(art);
+                name=new Label{pickingMode=PickingMode.Ignore,enableRichText=false};name.AddToClassList("menu-card-name");Button.Add(name);
+                cost=new Label{pickingMode=PickingMode.Ignore};cost.AddToClassList("menu-card-cost");Button.Add(cost);
+                empty=new Label("＋"){pickingMode=PickingMode.Ignore};empty.AddToClassList("empty-card-label");Button.Add(empty);
             }
-
             public void Show(CardDefinition card)
             {
-                art.style.backgroundImage = DuelSpriteLibrary.Card(card.id);
-                name.text = card.name;
-                cost.text = card.cost.ToString("0");
-                Button.tooltip = card.name + " · " + cost.text + " 能量\n" + card.description;
-            }
-
-            public void SetInDeck(bool selected)
-            {
-                inDeck.style.display = selected ? DisplayStyle.Flex : DisplayStyle.None;
-            }
-
-            private Label AddLabel(string className)
-            {
-                var label = new Label { pickingMode = PickingMode.Ignore, enableRichText = false };
-                label.AddToClassList(className);
-                Button.Add(label);
-                return label;
+                bool exists=card!=null;
+                Button.EnableInClassList("empty-slot",!exists);
+                art.style.backgroundImage=exists?new StyleBackground(DuelSpriteLibrary.Card(card.id)):new StyleBackground(StyleKeyword.None);
+                cost.text=exists?Number(card.cost):""; name.text=exists?card.name:"";
+                Display(cost,exists);Display(name,exists);Display(empty,!exists);
+                Button.tooltip=exists?card.name+" · "+cost.text+" 能量":"空的牌池欄位";
             }
         }
     }
