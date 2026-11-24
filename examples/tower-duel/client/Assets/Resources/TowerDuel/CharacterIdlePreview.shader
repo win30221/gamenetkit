@@ -5,6 +5,7 @@ Shader "Hidden/TowerDuel/CharacterIdlePreview"
         _MainTex ("Sprite atlas", 2D) = "white" {}
         _FrameRect ("UV rect", Vector) = (0,0,1,1)
         _Pose ("Time, foot, height, flight", Vector) = (0,.1,.8,0)
+        _AuthoredIdle ("Authored idle loop", Float) = 0
     }
     SubShader
     {
@@ -17,6 +18,7 @@ Shader "Hidden/TowerDuel/CharacterIdlePreview"
             #include "UnityCG.cginc"
             sampler2D _MainTex;
             float4 _FrameRect, _Pose, _MainTex_TexelSize;
+            float _AuthoredIdle;
             fixed4 frag(v2f_img i) : SV_Target
             {
                 float t=_Pose.x;
@@ -31,10 +33,10 @@ Shader "Hidden/TowerDuel/CharacterIdlePreview"
                 // Lower legs are fixed; torso and upper silhouette breathe/sway.
                 // Different offsets across the pose make this a local deformation,
                 // not a uniform resize or a rotation through the eight directions.
-                float weight=smoothstep(.12,.90,h)*(1-flight);
+                float weight=smoothstep(.12,.90,h)*(1-flight)*(1-_AuthoredIdle);
                 float sway=sin(t*2.4)*.016*weight;
                 float breathe=sin(t*3.4)*.017*weight;
-                float top=smoothstep(.72,1,h)*(1-flight);
+                float top=smoothstep(.72,1,h)*(1-flight)*(1-_AuthoredIdle);
                 uv.x-=sway+sin(t*4.0+uv.x*5.0)*.008*top;
                 uv.y-=breathe+sin(t*2.4+uv.x*3.0)*.004*top;
                 if(any(uv<.002)||any(uv>.998))return fixed4(0,0,0,0);

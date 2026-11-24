@@ -4,10 +4,9 @@ using UnityEngine.UIElements;
 namespace TowerDuel
 {
     /// <summary>
-    /// UI-only idle presentation. The authored Idle atlas has one frame per
-    /// direction, so ground units use anchored local deformation of that pose.
-    /// Flying units reuse the real six-frame flight cycle at a fixed location.
-    /// No battle state, direction, animation timing or sprite atlas is changed.
+    /// UI-only idle presentation. Play the authored idle loop when available.
+    /// Legacy single-frame ground units retain local deformation; legacy
+    /// flyers reuse the authored flight loop. No battle state is changed.
     /// </summary>
     internal sealed class DuelCharacterIdlePreview : System.IDisposable
     {
@@ -67,17 +66,19 @@ namespace TowerDuel
             if(!active||!set)return;
             float now=Time.unscaledTime;
             if(now<nextFrame)return;
-            nextFrame=now+1f/30f;
+            bool authoredIdle=set.FrameCount(DuelSpriteClip.Idle)>1;
+            var clip=flying&&!authoredIdle?DuelSpriteClip.Walk:DuelSpriteClip.Idle;
+            nextFrame=now+1f/Mathf.Max(30f,set.LoopFps(clip));
             float elapsed=now-started;
-            int frame=flying?((int)(elapsed*9f))%Mathf.Max(1,set.WalkFrames):0;
-            var sprite=set.Frame(flying?DuelSpriteClip.Walk:DuelSpriteClip.Idle,0,frame);
+            int frame=set.LoopFrame(clip,elapsed);
+            var sprite=set.Frame(clip,0,frame);
             if(!sprite)return;
             if(!material||!target)
             {
                 // Graphics fallback: retain actual flight frames, or show the
                 // authored idle pose with a tiny foot-anchored UI deformation.
                 view.sprite=sprite;
-                float breath=flying?0f:Mathf.Sin(elapsed*3.4f);
+                float breath=flying||authoredIdle?0f:Mathf.Sin(elapsed*3.4f);
                 view.style.scale=new Scale(new Vector3(1+.012f*breath,1+.018f*breath,1));
                 view.style.transformOrigin=new TransformOrigin(Length.Percent(50),Length.Percent(79),0);
                 return;
@@ -87,6 +88,7 @@ namespace TowerDuel
                 rect.width/sprite.texture.width,rect.height/sprite.texture.height));
             material.SetVector("_Pose",new Vector4(elapsed,1f-set.Baseline/(float)set.TileSize,
                 set.ReferenceHeight/(float)set.TileSize,flying?1f:0f));
+            material.SetFloat("_AuthoredIdle",authoredIdle?1f:0f);
             Graphics.Blit(sprite.texture,target,material);
             view.MarkDirtyRepaint();
         }

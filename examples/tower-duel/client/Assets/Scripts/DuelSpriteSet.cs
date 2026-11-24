@@ -11,7 +11,26 @@ namespace TowerDuel
         public string Kind;
         public Texture2D Idle, Walk, Attack;
         public int TileSize = 192, Baseline = 176, ReferenceHeight = 160;
-        public int WalkFrames = 6, AttackFrames = 6, ImpactFrame = 3;
+        public int IdleFrames = 1, WalkFrames = 6, AttackFrames = 6, ImpactFrame = 3;
+        public float IdleFps = 8f, WalkFps = 8f;
+
+        public int FrameCount(DuelSpriteClip clip) =>
+            clip == DuelSpriteClip.Walk ? WalkFrames :
+            clip == DuelSpriteClip.Attack ? AttackFrames : Mathf.Max(1, IdleFrames);
+        public float LoopFps(DuelSpriteClip clip)
+        {
+            if (clip != DuelSpriteClip.Idle && clip != DuelSpriteClip.Walk)
+                throw new ArgumentException("Attack frames follow authority timing, not loop FPS", nameof(clip));
+            float fps = clip == DuelSpriteClip.Walk ? WalkFps : IdleFps;
+            // Assets serialized before the optional settings existed can contain zero.
+            return fps > 0f && !float.IsNaN(fps) && !float.IsInfinity(fps) ? fps : 8f;
+        }
+        public int LoopFrame(DuelSpriteClip clip, double elapsedSeconds)
+        {
+            int count = FrameCount(clip);
+            double frame = Math.Floor(Math.Max(0d, elapsedSeconds) * LoopFps(clip));
+            return (int)(frame % count);
+        }
         public float UnitHeight = 2.1f, WorldHeight = 1.05f;
         public float TeamMaskTop = 2f;
         public bool Baked;
@@ -23,7 +42,7 @@ namespace TowerDuel
             // while the loaded ScriptableObject can remain in the Editor cache.
             if (idle == null || !idle[0][0])
             {
-                idle = Slice(Idle, 1); walk = Slice(Walk, WalkFrames); attack = Slice(Attack, AttackFrames);
+                idle = Slice(Idle, FrameCount(DuelSpriteClip.Idle)); walk = Slice(Walk, WalkFrames); attack = Slice(Attack, AttackFrames);
             }
             var frames = clip == DuelSpriteClip.Walk ? walk : clip == DuelSpriteClip.Attack ? attack : idle;
             return frames[Mathf.Clamp(direction, 0, 7)][Mathf.Clamp(frame, 0, frames[0].Length - 1)];
@@ -33,7 +52,7 @@ namespace TowerDuel
             if(!Baked)return Frame(clip,direction,frame);
             if(idleShadow==null||!idleShadow[0][0])
             {
-                idleShadow=Slice(Idle,1,true);walkShadow=Slice(Walk,WalkFrames,true);attackShadow=Slice(Attack,AttackFrames,true);
+                idleShadow=Slice(Idle,FrameCount(DuelSpriteClip.Idle),true);walkShadow=Slice(Walk,WalkFrames,true);attackShadow=Slice(Attack,AttackFrames,true);
             }
             var frames=clip==DuelSpriteClip.Walk?walkShadow:clip==DuelSpriteClip.Attack?attackShadow:idleShadow;
             return frames[Mathf.Clamp(direction,0,7)][Mathf.Clamp(frame,0,frames[0].Length-1)];

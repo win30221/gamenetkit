@@ -122,8 +122,12 @@ def validate(folder):
     if (motion/'timing.json').exists():
         timing=json.loads((motion/'timing.json').read_text())
         for clip in ('walk','attack'):
-            pictures=[Image.open(motion/f'{clip}-{i}.png').convert('RGB') for i in range(6)]
-            durations=[125]*6 if clip=='walk' else [round(timing['windupTicks']/30/3*1000)]*3+[round((timing['cooldownTicks']-timing['windupTicks'])/30/3*1000)]*3
+            count=timing.get(clip+'Frames',6)
+            impact=timing.get('impactFrame',3)
+            pictures=[Image.open(motion/f'{clip}-{i}.png').convert('RGB') for i in range(count)]
+            durations=([max(1,round(1000/timing.get('walkFps',8)))]*count if clip=='walk' else
+                       [max(1,round(timing['windupTicks']/30/impact*1000))]*impact+
+                       [max(1,round((timing['cooldownTicks']-timing['windupTicks'])/30/(count-impact)*1000))]*(count-impact))
             pictures[0].save(folder/f'{clip}-native.gif',save_all=True,append_images=pictures[1:],duration=durations,loop=0)
     print(json.dumps(dict(passed=True, views=len(results), checks=report['checks'])))
 

@@ -12,7 +12,7 @@ namespace TowerDuel
         private MaterialPropertyBlock properties;
         private SpriteRenderer projectedShadow;
         private MaterialPropertyBlock shadowProperties;
-        private double lastTick = double.NaN, walkTicks, deathStarted = double.NaN;
+        private double lastTick = double.NaN, walkTicks, idleTicks, deathStarted = double.NaN;
         private long attackSeen = -1, attackTarget, cancelledAttack = -1;
         private bool enemy, preview, airborne;
         private Color tint = Color.white;
@@ -57,7 +57,7 @@ namespace TowerDuel
             if (airborne != entity.airborne)
             {
                 airborne = entity.airborne;
-                walkTicks = 0;
+                walkTicks = idleTicks = 0;
                 lastTick = double.NaN;
             }
             var currentSet = Set;
@@ -80,6 +80,7 @@ namespace TowerDuel
                 (movement < .25f || elapsed < windup);
             if (attacking)
             {
+                idleTicks = 0;
                 int frame;
                 double contact = confirmedReleaseTick ?? entity.hitTick;
                 if (entity.hitTick >= entity.attackTick && entity.hitTick > 0 && tick >= contact)
@@ -90,12 +91,21 @@ namespace TowerDuel
                 else frame = Mathf.Clamp(Mathf.FloorToInt((float)(elapsed / Math.Max(1, windup) * currentSet.ImpactFrame)), 0, currentSet.ImpactFrame - 1);
                 Show(DuelSpriteClip.Attack, DirectionIndex, Mathf.Clamp(frame, 0, currentSet.AttackFrames - 1));
             }
-            else if (!deploying && (airborne || movement > .06f))
+            else if (!deploying && (movement > .06f ||
+                     (airborne && currentSet.FrameCount(DuelSpriteClip.Idle) == 1)))
             {
+                idleTicks = 0;
                 walkTicks += step * (airborne ? slow : Mathf.Clamp(movement, .15f, 2.5f));
-                Show(DuelSpriteClip.Walk, DirectionIndex, (int)(walkTicks * 8 / 30) % currentSet.WalkFrames);
+                Show(DuelSpriteClip.Walk, DirectionIndex, currentSet.LoopFrame(DuelSpriteClip.Walk, walkTicks / 30d));
             }
-            else { walkTicks = 0; Show(DuelSpriteClip.Idle, DirectionIndex, 0); }
+            else
+            {
+                walkTicks = 0;
+                if (deploying || shownClip != DuelSpriteClip.Idle) idleTicks = 0;
+                else idleTicks += step * Mathf.Max(0f, slow);
+                Show(DuelSpriteClip.Idle, DirectionIndex,
+                    deploying ? 0 : currentSet.LoopFrame(DuelSpriteClip.Idle, idleTicks / 30d));
+            }
             tint = Color.white; hit = Mathf.Clamp01(reaction);
             alpha = 1; ApplyProperties();
         }
@@ -146,7 +156,7 @@ namespace TowerDuel
             billboard.rotation = Quaternion.LookRotation(forward.normalized);
             float scale = currentSet.WorldHeight * currentSet.TileSize / Mathf.Max(1, currentSet.ReferenceHeight);
             scale *= TowerDuelClient.VisualScaleForSize(view.orthographicSize);
-            if (Clip == DuelSpriteClip.Idle && !preview && !double.IsNaN(lastTick))
+            if (Clip == DuelSpriteClip.Idle && currentSet.FrameCount(DuelSpriteClip.Idle) == 1 && !preview && !double.IsNaN(lastTick))
                 scale *= 1 + .004f * Mathf.Sin((float)(lastTick / 30 * Math.PI * 2));
             if (Clip == DuelSpriteClip.Death) scale *= Mathf.Lerp(.84f, 1, alpha);
             // Stand the sprite upright for correct 3D occlusion, while preserving
