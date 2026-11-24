@@ -20,7 +20,7 @@ namespace TowerDuel
         private readonly List<DuelCardDrag> cardDrags=new List<DuelCardDrag>();
         private Button draggingCard;
         private Vector2 dragOrigin,dragPosition,dragSize,dragCardOrigin;
-        private bool battlefieldDragStarted,hasDragPreviewPoint;
+        private bool hasDragPreviewPoint;
         private Vector3 dragPreviewPoint;
         private float dragCardOpacity=1f,lastDragAnimationTime;
         private const float DragCardFadeSeconds=.16f;
@@ -72,8 +72,8 @@ namespace TowerDuel
                 var cost=new Label(definition.cost.ToString("0")){pickingMode=PickingMode.Ignore};cost.AddToClassList("card-cost");button.Add(cost);
                 root.Q("cardRow").Add(button);
                 button.clicked+=()=>{client.Select(id);world.Focus();};cards.Add(id,button);
-                var drag=new DuelCardDrag(CanPlay,
-                    (point,touch)=>StartDrag(id,button,point,touch),MoveDrag,DropDrag,CancelDrag,
+                var drag=new DuelCardDrag(()=>CanPlay()&&pointer<0&&draggingCard==null,
+                    (point,touch)=>StartDrag(id,button,point),MoveDrag,DropDrag,CancelDrag,
                     ()=>{client.Select(id);world.Focus();});
                 button.AddManipulator(drag);cardDrags.Add(drag);
             }
@@ -95,19 +95,27 @@ namespace TowerDuel
             root.Q<Button>("audioButton").clicked+=()=>client.Audio.Toggle();
             world.RegisterCallback<PointerDownEvent>(evt=>{
                 if(hudMenuOpen){SetHudMenu(false);evt.StopPropagation();return;}
-                if(!evt.isPrimary||evt.button!=0||!client.Selected||client.Session.Pending)return;
-                if(!WorldPoint(evt.position,out var p))return;
-                pointer=evt.pointerId;world.CapturePointer(pointer);client.ShowPreview(p,true);evt.StopPropagation();
+                if(pointer>=0||draggingCard!=null||!evt.isPrimary||evt.button!=0||!client.Selected||!CanPlay())return;
+                if(!client.Session.InHand(client.SelectedCard)||!cards.TryGetValue(client.SelectedCard,out var button)
+                    ||!DragOnBattlefield(evt.position)||!DropPoint(evt.position,out _))return;
+                pointer=evt.pointerId;world.CapturePointer(pointer);
+                StartDrag(client.SelectedCard,button,evt.position,true);evt.StopPropagation();
             });
-            world.RegisterCallback<PointerMoveEvent>(evt=>{if(client.Selected&&WorldPoint(evt.position,out var p))client.ShowPreview(p,true);else client.HidePreview();});
+            world.RegisterCallback<PointerMoveEvent>(evt=>{
+                if(pointer!=evt.pointerId)return;
+                MoveDrag(evt.position);evt.StopPropagation();
+            });
             world.RegisterCallback<PointerUpEvent>(evt=>{
                 if(pointer!=evt.pointerId)return;
-                bool valid=WorldPoint(evt.position,out var p);world.ReleasePointer(pointer);pointer=-1;
-                if(valid)client.Deploy(p);client.HidePreview();evt.StopPropagation();
+                ReleaseWorldPointer();DropDrag(evt.position);evt.StopPropagation();
             });
-            world.RegisterCallback<PointerCancelEvent>(_=>CancelPointer());
-            world.RegisterCallback<PointerCaptureOutEvent>(_=>{pointer=-1;client.HidePreview();});
-            root.RegisterCallback<KeyDownEvent>(evt=>{if(evt.keyCode==KeyCode.Escape){CancelCardDrags();client.Selected=false;CancelPointer();}});
+            world.RegisterCallback<PointerCancelEvent>(evt=>{
+                if(pointer==evt.pointerId){ReleaseWorldPointer();CancelDrag();}
+            });
+            world.RegisterCallback<PointerCaptureOutEvent>(evt=>{
+                if(pointer==evt.pointerId){pointer=-1;CancelDrag();}
+            });
+            root.RegisterCallback<KeyDownEvent>(evt=>{if(evt.keyCode==KeyCode.Escape)CancelCardDrags();});
             DuelCartoonSkin.Apply(root);
             DuelCartoonSkin.SetMenuTab(root.Q<Button>("battleTab"), true);
             Update();
@@ -131,14 +139,15 @@ namespace TowerDuel
             TD_CloseKeyboard();
 #endif
         }
-        private void StartDrag(string card,Button button,Vector2 point,bool touch)
+        private void StartDrag(string card,Button button,Vector2 point,bool fromBattlefield=false)
         {
             client.BeginDeployment(card);draggingCard=button;
-            battlefieldDragStarted=false;hasDragPreviewPoint=false;
-            dragCardOpacity=1f;lastDragAnimationTime=Time.unscaledTime;
+            hasDragPreviewPoint=false;
+            dragCardOpacity=fromBattlefield?0f:1f;lastDragAnimationTime=Time.unscaledTime;
             bool b3=DuelSpriteLibrary.Converted(card);dragPreview.EnableInClassList("b3-card",b3);Display(dragFrame,b3);
             dragOrigin=point;dragPosition=point;
-            dragSize=button.worldBound.size;dragCardOrigin=button.worldBound.position;
+            dragSize=button.worldBound.size;
+            dragCardOrigin=fromBattlefield?point-dragSize*.5f:button.worldBound.position;
             dragPreview.style.scale=new Scale(new Vector3(dragSize.x/112,dragSize.y/150,1));
             button.AddToClassList("dragging");
             dragPreview.Q("dragArt").style.backgroundImage=button.Q(className:"card-art").resolvedStyle.backgroundImage;
@@ -162,9 +171,9 @@ namespace TowerDuel
         }
         private void MoveDrag(Vector2 point)
         {
+            if(draggingCard==null)return;
             dragPosition=point;
             bool battlefield=DragOnBattlefield(point);
-            battlefieldDragStarted|=battlefield;
 
             // A reversible, time-based card fade works for mouse and touch,
             // including a fast return from the arena to the hand.
@@ -178,22 +187,18 @@ namespace TowerDuel
             Display(dragPreview,dragCardOpacity>.001f);
             dragPreview.EnableInClassList("invalid",false);
 
-            // The closest legal deployment cell is also the ghost's location
-            // when the pointer is over the wall, enemy territory or outside
-            // the playable map. Never render troops on an illegal cell.
-            if(battlefield&&DragPoint(point,out var nearest))
-            {
-                dragPreviewPoint=nearest;hasDragPreviewPoint=true;
-            }
+            // Resolve the same deployment point for both input methods.
+            // Clear stale previews when the aim cannot resolve to a legal point.
+            if(battlefield)hasDragPreviewPoint=DragPoint(point,out dragPreviewPoint);
             // During return-to-hand the last legal ghost stays in place until
             // the card has faded in, avoiding a blank intermediate frame.
-            bool model=battlefieldDragStarted&&hasDragPreviewPoint&&(battlefield||dragCardOpacity<.999f);
+            bool model=hasDragPreviewPoint&&(battlefield||dragCardOpacity<.999f);
             client.ShowPreview(dragPreviewPoint,model);
         }
         private bool DragPoint(Vector2 point,out Vector3 p)
         {
             p=default;
-            if(!root.worldBound.Contains(point)||!WorldPoint(point,out var aim))return false;
+            if(!DropPoint(point,out var aim))return false;
             var state=client.Session.State;
             var card=client.Rules.Find(client.SelectedCard);
             if(state==null||card==null)return false;
@@ -201,23 +206,22 @@ namespace TowerDuel
         }
         private void DropDrag(Vector2 point)
         {
-            Vector3 p=default;
-            // Rendering a snapped ghost does not bypass the actual input and
-            // server-side placement requirements.
-            bool valid=CanPlay()&&DropPoint(point,out var aim)&&client.CanDeploy(aim)
-                &&DragPoint(point,out p)&&client.CanDeploy(p);
-            if(valid)client.Deploy(p);
+            if(draggingCard==null)return;
+            MoveDrag(point);
+            // Commit the resolved preview point, not the unsnapped pointer aim.
+            if(CanPlay()&&DragOnBattlefield(point)&&hasDragPreviewPoint&&client.CanDeploy(dragPreviewPoint))
+                client.Deploy(dragPreviewPoint);
             CancelDrag();
         }
         private void CancelDrag()
         {
             draggingCard?.RemoveFromClassList("dragging");draggingCard=null;
-            battlefieldDragStarted=false;hasDragPreviewPoint=false;
+            hasDragPreviewPoint=false;
             dragCardOpacity=1f;dragPreview.style.opacity=DragCardMaxOpacity;
             Display(dragPreview,false);
             client.Selected=false;client.HidePreview();
         }
-        private void CancelCardDrags(){foreach(var drag in cardDrags)drag.Cancel();CancelDrag();}
+        private void CancelCardDrags(){foreach(var drag in cardDrags)drag.Cancel();ReleaseWorldPointer();CancelDrag();}
         private void CopyRoomCode()
         {
             var state=client.Session.State;
@@ -254,7 +258,7 @@ namespace TowerDuel
             var ray=client.Camera.ScreenPointToRay(screen);var plane=new Plane(Vector3.up,Vector3.zero);
             if(!plane.Raycast(ray,out var enter))return false;point=DuelPresentation.MirrorDepth(ray.GetPoint(enter),client.Session.State?.seat??0);return true;
         }
-        private void CancelPointer(){if(pointer>=0&&world.HasPointerCapture(pointer))world.ReleasePointer(pointer);pointer=-1;client.HidePreview();}
+        private void ReleaseWorldPointer(){int old=pointer;pointer=-1;if(old>=0&&world.HasPointerCapture(old))world.ReleasePointer(old);}
         private void Text(string name,string value){var label=root.Q<Label>(name);if(label.text!=value)label.text=value;}
         private static void Display(VisualElement e,bool show)=>e.style.display=show?DisplayStyle.Flex:DisplayStyle.None;
         private void LayoutViewport()
