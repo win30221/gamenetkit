@@ -272,3 +272,16 @@ Button:disabled { opacity:.6; }
 .subtitle,.hint { color:#75533b; }
 .players { color:#43271e; }
 .invite-code { color:#27589b; }
+
+.skin-slice { -unity-slice-left:24; -unity-slice-right:24; -unity-slice-top:24; -unity-slice-bottom:24; -unity-slice-scale:.65px; -unity-background-scale-mode:stretch-to-fill; }
+.skin-small-slice { -unity-slice-left:15; -unity-slice-right:15; -unity-slice-top:15; -unity-slice-bottom:15; -unity-slice-scale:.55px; -unity-background-scale-mode:stretch-to-fill; }
+.skin-frame-slice { -unity-slice-left:20; -unity-slice-right:20; -unity-slice-top:20; -unity-slice-bottom:20; -unity-slice-scale:.38px; -unity-background-scale-mode:stretch-to-fill; }
+.skin-badge { -unity-background-scale-mode:scale-to-fit; }
+.menu-card-frame { position:absolute; left:0; right:0; top:0; bottom:0; background-color:transparent; }
+.menu-card .menu-card-name { left:4px; right:4px; bottom:4px; }
+.menu-card-art { left:3px; right:3px; top:3px; bottom:3px; }
+.menu-card-selected .menu-card-frame, .replace-target .menu-card-frame { -unity-background-image-tint-color:#ffde4a; }
+.card-detail-panel .detail-stage { background-size:cover; }
+.top-hud .timer { color:#43271e; }
+.hud-menu-panel .danger-button { color:#fff4db; -unity-text-outline-color:#43201e; -unity-text-outline-width:.7px; }
+.waiting-leave { color:#fff4db; -unity-text-outline-color:#43201e; -unity-text-outline-width:.7px; }

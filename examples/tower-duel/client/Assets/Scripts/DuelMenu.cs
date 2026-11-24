@@ -81,7 +81,11 @@ namespace TowerDuel
             lobby.Q<Button>("detailBackButton").clicked+=CloseDetail;
             actionLayer.RegisterCallback<PointerDownEvent>(evt=>{if(evt.target==actionLayer){CloseActions();evt.StopPropagation();}});
             detailLayer.RegisterCallback<PointerDownEvent>(evt=>{if(evt.target==detailLayer){CloseDetail();evt.StopPropagation();}});
-            RefreshDeck(); ShowCards(false);
+            RefreshDeck();
+            Display(settingsPanel,false); Display(joinPanel,false); Display(actionLayer,false);
+            Display(detailLayer,false); Display(replaceBar,false);
+            Display(deckPage,false); Display(battlePage,true);
+            DuelCartoonSkin.SetMenuTab(cardsTab,false); DuelCartoonSkin.SetMenuTab(battleTab,true);
         }
 
         public void Layout(Rect safeArea,float unitsPerPixel)
@@ -368,14 +372,17 @@ namespace TowerDuel
         private sealed class CardTile
         {
             public readonly Button Button;
-            private readonly VisualElement art;
+            private readonly VisualElement art,frame;
             private readonly Label cost,empty,name;
             public CardTile(Action click)
             {
                 Button=new Button(click);Button.AddToClassList("menu-card");
                 art=new VisualElement{pickingMode=PickingMode.Ignore};art.AddToClassList("menu-card-art");Button.Add(art);
+                frame=new VisualElement{pickingMode=PickingMode.Ignore};frame.AddToClassList("menu-card-frame");Button.Add(frame);
+                DuelCartoonSkin.PaintCardFrame(frame);
                 name=new Label{pickingMode=PickingMode.Ignore,enableRichText=false};name.AddToClassList("menu-card-name");Button.Add(name);
                 cost=new Label{pickingMode=PickingMode.Ignore};cost.AddToClassList("menu-card-cost");Button.Add(cost);
+                DuelCartoonSkin.PaintBadge(cost);
                 empty=new Label("＋"){pickingMode=PickingMode.Ignore};empty.AddToClassList("empty-card-label");Button.Add(empty);
             }
             public void Show(CardDefinition card)
@@ -384,7 +391,7 @@ namespace TowerDuel
                 Button.EnableInClassList("empty-slot",!exists);
                 art.style.backgroundImage=exists?new StyleBackground(DuelSpriteLibrary.Card(card.id)):new StyleBackground(StyleKeyword.None);
                 cost.text=exists?Number(card.cost):""; name.text=exists?card.name:"";
-                Display(cost,exists);Display(name,exists);Display(empty,!exists);
+                Display(cost,exists);Display(name,exists);Display(frame,exists);Display(empty,!exists);
                 Button.tooltip=exists?card.name+" · "+cost.text+" 能量":"空的牌池欄位";
             }
         }
