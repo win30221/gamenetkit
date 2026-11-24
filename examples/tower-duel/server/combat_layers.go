@@ -95,11 +95,7 @@ func (w *match) advanceKnockback(u *unit) {
 // movement/pushes so all units use the same positions, regardless of ID order.
 func (w *match) refreshUnitAuras(units []*unit) {
 	for _, u := range units {
-		for multiplier, until := range u.AuraUntil {
-			if w.Tick >= until {
-				delete(u.AuraUntil, multiplier)
-			}
-		}
+		u.Buffs.expire(w.Tick)
 	}
 	for _, ally := range units {
 		card := w.Rules.ByID[ally.State.Kind]
@@ -110,21 +106,11 @@ func (w *match) refreshUnitAuras(units []*unit) {
 			if u.State.HP <= 0 || u.State.Seat != ally.State.Seat || distance(position(ally.State), position(u.State)) > card.AuraRadius+u.State.Radius+1e-9 {
 				continue
 			}
-			if u.AuraUntil == nil {
-				u.AuraUntil = make(map[float64]uint64)
-			}
-			u.AuraUntil[card.MoveMultiplier] = w.Tick + tickRate
+			u.Buffs.apply(buffKey{Stat: buffMoveSpeed, SourceID: ally.State.ID, Kind: "standard_aura", Scope: buffTimed}, card.MoveMultiplier, w.Tick+tickRate, w.Tick)
 		}
 	}
 }
 
 func (w *match) movementFactor(u *unit) float64 {
-	boost := 1.0
-	// Overlapping sources refresh their durations, never stack multipliers.
-	for multiplier, until := range u.AuraUntil {
-		if w.Tick < until {
-			boost = max(boost, multiplier)
-		}
-	}
-	return w.speedFactor(u) * boost
+	return u.Buffs.factor(buffMoveSpeed, w.Tick)
 }

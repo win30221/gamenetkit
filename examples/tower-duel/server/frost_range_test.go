@@ -39,10 +39,10 @@ func TestFrostOverlapsSoldierFootprint(t *testing.T) {
 					w.Units[200], w.Units[201] = enemy, ally
 					w.Tick = w.Effects[0].Impact
 					w.stepEffects(w.sortedUnits(), map[uint64]int{})
-					if (w.speedFactor(enemy) < 1) != tc.slowed || enemy.State.Slowed != tc.slowed {
-						t.Fatalf("foot center (%v,%v): slowed=%v factor=%v", tc.x, tc.z, enemy.State.Slowed, w.speedFactor(enemy))
+					if (w.attackSpeedFactor(enemy) < 1) != tc.slowed || enemy.State.Slowed != tc.slowed {
+						t.Fatalf("foot center (%v,%v): slowed=%v factor=%v", tc.x, tc.z, enemy.State.Slowed, w.attackSpeedFactor(enemy))
 					}
-					if w.speedFactor(ally) != 1 || ally.State.Slowed {
+					if w.attackSpeedFactor(ally) != 1 || ally.State.Slowed {
 						t.Fatal("frost affected its caster's soldier")
 					}
 				})
@@ -69,8 +69,8 @@ func TestFrostCrossingUpdatesAfterMovement(t *testing.T) {
 				w.Effects = []effectState{{ID: 900, Kind: "frost", Seat: 1 - seat, X: center.X, Z: center.Z, Radius: c.Radius, Impact: 1, End: 121, Slow: c.Slow}}
 				w.step()
 				inside := distance(center, position(u.State)) <= c.Radius+u.State.Radius
-				if inside != entering || u.State.Slowed != inside || (w.speedFactor(u) < 1) != inside {
-					t.Fatalf("post-movement center distance=%v inside=%v slowed=%v factor=%v", distance(center, position(u.State)), inside, u.State.Slowed, w.speedFactor(u))
+				if inside != entering || u.State.Slowed != inside || (w.attackSpeedFactor(u) < 1) != inside {
+					t.Fatalf("post-movement center distance=%v inside=%v slowed=%v factor=%v", distance(center, position(u.State)), inside, u.State.Slowed, w.attackSpeedFactor(u))
 				}
 			})
 		}
@@ -90,8 +90,8 @@ func TestFrostClearsImmediatelyAndReevaluatesOverlaps(t *testing.T) {
 		t.Helper()
 		u.State.X = x
 		w.stepEffects(w.sortedUnits(), map[uint64]int{})
-		if math.Abs(w.speedFactor(u)-factor) > 1e-9 || u.State.Slowed != (factor < 1) {
-			t.Fatalf("x=%v: factor=%v slowed=%v, want=%v", x, w.speedFactor(u), u.State.Slowed, factor)
+		if math.Abs(w.attackSpeedFactor(u)-factor) > 1e-9 || u.State.Slowed != (factor < 1) {
+			t.Fatalf("x=%v: factor=%v slowed=%v, want=%v", x, w.attackSpeedFactor(u), u.State.Slowed, factor)
 		}
 	}
 	check(.5, .25)
@@ -123,8 +123,8 @@ func TestFrostCrossingUpdatesAfterCollisionPush(t *testing.T) {
 				w.Effects = []effectState{{ID: 900, Kind: "frost", Seat: 1 - seat, X: center.X, Z: center.Z, Radius: c.Radius, Impact: 1, End: 121, Slow: c.Slow}}
 				w.step()
 				inside := distance(center, position(u.State)) <= c.Radius+u.State.Radius
-				if inside != entering || u.State.Slowed != inside || (w.speedFactor(u) < 1) != inside || u.State.ReadyTick != 1000 {
-					t.Fatalf("collision crossing distance=%v inside=%v slowed=%v factor=%v readyTick=%v", distance(center, position(u.State)), inside, u.State.Slowed, w.speedFactor(u), u.State.ReadyTick)
+				if inside != entering || u.State.Slowed != inside || (w.attackSpeedFactor(u) < 1) != inside || u.State.ReadyTick != 1000 {
+					t.Fatalf("collision crossing distance=%v inside=%v slowed=%v factor=%v readyTick=%v", distance(center, position(u.State)), inside, u.State.Slowed, w.attackSpeedFactor(u), u.State.ReadyTick)
 				}
 			})
 		}

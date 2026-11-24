@@ -100,12 +100,12 @@ func TestFrostRefreshesWithoutStackingAndExpires(t *testing.T) {
 	w.Effects = append(w.Effects, w.Effects[0])
 	w.Tick++
 	w.stepEffects(w.sortedUnits(), map[uint64]int{})
-	if math.Abs(w.speedFactor(enemy)-.55) > .00001 || w.speedFactor(ally) != 1 {
+	if math.Abs(w.attackSpeedFactor(enemy)-.55) > .00001 || w.attackSpeedFactor(ally) != 1 {
 		t.Fatal("slow stacked or affected ally")
 	}
 	w.Tick = w.Effects[0].End
 	w.stepEffects(w.sortedUnits(), map[uint64]int{})
-	if w.speedFactor(enemy) != 1 || len(w.Effects) != 0 {
+	if w.attackSpeedFactor(enemy) != 1 || len(w.Effects) != 0 {
 		t.Fatal("slow did not expire")
 	}
 }

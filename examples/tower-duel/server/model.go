@@ -104,9 +104,7 @@ type unit struct {
 	UseOuterTrack    bool
 	LockedTarget     uint64
 	Travelled        float64
-	SlowUntil        uint64
-	SlowFactor       float64
-	AuraUntil        map[float64]uint64
+	Buffs            buffSet
 	CooldownProgress float64
 	WindupTarget     uint64
 	WindupProgress   float64
@@ -192,6 +190,7 @@ type match struct {
 	NextID             uint64
 	TowerCooldown      map[uint64]int
 	TowerProgress      map[uint64]float64
+	TowerBuffs         map[uint64]*buffSet
 	Results            [2]map[uint64]actionResult
 	HighWater          [2]uint64
 	Hands              [2][4]string
