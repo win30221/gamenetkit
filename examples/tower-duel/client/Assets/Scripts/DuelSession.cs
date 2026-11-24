@@ -19,7 +19,11 @@ namespace TowerDuel
         private readonly List<EffectState> sampledEffects=new List<EffectState>(16);
         private readonly DuelMap map;
         private readonly DuelRules rules;
-        private DeployMessage pending;
+        private const int MaxPendingDeployments=4;
+        private readonly SortedDictionary<long,DeployMessage> pending=new SortedDictionary<long,DeployMessage>();
+        // Transport is ordered; only advance the send cursor after local submission succeeds.
+        private long sentThrough,sendingAction;
+        private double retryAt;
         private Task<bool> send;
         private long nextAction;
         private bool readyRequested,rematchRequested,leaving;
@@ -31,7 +35,24 @@ namespace TowerDuel
         public bool Searching {get;private set;}
         public bool Recovering=>recovery.Pending;
         public double RenderTick=>timeline.RenderTick;
-        public bool Pending=>pending!=null;
+        public bool Pending=>pending.Count>0;
+        public int PendingCount=>pending.Count;
+        public float AvailableEnergy
+        {
+            get
+            {
+                if(State==null)return 0;
+                float energy=State.energy;
+                foreach(var entry in pending)
+                    if(entry.Key>State.actionWatermark)energy-=rules.Find(entry.Value.card).cost;
+                return Mathf.Max(0,energy);
+            }
+        }
+        public bool CardPending(string card)
+        {
+            foreach(var action in pending.Values)if(action.card==card)return true;
+            return false;
+        }
         public bool CanAct=>State!=null&&!Recovering&&!Connecting&&!leaving;
         public int Accepted {get;private set;}
         public int Rejected {get;private set;}
@@ -64,7 +85,7 @@ namespace TowerDuel
             hello.rulesHash=rules.Hash;
             hello.token=mode=="resume"?token:"";
             int epoch=Transport.BeginAttempt();Transport.Open(epoch,endpoint.Uri.AbsoluteUri,JsonUtility.ToJson(hello),"",callback,false);
-            Connecting=true;deadline=now+(Recovering?5:12);send=null;nextSend=0;
+            Connecting=true;deadline=now+(Recovering?5:12);send=null;nextSend=0;sentThrough=sendingAction=0;retryAt=0;
         }
         public bool TryRestore(string endpoint,string callbackName)
         {
@@ -88,19 +109,39 @@ namespace TowerDuel
         public bool InHand(string card)=>State?.hand!=null&&Array.IndexOf(State.hand,card)>=0;
         public void Ready(){if(CanAct&&State.phase=="waiting")readyRequested=true;}
         public void Rematch(){if(CanAct&&State.phase=="ended")rematchRequested=true;}
+        public bool CanDeploy(Vector3 point,string card)
+        {
+            if(!CanAct||pending.Count>=MaxPendingDeployments||(State.phase!="playing"&&State.phase!="overtime"))return false;
+            var definition=rules.Find(card);
+            return definition!=null&&InHand(card)&&!CardPending(card)&&AvailableEnergy+1e-5f>=definition.cost&&map.CanDeploy(State.seat,point,State,definition);
+        }
         public bool Deploy(Vector3 point,string card="guard")
         {
-            if(!CanAct||Pending||(State.phase!="playing"&&State.phase!="overtime"))return false;
+            if(!CanAct||pending.Count>=MaxPendingDeployments||(State.phase!="playing"&&State.phase!="overtime"))return false;
             var definition=rules.Find(card);if(definition==null)return false;
-            if(!InHand(card)){Status=DuelText.Reason("card_not_in_hand");return false;}
-            if(State.energy+1e-5f<definition.cost){Status=DuelText.Reason("not_enough_energy");return false;}
+            if(!InHand(card)||CardPending(card)){Status=DuelText.Reason("card_not_in_hand");return false;}
+            if(AvailableEnergy+1e-5f<definition.cost){Status=DuelText.Reason("not_enough_energy");return false;}
             if(!map.CanDeploy(State.seat,point,State,definition)){Status=definition.IsSpell?"請在戰場內指定法術落點。":DuelText.Reason("invalid_placement");return false;}
-            pending=new DeployMessage{match=State.match,action=++nextAction,card=card,x=point.x,z=point.z};pendingSince=Now;nextSend=0;Status="正在確認出牌…";return true;
+            if(!Pending){pendingSince=Now;nextSend=0;}
+            var action=new DeployMessage{match=State.match,action=++nextAction,card=card,x=point.x,z=point.z};
+            pending.Add(action.action,action);Status="正在確認出牌…";return true;
+        }
+        private void ClearPending()
+        {
+            pending.Clear();sentThrough=sendingAction=0;retryAt=nextSend=0;
+        }
+        private DeployMessage NextDeployment(double now)
+        {
+            foreach(var entry in pending)if(entry.Key>sentThrough)return entry.Value;
+            if(now<retryAt)return null;
+            sentThrough=0;
+            foreach(var entry in pending)return entry.Value;
+            return null;
         }
         private void BeginRecovery(double now)
         {
             if(string.IsNullOrEmpty(token)||!recovery.Fail(now,true)){Disconnect("連線已中斷，請重新加入。");return;}
-            Connecting=false;Transport.Close();send=null;
+            Connecting=false;Transport.Close();send=null;sentThrough=sendingAction=0;retryAt=0;
             Status="連線中斷，正在恢復原局…";
         }
         public void SimulateDisconnect(){if(Debug.isDebugBuild)BeginRecovery(Now);}
@@ -135,12 +176,16 @@ namespace TowerDuel
                     }
                     if(message.type=="action")
                     {
-                        if(State!=null&&pending!=null&&message.match==State.match&&message.action==pending.action)
+                        if(State!=null&&message.match==State.match&&pending.TryGetValue(message.action,out var action))
                         {
-                            if(message.accepted){Accepted++;LastPlayedCard=pending.card;}else Rejected++;
-                            if(message.hand!=null&&message.hand.Length==4&&message.handVersion>=State.handVersion){State.hand=message.hand;State.nextCard=message.nextCard;State.handVersion=message.handVersion;State.energy=message.energy;}
+                            if(message.accepted){Accepted++;LastPlayedCard=action.card;}else Rejected++;
+                            // A cached response after reconnect must not overwrite newer authoritative state.
+                            if(message.hand!=null&&message.hand.Length==4&&message.action>State.actionWatermark&&message.handVersion>=State.handVersion)
+                            {State.hand=message.hand;State.nextCard=message.nextCard;State.handVersion=message.handVersion;State.energy=message.energy;}
+                            State.actionWatermark=Math.Max(State.actionWatermark,message.action);
+                            pending.Remove(message.action);pendingSince=now;
                             Status=message.accepted?"部署成功。":DuelText.Reason(message.reason);
-                            pending=null;ActionConfirmed?.Invoke(message);
+                            ActionConfirmed?.Invoke(message);
                         }
                         continue;
                     }
@@ -154,17 +199,17 @@ namespace TowerDuel
                     if(!fresh&&message.type=="snapshot"&&message.tick<=State.tick)continue;
                     if(fresh)
                     {
-                        pending=null;nextAction=0;readyRequested=rematchRequested=false;Accepted=Rejected=0;LastPlayedCard=null;frames.Clear();timeline.Reset(message.tick,received);
+                        ClearPending();nextAction=0;readyRequested=rematchRequested=false;Accepted=Rejected=0;LastPlayedCard=null;frames.Clear();timeline.Reset(message.tick,received);
                     }
                     if(message.type=="welcome")
                     {
                         if(Recovering)Resumes++;
                         Searching=false;
                         recovery.Connected();Connecting=false;token=message.resumeToken;room=message.room;nextSave=0;SaveResume();
-                        nextAction=Math.Max(nextAction,message.actionWatermark);frames.Clear();timeline.Reset(message.tick,received);pendingSince=now;nextSend=0;
+                        nextAction=Math.Max(nextAction,message.actionWatermark);frames.Clear();timeline.Reset(message.tick,received);pendingSince=now;nextSend=0;sentThrough=sendingAction=0;retryAt=0;
                     }
                     else timeline.Observe(message.tick,received);
-                    if(!fresh&&message.handVersion<State.handVersion){message.hand=State.hand;message.nextCard=State.nextCard;message.handVersion=State.handVersion;message.energy=State.energy;}
+                    if(!fresh&&(message.handVersion<State.handVersion||message.actionWatermark<State.actionWatermark)){message.hand=State.hand;message.nextCard=State.nextCard;message.handVersion=State.handVersion;message.energy=State.energy;message.actionWatermark=State.actionWatermark;}
                     bool phaseChanged=fresh||State.phase!=message.phase;
                     State=message;frames.Add(message.tick,new DuelFrame(message));Connecting=false;lastReceive=received;
                     if(phaseChanged||message.type=="welcome")
@@ -183,14 +228,28 @@ namespace TowerDuel
             if(send!=null)
             {
                 if(!send.IsCompleted)return;
-                try{if(!send.GetAwaiter().GetResult())nextSend=now+.25;}catch(Exception){BeginRecovery(now);return;}
-                send=null;
+                try
+                {
+                    if(send.GetAwaiter().GetResult())sentThrough=Math.Max(sentThrough,sendingAction);
+                    else nextSend=now+.25;
+                }
+                catch(Exception){BeginRecovery(now);return;}
+                send=null;sendingAction=0;
             }
-            if(pending!=null&&now-pendingSince>8){BeginRecovery(now);return;}
+            if(Pending&&now-pendingSince>8){BeginRecovery(now);return;}
             if(now<nextSend||Transport.Sending)return;
             string json=null;
-            if(pending!=null)json=JsonUtility.ToJson(pending);
-            else if(readyRequested&&State.phase=="waiting"&&!State.players[State.seat].ready)json=JsonUtility.ToJson(new ReadyMessage{match=State.match});
+            if(Pending)
+            {
+                var action=NextDeployment(now);
+                if(action!=null)
+                {
+                    sendingAction=action.action;retryAt=now+.5;
+                    send=Transport.TrySend(JsonUtility.ToJson(action));
+                }
+                return;
+            }
+            if(readyRequested&&State.phase=="waiting"&&!State.players[State.seat].ready)json=JsonUtility.ToJson(new ReadyMessage{match=State.match});
             else if(rematchRequested&&State.phase=="ended"&&!State.players[State.seat].rematch)json=JsonUtility.ToJson(new ControlMessage{type="rematch",match=State.match});
             if(json!=null){send=Transport.TrySend(json);nextSend=now+.5;}
         }
@@ -277,7 +336,7 @@ namespace TowerDuel
         public void Disconnect(string reason="")
         {
             Searching=false;
-            recovery.Stop();Transport.Close();State=null;Connecting=false;pending=null;send=null;readyRequested=rematchRequested=false;frames.Clear();timeline.Reset(-1,0);nextAction=0;Accepted=Rejected=0;token=null;PlayerPrefs.DeleteKey(ResumeKey);PlayerPrefs.Save();Status=reason;
+            recovery.Stop();Transport.Close();State=null;Connecting=false;ClearPending();send=null;readyRequested=rematchRequested=false;frames.Clear();timeline.Reset(-1,0);nextAction=0;Accepted=Rejected=0;token=null;PlayerPrefs.DeleteKey(ResumeKey);PlayerPrefs.Save();Status=reason;
         }
         public void ReceiveBrowser(string json)=>Transport.Receive(Transport.Epoch,json);
         public void Dispose(){recovery.Stop();Transport.Dispose();}

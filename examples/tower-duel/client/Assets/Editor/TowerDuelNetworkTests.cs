@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using Realtime.Core;
 using UnityEngine;
@@ -67,6 +68,8 @@ namespace TowerDuel.Editor
             {
                 BackoffAndExpiry();
                 RestoreAndPendingAction();
+                MultiplePendingDeployments();
+                IndependentDeploymentPreviews();
                 CancellationAndFatalErrors();
                 NearestDeployment();
                 SharedEffectTimeline();
@@ -77,7 +80,7 @@ namespace TowerDuel.Editor
                 DeploymentWaitAndRecovery();
                 FixedBattlefieldView();
                 MobileBattlefieldFraming();
-                return "TOWER_DUEL_NETWORK_TESTS PASS: SDK backoff/expiry, saved-seat restore, pending-action recovery, cancellation, nearest legal deployment, shared effect timing, rendered frost boundary, snapshot stalls, match resets, ranged windup/release, cosmetic impact deduplication and deployment readiness/recovery";
+                return "TOWER_DUEL_NETWORK_TESTS PASS: SDK backoff/expiry, saved-seat restore, pending-action recovery, concurrent deployment/energy reservation, independent previews, cancellation, nearest legal deployment, shared effect timing, rendered frost boundary, snapshot stalls, match resets, ranged windup/release, cosmetic impact deduplication and deployment readiness/recovery";
             }
             finally
             {
@@ -279,7 +282,7 @@ namespace TowerDuel.Editor
             {
                 f.Deliver(f.State(100,"welcome"));
                 Require(f.Session.Deploy(new Vector3(-5,0,-3)),"Could not create a pending deployment.");
-                long action=Field<DeployMessage>(f.Session,"pending").action;
+                long action=FirstPending(f.Session).action;
                 int oldEpoch=f.Session.Transport.Epoch;
                 f.Error("connection_closed");
                 f.Session.Transport.Receive(oldEpoch,JsonUtility.ToJson(f.State(500,"welcome")));
@@ -291,7 +294,7 @@ namespace TowerDuel.Editor
                 var result=new DuelMessage{type="action",match=welcome.match,action=action,accepted=true};
                 f.Deliver(result);f.Deliver(result);
                 Require(!f.Session.Pending&&f.Session.Accepted==1,"A repeated confirmation was presented more than once.");
-                Require(f.Session.Deploy(new Vector3(-5,0,-3))&&Field<DeployMessage>(f.Session,"pending").action>action,"Resume reused an acknowledged action ID.");
+                Require(f.Session.Deploy(new Vector3(-5,0,-3))&&FirstPending(f.Session).action>action,"Resume reused an acknowledged action ID.");
             }
             using(var restored=new Fixture())
             {
@@ -299,6 +302,102 @@ namespace TowerDuel.Editor
                 Require(restored.Session.Recovering&&restored.Recovery.Armed,"Saved credentials did not arm the SDK policy.");
                 restored.Deliver(restored.State(140,"welcome"));
                 Require(restored.Session.Resumes==1&&!restored.Session.Recovering&&restored.Recovery.Attempts==0,"Restored welcome did not reset retry state.");
+            }
+        }
+
+        private static DeployMessage FirstPending(DuelSession session)
+        {
+            foreach(var item in Field<SortedDictionary<long,DeployMessage>>(session,"pending").Values)return item;
+            throw new InvalidOperationException("Expected a pending deployment");
+        }
+        private static void MultiplePendingDeployments()
+        {
+            using(var f=new Fixture())
+            {
+                var welcome=f.State(100,"welcome");f.Deliver(welcome);
+                var queue=Field<SortedDictionary<long,DeployMessage>>(f.Session,"pending");
+                string[] hand=(string[])welcome.hand.Clone();
+                Vector3 Point(string card)
+                {
+                    Require(f.Map.TryNearestDeployment(0,new Vector3(-4.5f,0,-3.5f),f.Session.State,f.Rules.Find(card),out var point),"No legal test point for "+card);
+                    return point;
+                }
+                float firstThree=0;
+                for(int i=0;i<3;i++)
+                {
+                    firstThree+=f.Rules.Find(hand[i]).cost;
+                    Require(f.Session.Deploy(Point(hand[i]),hand[i]),"An independent release was blocked by an earlier pending action");
+                }
+                Require(queue.Count==3&&Mathf.Abs(f.Session.AvailableEnergy-(10-firstThree))<.001f,"Pending actions did not reserve their own energy");
+                Require(!f.Session.Deploy(Point(hand[0]),hand[0]),"The same card was queued twice");
+                Require(!f.Session.Deploy(Point(hand[3]),hand[3]),"An unaffordable fourth action was queued");
+
+                var actions=new List<long>(queue.Keys);
+                var next=typeof(DuelSession).GetMethod("NextDeployment",Private);
+                Set(f.Session,"sentThrough",0L);
+                for(int i=0;i<actions.Count;i++)
+                {
+                    var action=(DeployMessage)next.Invoke(f.Session,new object[]{f.Now});
+                    Require(action.action==actions[i],"Deployment send order was not monotonic");
+                    Set(f.Session,"sentThrough",action.action);
+                }
+                Set(f.Session,"retryAt",f.Now+1);
+                Require(next.Invoke(f.Session,new object[]{f.Now})==null,"In-flight actions were resent immediately");
+                Require(((DeployMessage)next.Invoke(f.Session,new object[]{f.Now+2})).action==actions[0],"Retry did not restart at the oldest pending action");
+
+                // A snapshot can include a processed action before its reliable reply arrives.
+                // Regeneration then makes a fourth distinct release affordable.
+                var snapshot=f.State(300);
+                snapshot.actionWatermark=actions[0];snapshot.handVersion=1;
+                snapshot.hand=new[]{welcome.nextCard,hand[1],hand[2],hand[3]};
+                snapshot.nextCard=f.Rules.cards[5].id;snapshot.energy=10;
+                f.Deliver(snapshot);
+                Require(Mathf.Abs(f.Session.AvailableEnergy-(10-firstThree+f.Rules.Find(hand[0]).cost))<.001f,"Snapshot double-charged acknowledged energy");
+                Require(f.Session.Deploy(Point(hand[3]),hand[3])&&queue.Count==4,"Fourth pending action was not supported when energy permitted");
+                actions=new List<long>(queue.Keys);
+                f.Error("connection_closed");
+                var resumed=f.State(320,"welcome");resumed.actionWatermark=actions[2];resumed.handVersion=3;
+                resumed.hand=new[]{f.Rules.cards[4].id,f.Rules.cards[5].id,f.Rules.cards[6].id,hand[3]};
+                resumed.nextCard=f.Rules.cards[7].id;resumed.energy=5;
+                f.Deliver(resumed);
+                Require(queue.Count==4&&!f.Session.Recovering,"Reconnection discarded outstanding actions");
+                Require(Mathf.Abs(f.Session.AvailableEnergy-(5-f.Rules.Find(hand[3]).cost))<.001f,"Recovered watermark reserved already processed energy");
+                foreach(long action in actions)
+                {
+                    var result=new DuelMessage{type="action",match=welcome.match,action=action,accepted=true};
+                    f.Deliver(result);f.Deliver(result);
+                }
+                Require(!f.Session.Pending&&f.Session.Accepted==4,"Independent confirmations were lost or counted twice");
+            }
+        }
+        private static void IndependentDeploymentPreviews()
+        {
+            using(var f=new Fixture())
+            {
+                var root=new GameObject("Multi-touch preview regression");
+                try
+                {
+                    using(var presentation=new DuelPresentation(root.transform,f.Map,f.Rules))
+                    {
+                        var previews=new DuelDeploymentPreview[4];
+                        string[] hand={"guard","archer","swords","frost"};
+                        for(int i=0;i<previews.Length;i++)
+                        {
+                            previews[i]=presentation.AcquirePreview();
+                            var card=f.Rules.Find(hand[i]);var point=new Vector3(-4.5f+i*2,0,-3.5f);
+                            presentation.Preview(point,true,true,card.id,0,DuelRules.Formation(0,point,card),card.IsSpell?card.radius:card.BodyRadius,null,previews[i]);
+                            Require(previews[i].ActiveKind==card.id,"Independent pointer preview used the wrong card");
+                        }
+                        presentation.ReleasePreview(previews[1]);
+                        Require(previews[1].ActiveKind==null&&previews[0].ActiveKind==hand[0]&&previews[2].ActiveKind==hand[2]&&previews[3].ActiveKind==hand[3],"Cancelling one preview hid another pointer");
+                        var reused=presentation.AcquirePreview();
+                        Require(reused==previews[1],"Cancelled preview was not reusable");
+                        presentation.ReleasePreview(reused);
+                        for(int i=0;i<previews.Length;i++)presentation.ReleasePreview(previews[i]);
+                        foreach(var preview in previews)Require(preview.ActiveKind==null,"Preview remained after cancellation");
+                    }
+                }
+                finally{UnityEngine.Object.Destroy(root);}
             }
         }
 

@@ -7,13 +7,13 @@ namespace TowerDuel
     public sealed class DuelCardDrag : PointerManipulator
     {
         private readonly Func<bool> canStart;
-        private readonly Action<Vector2,bool> begin;
-        private readonly Action<Vector2> move,drop;
-        private readonly Action cancel,click;
+        private readonly Action<int,Vector2> begin,move,drop;
+        private readonly Action<int> cancel;
+        private readonly Action click;
         private int pointer=-1;
         private Vector2 origin;
-        private bool dragging,touch;
-        public DuelCardDrag(Func<bool> canStart,Action<Vector2,bool> begin,Action<Vector2> move,Action<Vector2> drop,Action cancel,Action click)
+        private bool dragging;
+        public DuelCardDrag(Func<bool> canStart,Action<int,Vector2> begin,Action<int,Vector2> move,Action<int,Vector2> drop,Action<int> cancel,Action click)
         {this.canStart=canStart;this.begin=begin;this.move=move;this.drop=drop;this.cancel=cancel;this.click=click;}
         protected override void RegisterCallbacksOnTarget()
         {
@@ -34,27 +34,27 @@ namespace TowerDuel
         }
         private void Down(PointerDownEvent evt)
         {
-            if(pointer>=0||!evt.isPrimary||evt.button!=0||!canStart())return;
-            pointer=evt.pointerId;origin=evt.position;dragging=false;touch=evt.pointerType!=UnityEngine.UIElements.PointerType.mouse;
+            if(pointer>=0||(evt.pointerType==UnityEngine.UIElements.PointerType.mouse&&evt.button!=0)||!canStart())return;
+            pointer=evt.pointerId;origin=evt.position;dragging=false;
             target.CapturePointer(pointer);target.Focus();evt.StopImmediatePropagation();
         }
         private void Move(PointerMoveEvent evt)
         {
             if(evt.pointerId!=pointer)return;
-            if(!dragging&&((Vector2)evt.position-origin).sqrMagnitude>=16){dragging=true;begin(origin,touch);}
-            if(dragging)move(evt.position);
+            if(!dragging&&((Vector2)evt.position-origin).sqrMagnitude>=16){dragging=true;begin(pointer,origin);}
+            if(dragging)move(pointer,evt.position);
             evt.StopImmediatePropagation();
         }
         private void Up(PointerUpEvent evt)
         {
             if(evt.pointerId!=pointer)return;
-            bool wasDragging=dragging;Release();
-            if(wasDragging)drop(evt.position);else click();
+            int old=pointer;bool wasDragging=dragging;Release();
+            if(wasDragging)drop(old,evt.position);else if(canStart())click();
             evt.StopImmediatePropagation();
         }
         private void Cancelled(PointerCancelEvent evt){if(evt.pointerId==pointer)Cancel();}
         private void Lost(PointerCaptureOutEvent evt){if(evt.pointerId==pointer)Cancel();}
         private void Release(){int old=pointer;pointer=-1;dragging=false;if(old>=0&&target.HasPointerCapture(old))target.ReleasePointer(old);}
-        public void Cancel(){bool wasDragging=dragging;Release();if(wasDragging)cancel();}
+        public void Cancel(){int old=pointer;bool wasDragging=dragging;Release();if(wasDragging)cancel(old);}
     }
 }

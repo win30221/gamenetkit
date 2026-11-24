@@ -113,30 +113,40 @@ namespace TowerDuel
             return material;
         }
         private DuelMessage previewState;
-        private Vector3 spellPoint;
-        private CardDefinition previewSpell;
+        private readonly List<DuelDeploymentPreview> extraPreviews=new List<DuelDeploymentPreview>();
+        private readonly HashSet<DuelDeploymentPreview> leasedPreviews=new HashSet<DuelDeploymentPreview>();
+        private readonly Dictionary<DuelDeploymentPreview,(CardDefinition card,Vector3 point)> spellAims=new Dictionary<DuelDeploymentPreview,(CardDefinition,Vector3)>();
         private bool outlineVisible;
         private readonly MaterialPropertyBlock spellOutline = new();
         private void UpdateSpellOutline(DuelMessage state)
         {
-            if(previewSpell==null&&!outlineVisible)return;
+            if(spellAims.Count==0&&!outlineVisible)return;
             foreach(var e in state.units)
                 if(units.TryGetValue(e.id,out var unit)) SetOutline(e,unit.Art.transform.position,unit.Renderers,state.seat);
             foreach(var e in state.towers)
                 SetOutline(e,towers[e.id].transform.position,towers[e.id].GetComponentsInChildren<SpriteRenderer>(),state.seat);
-            outlineVisible=previewSpell!=null;
+            outlineVisible=spellAims.Count>0;
         }
         private void SetOutline(EntityState entity,Vector3 renderedPosition,Renderer[] renderers,int seat)
         {
-            float reach=(previewSpell?.radius??0)+entity.radius;
-            float x=spellPoint.x-renderedPosition.x,z=spellPoint.z-renderedPosition.z;
-            bool hit=previewSpell!=null&&entity.seat!=seat&&entity.hp>0&&(!entity.airborne||previewSpell.hitAir)&&x*x+z*z<=reach*reach+1e-5f;
-            var tint=previewSpell?.id=="fireball"?new Color(1f,.56f,.15f,1):new Color(.25f,.85f,1f,1);
+            Color tint=Color.clear;
+            if(entity.seat!=seat&&entity.hp>0)
+                foreach(var aim in spellAims.Values)
+                {
+                    float reach=aim.card.radius+entity.radius;
+                    float x=aim.point.x-renderedPosition.x,z=aim.point.z-renderedPosition.z;
+                    if((!entity.airborne||aim.card.hitAir)&&x*x+z*z<=reach*reach+1e-5f)
+                    {
+                        // Fireball wins only the cosmetic tint when both spells overlap.
+                        if(aim.card.id=="fireball"){tint=new Color(1f,.56f,.15f,1);break;}
+                        tint=new Color(.25f,.85f,1f,1);
+                    }
+                }
             foreach(var renderer in renderers)
             {
                 if(!(renderer is SpriteRenderer)||!renderer.sharedMaterial.HasProperty("_AimOutline"))continue;
                 renderer.GetPropertyBlock(spellOutline);
-                spellOutline.SetColor("_AimOutline",hit?tint:Color.clear);
+                spellOutline.SetColor("_AimOutline",tint);
                 renderer.SetPropertyBlock(spellOutline);
             }
         }
@@ -384,30 +394,44 @@ namespace TowerDuel
             line.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;line.receiveShadows=false;line.numCapVertices=2;return line;
         }
         private int CardBit(string kind){for(int i=0;i<rules.cards.Length;i++)if(rules.cards[i].id==kind)return 1<<i;return 0;}
-        public void Preview(Vector3 point,bool visible,bool valid,string card="guard",int seat=0,Vector3[] formation=null,float radius=.32f,DuelMessage state=null)
+        public DuelDeploymentPreview AcquirePreview()
+        {
+            if(leasedPreviews.Add(DeploymentPreview))return DeploymentPreview;
+            foreach(var preview in extraPreviews)if(leasedPreviews.Add(preview))return preview;
+            var created=new DuelDeploymentPreview(root,prefabs);extraPreviews.Add(created);leasedPreviews.Add(created);return created;
+        }
+        public void ReleasePreview(DuelDeploymentPreview preview)
+        {
+            if(!leasedPreviews.Remove(preview))return;
+            preview.Hide();spellAims.Remove(preview);
+            if(previewState!=null)UpdateSpellOutline(previewState);
+        }
+        public void Preview(Vector3 point,bool visible,bool valid,string card="guard",int seat=0,Vector3[] formation=null,float radius=.32f,DuelMessage state=null,DuelDeploymentPreview view=null)
         {
             if(formation==null)formation=new[]{point};
             var definition=rules.Find(card);
-            spellPoint=MirrorDepth(point,seat);
-            DeploymentPreview.Show(card,seat,point,visible,valid,formation,radius,definition.IsSpell,definition.initialAir);
-            previewSpell=visible&&valid&&definition.IsSpell?definition:null;
+            view=view??DeploymentPreview;
+            view.Show(card,seat,point,visible,valid,formation,radius,definition.IsSpell,definition.initialAir);
+            if(visible&&valid&&definition.IsSpell)spellAims[view]=(definition,MirrorDepth(point,seat));
+            else spellAims.Remove(view);
             var current=state??previewState;
             if(current!=null)UpdateSpellOutline(current);
         }
         public void Reset()
         {
-            effects.Reset();previewSpell=null;previewState=null;
+            effects.Reset();spellAims.Clear();if(previewState!=null)UpdateSpellOutline(previewState);previewState=null;
             foreach(var v in units.Values){RemoveAura(v);UnityEngine.Object.Destroy(v.Art.gameObject);}units.Clear();
             foreach(var v in corpses)UnityEngine.Object.Destroy(v.Art.gameObject);corpses.Clear();
             foreach(var a in arrows)UnityEngine.Object.Destroy(a.Root.gameObject);arrows.Clear();
             foreach(var b in bolts)UnityEngine.Object.Destroy(b.Line.gameObject);bolts.Clear();towerAttacks.Clear();towerHealth.Clear();
             foreach(var tower in towers.Values)tower.SetActive(true);
             Environment?.Reset();
-            DeploymentPreview.Hide();
+            DeploymentPreview.Hide();foreach(var preview in extraPreviews)preview.Hide();
+            DeploymentGrid.Hide();
             RenderedKinds=WalkPoseSamples=AttackPoseSamples=DeathPoseSamples=DeathCount=ArrowsFired=WalkKinds=AttackKinds=0;
             SpriteKinds=0;
             SpriteShadowKinds=0;
         }
-        public void Dispose(){Reset();auraArt.Dispose();DeploymentGrid.Dispose();DeploymentPreview.Dispose();effects.Dispose();Environment?.Dispose();UnityEngine.Object.Destroy(root.gameObject);}
+        public void Dispose(){Reset();auraArt.Dispose();DeploymentGrid.Dispose();DeploymentPreview.Dispose();foreach(var preview in extraPreviews)preview.Dispose();extraPreviews.Clear();leasedPreviews.Clear();effects.Dispose();Environment?.Dispose();UnityEngine.Object.Destroy(root.gameObject);}
     }
 }

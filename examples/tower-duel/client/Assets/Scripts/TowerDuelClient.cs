@@ -66,9 +66,8 @@ namespace TowerDuel
             if (screenWidth != Screen.width || screenHeight != Screen.height || framedSafeArea != Screen.safeArea) FrameCamera();
             if (seat != viewSeat) SetViewSeat(seat);
             if (!Session.CanAct || state == null || (state.phase != "playing" && state.phase != "overtime")) Selected = false;
-            if (!Selected) HidePreview();
-            if(Selected&&state!=null)presentation.DeploymentGrid.Show(state,Rules.Find(SelectedCard));
-            else presentation.DeploymentGrid.Hide();
+            if(Selected&&(!Session.InHand(SelectedCard)||Session.CardPending(SelectedCard)))Selected=false;
+            // HUD owns independent gesture previews and the shared deployment grid.
             presentation.Update(Session);
             Audio.Observe(state);
             hud.Update();
@@ -153,13 +152,11 @@ namespace TowerDuel
             catch (Exception error) { Debug.LogWarning("Connect: " + error.Message); Session.Disconnect("伺服器位址無效，請輸入 http:// 或 https:// 位址。"); }
         }
         public void Leave() { Selected = false; HidePreview(); Session.Leave(); presentation.Reset(); }
-        public void Select(string card){if(Rules.Find(card)==null||!Session.CanAct||!Session.InHand(card))return;Audio.Play("select",true);if(Selected&&SelectedCard==card)Selected=false;else{SelectedCard=card;Selected=true;}}
+        public void Select(string card){if(Rules.Find(card)==null||!Session.CanAct||!Session.InHand(card)||Session.CardPending(card))return;Audio.Play("select",true);if(Selected&&SelectedCard==card)Selected=false;else{SelectedCard=card;Selected=true;}}
         public void BeginDeployment(string card){if(Rules.Find(card)!=null){SelectedCard=card;Selected=true;}}
         public bool CanDeploy(Vector3 point)
         {
-            point=SnapDeployment(point);
-            var state=Session.State;var card=Rules.Find(SelectedCard);
-            return Session.CanAct&&state!=null&&card!=null&&Session.InHand(SelectedCard)&&!Session.Pending&&(state.phase=="playing"||state.phase=="overtime")&&state.energy>=card.cost&&Map.CanDeploy(state.seat,point,state,card);
+            return Session.CanDeploy(SnapDeployment(point),SelectedCard);
         }
         public Vector3 SnapDeployment(Vector3 point)=>Map.SnapDeployment(point,Rules.Find(SelectedCard));
         public void Deploy(Vector3 point) { if (Session.Deploy(SnapDeployment(point),SelectedCard)) Selected = false; }
