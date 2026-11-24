@@ -12,6 +12,7 @@ namespace TowerDuel
             public DuelUnitArt Art;
             public DuelContactShadow Contact;
             public LineRenderer AuraGlow,AuraRing;
+            public SpriteRenderer AuraSprite;
             public Vector3 Previous;
             public Quaternion Leg,Arm,Hip;
             public long Attack,Hit;
@@ -46,6 +47,7 @@ namespace TowerDuel
         private readonly DuelEffects effects;
         private readonly MaterialPropertyBlock flash=new MaterialPropertyBlock();
         private readonly Material trailMaterial;
+        private readonly DuelAuraArt auraArt;
         public DuelEffects Effects=>effects;
         public DuelEnvironment Environment {get;}
         public int SpellsSeen=>effects.SeenSpells;
@@ -89,6 +91,7 @@ namespace TowerDuel
             bombPrefab=Resources.Load<GameObject>("TowerDuel/Units/bomb");
             effects=new DuelEffects(root,cue=>parent.GetComponent<TowerDuelClient>()?.Audio.Play(cue));
             trailMaterial=Resources.Load<Material>("TowerDuel/BattleFX/Trail");
+            auraArt=new DuelAuraArt();
             Environment = new DuelEnvironment(root, map);
             foreach (var tower in map.towers)
                 towers.Add(tower.id, Environment.Building(tower.id));
@@ -167,7 +170,7 @@ namespace TowerDuel
                 float travel=Vector3.ProjectOnPlane(position-v.Previous,Vector3.up).magnitude;
                 var direction=MirrorDepth(new Vector3(e.dx,0,e.dz),state.seat);
                 v.Art.transform.position=position;v.Previous=position;
-                PresentAura(v,definition,position,e.seat==state.seat,e.hp>0&&!deploying);
+                PresentAura(v,definition,position,e.hp>0&&!deploying,session.RenderTick-e.readyTick);
                 if(v.Contact.Renderer)v.Contact.Renderer.transform.position=new Vector3(position.x,DuelMap.GroundHeight(position.z)+.003f,position.z);
                 if(v.Art.Animator&&!v.Art.Sprites&&direction.sqrMagnitude>.001f)v.Art.transform.rotation=Quaternion.Slerp(v.Art.transform.rotation,Quaternion.LookRotation(direction),15*Time.unscaledDeltaTime);
                 float speed=travel/Mathf.Max(.001f,Time.unscaledDeltaTime)/definition.speed;
@@ -248,8 +251,7 @@ namespace TowerDuel
             foreach(long id in removed)
             {
                 var v=units[id];units.Remove(id);
-                if(v.AuraGlow)v.AuraGlow.enabled=false;
-                if(v.AuraRing)v.AuraRing.enabled=false;
+                RemoveAura(v);
                 if(v.Art.Sprites)v.Art.Sprites.BeginDeath(DuelSession.Now);
                 else if(v.Art.Animator){v.Art.Animator.ResetTrigger(StrikeHash);v.Art.Animator.SetBool(DeadHash,true);v.Art.Animator.SetFloat(SpeedHash,0);v.Art.Animator.speed=1;}
                 effects.Death(v.Art.transform.position);
@@ -313,9 +315,21 @@ namespace TowerDuel
         }
         // Pure presentation: the radius comes from the same canonical card
         // definition the server uses. Never grant buffs from Unity colliders.
-        private void PresentAura(UnitVisual visual,CardDefinition definition,Vector3 position,bool friendly,bool active)
+        private void PresentAura(UnitVisual visual,CardDefinition definition,Vector3 position,bool active,double elapsedTicks)
         {
             if(definition.auraRadius<=0||definition.moveMultiplier<=1)return;
+            if(auraArt.Available)
+            {
+                if(!visual.AuraSprite)
+                {
+                    if(!active)return;
+                    visual.AuraSprite=auraArt.Create(root);
+                }
+                visual.AuraSprite.enabled=active;
+                if(active)auraArt.Present(visual.AuraSprite,position,definition.auraRadius,elapsedTicks);
+                return;
+            }
+            // Keep gameplay readable if an asset is missing in a development build.
             const int segments=64;
             if(!visual.AuraRing)
             {
@@ -330,9 +344,9 @@ namespace TowerDuel
             }
             visual.AuraGlow.enabled=visual.AuraRing.enabled=active;
             if(!active)return;
-            var color=friendly?new Color(1f,.78f,.28f,1):new Color(1f,.40f,.18f,1);
+            var color=new Color(1f,.78f,.28f,1);
             visual.AuraRing.startColor=visual.AuraRing.endColor=color;
-            color.a=.20f+.04f*Mathf.Sin(Time.unscaledTime*3f);
+            color.a=.20f+.04f*Mathf.Sin((float)(elapsedTicks/30d)*3f);
             visual.AuraGlow.startColor=visual.AuraGlow.endColor=color;
             for(int i=0;i<segments;i++)
             {
@@ -342,6 +356,17 @@ namespace TowerDuel
                 float y=DuelMap.GroundHeight(z)+.055f;
                 visual.AuraGlow.SetPosition(i,new Vector3(x,y,z));
                 visual.AuraRing.SetPosition(i,new Vector3(x,y+.005f,z));
+            }
+        }
+        private static void RemoveAura(UnitVisual visual)
+        {
+            if(visual.AuraGlow)visual.AuraGlow.enabled=false;
+            if(visual.AuraRing)visual.AuraRing.enabled=false;
+            if(visual.AuraSprite)
+            {
+                visual.AuraSprite.enabled=false;
+                UnityEngine.Object.Destroy(visual.AuraSprite.gameObject);
+                visual.AuraSprite=null;
             }
         }
         private static float RangedFlightDuration(Vector3 from,Vector3 target)=>Mathf.Clamp(Vector3.Distance(from,target)/24,.08f,.24f);
@@ -372,7 +397,7 @@ namespace TowerDuel
         public void Reset()
         {
             effects.Reset();previewSpell=null;previewState=null;
-            foreach(var v in units.Values)UnityEngine.Object.Destroy(v.Art.gameObject);units.Clear();
+            foreach(var v in units.Values){RemoveAura(v);UnityEngine.Object.Destroy(v.Art.gameObject);}units.Clear();
             foreach(var v in corpses)UnityEngine.Object.Destroy(v.Art.gameObject);corpses.Clear();
             foreach(var a in arrows)UnityEngine.Object.Destroy(a.Root.gameObject);arrows.Clear();
             foreach(var b in bolts)UnityEngine.Object.Destroy(b.Line.gameObject);bolts.Clear();towerAttacks.Clear();towerHealth.Clear();
@@ -383,6 +408,6 @@ namespace TowerDuel
             SpriteKinds=0;
             SpriteShadowKinds=0;
         }
-        public void Dispose(){Reset();DeploymentGrid.Dispose();DeploymentPreview.Dispose();effects.Dispose();Environment?.Dispose();UnityEngine.Object.Destroy(root.gameObject);}
+        public void Dispose(){Reset();auraArt.Dispose();DeploymentGrid.Dispose();DeploymentPreview.Dispose();effects.Dispose();Environment?.Dispose();UnityEngine.Object.Destroy(root.gameObject);}
     }
 }

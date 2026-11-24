@@ -48,6 +48,33 @@ namespace TowerDuel.Editor
             }
         }
 
+        private static void CheckAuraArt(Transform parent)
+        {
+            Require(DuelAuraArt.FrameAt(0)==0&&DuelAuraArt.FrameAt(5)==1&&DuelAuraArt.FrameAt(45)==0,"Aura animation did not loop");
+            var start=DuelAuraArt.RotationAt(0)*Vector3.up;
+            var quarter=DuelAuraArt.RotationAt(90)*Vector3.up;
+            Require(Vector3.Distance(start,Vector3.forward)<.001f&&Vector3.Distance(quarter,Vector3.right)<.001f,"Aura must rotate clockwise on XZ");
+            Require(Quaternion.Angle(DuelAuraArt.RotationAt(0),DuelAuraArt.RotationAt(360))<.01f,"Aura rotation did not loop");
+            using(var art=new DuelAuraArt())
+            {
+                // The optional art patch can be applied after fetching the branch.
+                if(!art.Available)return;
+                var sprite=art.Create(parent);
+                var centre=new Vector3(2,0,-5);
+                art.Present(sprite,centre,3,0);
+                var first=sprite.sprite;
+                float diameter=2*DuelAuraArt.PixelsPerRadius/sprite.sprite.pixelsPerUnit*sprite.transform.localScale.x;
+                Require(Mathf.Abs(diameter-6)<.001f,"Aura ring does not match server radius");
+                art.Present(sprite,centre,3,90);
+                Require(sprite.sprite!=null&&sprite.transform.localScale==new Vector3(3,3,1),"Aura animation changed its radius");
+                Require(Vector3.Distance(sprite.transform.rotation*Vector3.up,Vector3.right)<.001f,"Aura did not rotate around its centre");
+                Require(Mathf.Abs(sprite.transform.position.x-centre.x)<.001f&&Mathf.Abs(sprite.transform.position.z-centre.z)<.001f,"Aura centre drifted");
+                art.Present(sprite,centre,3,5);
+                Require(sprite.sprite!=first,"Aura atlas did not advance");
+                UnityEngine.Object.DestroyImmediate(sprite.gameObject);
+            }
+        }
+
         public static string Run()
         {
             Require(Application.isPlaying, "Run B3 sprite tests in an empty Play Mode scene");
@@ -74,6 +101,7 @@ namespace TowerDuel.Editor
                 var headings = new[] { Vector3.back, new Vector3(-1,0,-1), Vector3.left, new Vector3(-1,0,1),
                     Vector3.forward, new Vector3(1,0,1), Vector3.right, new Vector3(1,0,-1) };
                 CheckVariableClips();
+                CheckAuraArt(root.transform);
                 int converted = 0;
                 foreach (var card in DuelRules.Load().cards)
                 {
