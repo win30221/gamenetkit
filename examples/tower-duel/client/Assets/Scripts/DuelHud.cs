@@ -31,6 +31,23 @@ namespace TowerDuel
         }
         private readonly Dictionary<int,DragState> activeDrags=new Dictionary<int,DragState>();
         private readonly HashSet<int> worldPointers=new HashSet<int>();
+        private sealed class TouchGesture
+        {
+            public int Pointer;
+            public string Card,Match;
+            public Button Button;
+            public Vector2 Origin;
+            public bool Started;
+        }
+        // Raw touch IDs and UI Toolkit pointer IDs use separate namespaces.
+        private readonly Dictionary<int,TouchGesture> touchGestures=new Dictionary<int,TouchGesture>();
+        private readonly HashSet<int> seenTouches=new HashSet<int>();
+        private int nextTouchPointer=-2;
+        private float suppressMouseUntil;
+        private string handOrder="";
+        private readonly HashSet<int> rawContacts=new HashSet<int>();
+        private Label touchDebug;
+        private int peakContacts,peakDrags,rawEvents;
         private const int MaxActiveDrags=4;
         private const float DragCardFadeSeconds=.16f;
         private const float DragCardMaxOpacity=.68f;
@@ -51,6 +68,10 @@ namespace TowerDuel
         [DllImport("__Internal")] private static extern void TD_CopyRoomCode(string code,string target);
         [DllImport("__Internal")] private static extern void TD_CancelRoomCodeCopy();
         [DllImport("__Internal")] private static extern void TD_CloseKeyboard();
+        [DllImport("__Internal")] private static extern void TD_InstallTouchInput();
+        [DllImport("__Internal")] private static extern void TD_RemoveTouchInput();
+        [DllImport("__Internal")] private static extern int TD_RawTouchActive();
+        [DllImport("__Internal")] private static extern int TD_PollTouch(out int id,out int phase,out float x,out float y);
 #endif
         public DuelHud(TowerDuelClient client)
         {
@@ -79,8 +100,8 @@ namespace TowerDuel
                 var title=new Label(definition.name){pickingMode=PickingMode.Ignore};title.AddToClassList("card-name");button.Add(title);
                 var cost=new Label(definition.cost.ToString("0")){pickingMode=PickingMode.Ignore};cost.AddToClassList("card-cost");button.Add(cost);
                 root.Q("cardRow").Add(button);
-                button.clicked+=()=>SelectCard(id);cards.Add(id,button);
-                var drag=new DuelCardDrag(()=>CanStartCard(id),
+                button.clicked+=()=>{if(!RawTouchActive())SelectCard(id);};cards.Add(id,button);
+                var drag=new DuelCardDrag(()=>!RawTouchActive()&&CanStartCard(id),
                     (pointer,point)=>StartDrag(pointer,id,button,point),MoveDrag,DropDrag,CancelDrag,
                     ()=>SelectCard(id));
                 button.AddManipulator(drag);cardDrags.Add(drag);
@@ -101,7 +122,13 @@ namespace TowerDuel
             ready.clicked+=()=>client.Session.Ready();
             root.Q<Button>("rematchButton").clicked+=()=>client.Session.Rematch();
             root.Q<Button>("audioButton").clicked+=()=>client.Audio.Toggle();
+            // UI Toolkit still handles menus and desktop mouse. In battle, raw touch
+            // is the only source of touch gestures (including compatibility mouse events).
+            root.RegisterCallback<PointerDownEvent>(evt=>{if(SuppressDeploymentPointer(evt.target,evt.pointerType))evt.StopImmediatePropagation();},TrickleDown.TrickleDown);
+            root.RegisterCallback<PointerMoveEvent>(evt=>{if(SuppressDeploymentPointer(evt.target,evt.pointerType))evt.StopImmediatePropagation();},TrickleDown.TrickleDown);
+            root.RegisterCallback<PointerUpEvent>(evt=>{if(SuppressDeploymentPointer(evt.target,evt.pointerType))evt.StopImmediatePropagation();},TrickleDown.TrickleDown);
             world.RegisterCallback<PointerDownEvent>(evt=>{
+                if(RawTouchActive()||evt.pointerType==UnityEngine.UIElements.PointerType.touch)return;
                 if(hudMenuOpen){SetHudMenu(false);evt.StopPropagation();return;}
                 if(activeDrags.ContainsKey(evt.pointerId)||(evt.pointerType==UnityEngine.UIElements.PointerType.mouse&&evt.button!=0)||!client.Selected)return;
                 if(!cards.TryGetValue(client.SelectedCard,out var button)||!DragOnBattlefield(evt.position)||!DropPoint(evt.position,out _))return;
@@ -125,6 +152,18 @@ namespace TowerDuel
             root.RegisterCallback<KeyDownEvent>(evt=>{if(evt.keyCode==KeyCode.Escape)CancelCardDrags();});
             DuelCartoonSkin.Apply(root);
             DuelCartoonSkin.SetMenuTab(root.Q<Button>("battleTab"), true);
+            if(Application.absoluteURL.IndexOf("touchdebug=1",StringComparison.OrdinalIgnoreCase)>=0||TowerDuelClient.Argument("-td-touch-debug","0")=="1")
+            {
+                touchDebug=new Label{pickingMode=PickingMode.Ignore};
+                touchDebug.style.position=Position.Absolute;touchDebug.style.left=8;touchDebug.style.top=55;
+                touchDebug.style.fontSize=15;touchDebug.style.color=Color.white;touchDebug.style.backgroundColor=new Color(0,0,0,.75f);
+                root.Add(touchDebug);
+            }
+#if UNITY_WEBGL && !UNITY_EDITOR
+            TD_InstallTouchInput();
+#else
+            Input.multiTouchEnabled=true;
+#endif
             Update();
         }
         private void SetHudMenu(bool open)
@@ -143,6 +182,116 @@ namespace TowerDuel
         {
             if(!CanStartCard(card))return;
             client.Select(card);world.Focus();RefreshDeploymentGrid();
+        }
+        private bool RawTouchActive()
+        {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            return TD_RawTouchActive()!=0;
+#else
+            return Input.touchCount>0||Time.unscaledTime<suppressMouseUntil;
+#endif
+        }
+        private bool SuppressDeploymentPointer(IEventHandler target,string pointerType)
+        {
+            if(pointerType!=UnityEngine.UIElements.PointerType.touch&&!RawTouchActive())return false;
+            for(var e=target as VisualElement;e!=null&&e!=root;e=e.parent)
+                if(e==world||e.ClassListContains("unit-card"))return true;
+            return false;
+        }
+        private bool TouchCardClaimed(string card)
+        {
+            foreach(var gesture in touchGestures.Values)if(gesture.Card==card)return true;
+            return false;
+        }
+        private void TouchInput(int finger,int phase,Vector2 point)
+        {
+            rawEvents++;
+            if(phase==4){rawContacts.Clear();CancelTouches();return;}
+            if(phase==0){rawContacts.Add(finger);peakContacts=Mathf.Max(peakContacts,rawContacts.Count);}
+            else if(phase>=2)rawContacts.Remove(finger);
+            if(phase==0)
+            {
+                if(touchGestures.ContainsKey(finger)||!CanPlay()||touchGestures.Count>=MaxActiveDrags)return;
+                if(root.Q("hudMenuButton").worldBound.Contains(point))return;
+                if(hudMenuOpen)
+                {
+                    if(!root.Q("hudMenuPanel").worldBound.Contains(point))SetHudMenu(false);
+                    return;
+                }
+                foreach(string card in client.Session.State.hand)
+                {
+                    var button=cards[card];
+                    if(!button.worldBound.Contains(point)||button.resolvedStyle.display==DisplayStyle.None||!CanStartCard(card)||TouchCardClaimed(card))continue;
+                    touchGestures.Add(finger,new TouchGesture{Pointer=nextTouchPointer--,Card=card,Match=client.Session.State.match,Button=button,Origin=point});
+                    return;
+                }
+                if(client.Selected&&CanStartCard(client.SelectedCard)&&!TouchCardClaimed(client.SelectedCard)
+                    &&DragOnBattlefield(point)&&DropPoint(point,out _))
+                {
+                    string card=client.SelectedCard;
+                    var gesture=new TouchGesture{Pointer=nextTouchPointer--,Card=card,Match=client.Session.State.match,Button=cards[card],Origin=point};
+                    if(StartDrag(gesture.Pointer,card,gesture.Button,point,true))
+                    {gesture.Started=true;touchGestures.Add(finger,gesture);}
+                }
+                return;
+            }
+            if(!touchGestures.TryGetValue(finger,out var current))return;
+            if(!CanPlay()||client.Session.State.match!=current.Match||!client.Session.InHand(current.Card)||client.Session.CardPending(current.Card)||phase==3)
+            {
+                touchGestures.Remove(finger);CancelDrag(current.Pointer);return;
+            }
+            if((phase==1||phase==2)&&!current.Started&&(point-current.Origin).sqrMagnitude>=16f)
+                current.Started=StartDrag(current.Pointer,current.Card,current.Button,current.Origin);
+            if(phase==1)
+            {
+                if(current.Started)MoveDrag(current.Pointer,point);
+                return;
+            }
+            if(phase==2)
+            {
+                touchGestures.Remove(finger);
+                if(current.Started)DropDrag(current.Pointer,point);
+                else if(current.Button.worldBound.Contains(point))SelectCard(current.Card);
+            }
+        }
+        private void CancelTouches()
+        {
+            foreach(var gesture in touchGestures.Values)CancelDrag(gesture.Pointer);
+            touchGestures.Clear();
+        }
+        private void PumpTouches()
+        {
+            float width=root.resolvedStyle.width,height=root.resolvedStyle.height;
+            bool ready=width>0&&height>0&&!float.IsNaN(width)&&!float.IsNaN(height);
+#if UNITY_WEBGL && !UNITY_EDITOR
+            // Browser coordinates are normalized against the canvas CSS bounds, so
+            // high-DPI phones and Unity's render scale use the same panel coordinates.
+            while(TD_PollTouch(out int id,out int phase,out float x,out float y)!=0)
+            {
+                if(phase==4){TouchInput(id,phase,Vector2.zero);continue;}
+                if(ready)TouchInput(id,phase,new Vector2(x*width,y*height));
+                else CancelTouches();
+            }
+#else
+            seenTouches.Clear();
+            int count=Input.touchCount;
+            if(count>0)suppressMouseUntil=Time.unscaledTime+.5f;
+            for(int i=0;i<count;i++)
+            {
+                var touch=Input.GetTouch(i);seenTouches.Add(touch.fingerId);
+                if(!ready)continue;
+                var point=new Vector2(touch.position.x/Mathf.Max(1,Screen.width)*width,(1-touch.position.y/Mathf.Max(1,Screen.height))*height);
+                switch(touch.phase)
+                {
+                    case TouchPhase.Began:TouchInput(touch.fingerId,0,point);break;
+                    case TouchPhase.Moved:case TouchPhase.Stationary:TouchInput(touch.fingerId,1,point);break;
+                    case TouchPhase.Ended:TouchInput(touch.fingerId,2,point);break;
+                    case TouchPhase.Canceled:TouchInput(touch.fingerId,3,point);break;
+                }
+            }
+            foreach(int finger in new List<int>(rawContacts))
+                if(!seenTouches.Contains(finger))TouchInput(finger,3,Vector2.zero);
+#endif
         }
         private static VisualElement CardFrame(bool small=false)
         {
@@ -184,7 +333,7 @@ namespace TowerDuel
                 Origin=point,Position=point,CardOrigin=fromBattlefield?point-size*.5f:button.worldBound.position,
                 Opacity=fromBattlefield?0f:1f,LastAnimationTime=Time.unscaledTime
             };
-            activeDrags.Add(pointer,drag);button.AddToClassList("dragging");
+            activeDrags.Add(pointer,drag);peakDrags=Mathf.Max(peakDrags,activeDrags.Count);button.AddToClassList("dragging");
             MoveDrag(pointer,point);RefreshDeploymentGrid();return true;
         }
         private bool DropPoint(Vector2 point,out Vector3 worldPoint)
@@ -251,6 +400,7 @@ namespace TowerDuel
         private void CancelCardDrags()
         {
             client.Selected=false;
+            CancelTouches();
             foreach(var drag in cardDrags)drag.Cancel();
             foreach(int pointer in new List<int>(worldPointers))ReleaseWorldPointer(pointer);
             foreach(int pointer in new List<int>(activeDrags.Keys))CancelDrag(pointer);
@@ -365,7 +515,13 @@ namespace TowerDuel
             var state=client.Session.State;
             if(state!=null&&wasLobby){BlurInputs();menu.ClosePreview();}wasLobby=state==null;
             if(!CanPlay())CancelCardDrags();
-            else
+            PumpTouches();
+            if(touchDebug!=null)
+            {
+                touchDebug.text="touch: "+rawContacts.Count+" / peak "+peakContacts+"  events: "+rawEvents+"\ndrag: "+activeDrags.Count+" / peak "+peakDrags+"  pending: "+client.Session.PendingCount;
+                touchDebug.BringToFront();
+            }
+            if(CanPlay())
             {
                 // Match changes, hand replacement and capture loss affect only their own gestures.
                 foreach(int pointer in new List<int>(activeDrags.Keys))
@@ -420,7 +576,9 @@ namespace TowerDuel
                         bool inHand=client.Session.InHand(definition.id);Display(card,inHand);card.SetEnabled(inHand&&CanPlay()&&!client.Session.CardPending(definition.id));
                         card.EnableInClassList("selected",client.Selected&&client.SelectedCard==definition.id);card.EnableInClassList("unaffordable",client.Session.AvailableEnergy<definition.cost);
                     }
-                    foreach(string id in state.hand)cards[id].BringToFront();
+                    // Reordering an unchanged hand can interrupt an in-progress UI capture.
+                    string order=string.Join(",",state.hand);
+                    if(order!=handOrder){handOrder=order;foreach(string id in state.hand)cards[id].BringToFront();}
                 }
             }
             if(state!=null)
@@ -431,7 +589,7 @@ namespace TowerDuel
                 UpdateHealth(state);
                 UpdateEnergy(state);
             }
-            else energyMatch=null;
+            else{energyMatch=null;handOrder="";}
         }
         private void ObserveActionEnergy(DuelMessage message){if(client.Session.State!=null)ObserveEnergy(client.Session.State);}
         private void ObserveEnergy(DuelMessage state)
@@ -494,6 +652,14 @@ namespace TowerDuel
             }
             var removed=new List<long>();foreach(var pair in bars)if(!seen.Contains(pair.Key))removed.Add(pair.Key);foreach(long id in removed){bars[id].RemoveFromHierarchy();bars.Remove(id);fills.Remove(id);healthLabels.Remove(id);}
         }
-        public void Dispose(){client.Session.StateChanged-=ObserveEnergy;client.Session.ActionConfirmed-=ObserveActionEnergy;CancelCardDrags();ResetCopy();menu.Dispose();UnityEngine.Object.Destroy(document);UnityEngine.Object.Destroy(panel);}
+        public void CancelInput(){rawContacts.Clear();CancelCardDrags();}
+        public void Dispose()
+        {
+            client.Session.StateChanged-=ObserveEnergy;client.Session.ActionConfirmed-=ObserveActionEnergy;CancelCardDrags();
+#if UNITY_WEBGL && !UNITY_EDITOR
+            TD_RemoveTouchInput();
+#endif
+            ResetCopy();menu.Dispose();UnityEngine.Object.Destroy(document);UnityEngine.Object.Destroy(panel);
+        }
     }
 }

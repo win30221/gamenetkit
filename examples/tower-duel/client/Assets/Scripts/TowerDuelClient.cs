@@ -177,6 +177,8 @@ namespace TowerDuel
 
         [Preserve] public void OnTransportMessage(string json) => Session?.ReceiveBrowser(json);
         [Preserve] public void OnRoomCodeCopied(string result) => hud?.RoomCodeCopied(result);
+        private void OnApplicationFocus(bool focused){if(!focused)hud?.CancelInput();}
+        private void OnApplicationPause(bool paused){if(paused)hud?.CancelInput();}
         private void OnDestroy() { verification?.Dispose(); hud?.Dispose(); Session?.Dispose(); presentation?.Dispose(); Audio?.Dispose(); }
         public static string Argument(string key, string fallback)
         {
