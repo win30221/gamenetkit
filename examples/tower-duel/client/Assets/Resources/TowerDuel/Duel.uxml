@@ -40,20 +40,21 @@
         <ui:ScrollView name="battlePage" class="menu-page">
           <ui:VisualElement class="menu-body home-body">
             <ui:VisualElement class="home-header">
-              <ui:VisualElement class="menu-title-row">
-                <ui:Label text="雙塔對決" class="menu-title home-title" />
-                <ui:Button name="settingsButton" text="設定" class="settings-button" tooltip="遊戲設定" />
+              <ui:VisualElement name="homeCrest" class="home-crest" picking-mode="Ignore">
+                <ui:Label text="雙塔對決" class="menu-title home-title" picking-mode="Ignore" />
               </ui:VisualElement>
-              <ui:VisualElement class="home-title-accent" picking-mode="Ignore" />
-              <ui:Label text="即時卡牌對戰" class="menu-subtitle" />
+              <ui:Button name="settingsButton" text="設定" class="settings-button" tooltip="遊戲設定" />
             </ui:VisualElement>
             <ui:VisualElement class="menu-hero" picking-mode="Ignore">
               <ui:VisualElement name="menuBattlefield" class="menu-hero-art" picking-mode="Ignore" />
             </ui:VisualElement>
             <ui:Button name="quickMatchButton" text="快速配對" class="menu-button menu-primary" />
-            <ui:VisualElement name="friendRoom" class="menu-room-row">
-              <ui:Button name="createButton" text="建立房間" class="menu-button menu-friend-button" />
-              <ui:Button name="joinButton" text="加入房間" class="menu-button menu-join" />
+            <ui:VisualElement class="friend-room-panel">
+              <ui:Label text="好友對戰" class="friend-room-title" />
+              <ui:VisualElement name="friendRoom" class="menu-room-row">
+                <ui:Button name="createButton" text="建立房間" class="menu-button menu-friend-button" />
+                <ui:Button name="joinButton" text="加入房間" class="menu-button menu-join" />
+              </ui:VisualElement>
             </ui:VisualElement>
             <ui:Label name="lobbyStatus" class="menu-status" />
           </ui:VisualElement>
@@ -117,8 +118,10 @@
             </ui:VisualElement>
             <ui:ScrollView name="detailScroll" class="detail-scroll">
               <ui:VisualElement name="detailStage" class="detail-stage">
-                <ui:Image name="detailSprite" class="detail-sprite" />
-                <ui:Label name="detailCost" class="detail-cost" />
+                <ui:VisualElement name="detailShadow" class="detail-shadow" picking-mode="Ignore" />
+                <ui:Image name="detailSprite" class="detail-sprite" picking-mode="Ignore" />
+                <ui:Label name="detailCost" class="detail-cost" picking-mode="Ignore" />
+                <ui:Button name="detailFormButton" text="升空型態" class="menu-button compact-button form-button" />
               </ui:VisualElement>
               <ui:Label name="detailName" class="detail-name" />
               <ui:Label name="detailType" class="detail-type" />

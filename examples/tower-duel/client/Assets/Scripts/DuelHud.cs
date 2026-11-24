@@ -302,7 +302,7 @@ namespace TowerDuel
                 layoutScreenWidth!=Screen.width||layoutScreenHeight!=Screen.height)
                 LayoutViewport();
             var state=client.Session.State;
-            if(state!=null&&wasLobby)BlurInputs();wasLobby=state==null;
+            if(state!=null&&wasLobby){BlurInputs();menu.ClosePreview();}wasLobby=state==null;
             if(!CanPlay())CancelCardDrags();
             if(draggingCard!=null)MoveDrag(dragPosition);
             if(copyRoom!=""&&(state?.room!=copyRoom||(state.phase!="waiting"&&state.phase!="countdown")))ResetCopy();
@@ -422,6 +422,6 @@ namespace TowerDuel
             }
             var removed=new List<long>();foreach(var pair in bars)if(!seen.Contains(pair.Key))removed.Add(pair.Key);foreach(long id in removed){bars[id].RemoveFromHierarchy();bars.Remove(id);fills.Remove(id);healthLabels.Remove(id);}
         }
-        public void Dispose(){client.Session.StateChanged-=ObserveEnergy;client.Session.ActionConfirmed-=ObserveActionEnergy;CancelCardDrags();ResetCopy();UnityEngine.Object.Destroy(document);UnityEngine.Object.Destroy(panel);}
+        public void Dispose(){client.Session.StateChanged-=ObserveEnergy;client.Session.ActionConfirmed-=ObserveActionEnergy;CancelCardDrags();ResetCopy();menu.Dispose();UnityEngine.Object.Destroy(document);UnityEngine.Object.Destroy(panel);}
     }
 }

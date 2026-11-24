@@ -285,3 +285,58 @@ Button:disabled { opacity:.6; }
 .top-hud .timer { color:#43271e; }
 .hud-menu-panel .danger-button { color:#fff4db; -unity-text-outline-color:#43201e; -unity-text-outline-width:.7px; }
 .waiting-leave { color:#fff4db; -unity-text-outline-color:#43201e; -unity-text-outline-width:.7px; }
+
+/* Fantasy polish: reduce nested frames, give the character stage room, and
+   reserve the heavier ornamental treatment for large buttons and the crest. */
+.home-header { position:relative; height:136px; flex-shrink:0; padding:0; }
+.home-crest { height:136px; width:100%; align-items:center; justify-content:center; padding-top:12px; -unity-background-scale-mode:scale-to-fit; }
+.home-crest .home-title { flex-grow:0; min-height:56px; font-size:43px; -unity-font-style:bold; color:#4b281a; -unity-text-align:middle-center; -unity-text-outline-width:0px; }
+.home-header .settings-button { position:absolute; right:0; top:8px; width:46px; height:46px; }
+.home-body { padding:14px 9px 12px; }
+.menu-hero { margin-top:2px; margin-bottom:15px; border-radius:12px; border-width:3px; border-color:#593823; }
+.home-body .menu-primary { margin:0 5px; min-height:82px; height:82px; flex-direction:row; align-items:center; justify-content:center; }
+.home-body .menu-primary .menu-icon { width:42px; height:42px; margin-right:10px; -unity-background-image-tint-color:#ffffff; }
+.home-body .menu-primary .icon-label { font-size:32px; color:#fff8dc; -unity-font-style:bold; -unity-text-outline-width:1px; -unity-text-outline-color:#263415; }
+.friend-room-panel { margin:12px 3px 0; padding:9px 10px 11px; flex-shrink:0; }
+.friend-room-title { font-size:23px; -unity-font-style:bold; -unity-text-align:middle-center; color:#573323; margin-bottom:5px; }
+.home-body .friend-room-panel .menu-room-row { margin:0; height:57px; }
+.friend-room-panel .menu-room-row > Button { height:57px; min-height:57px; }
+.menu-room-row .menu-icon, .menu-tab .menu-icon, .menu-tab-selected .menu-icon, .settings-button .menu-icon { -unity-background-image-tint-color:#ffffff; }
+.menu-tab .menu-icon { width:40px; height:40px; }
+.menu-tab { min-height:78px; }
+.deck-body { padding:12px 13px 12px; }
+.deck-panel,.menu-catalog { background-color:rgba(255,250,226,.35); border-radius:10px; border-width:1px; border-color:#d9bd89; padding:8px 5px; }
+.deck-title-row,.catalog-header { border-width:0; }
+.menu-card { border-width:1px; border-color:#4c3227; border-radius:10px; }
+.menu-card-selected,.menu-card-selected:hover,.menu-card-selected:focus,.replace-target { border-width:3px; border-color:#ffdb49; }
+.catalog-filter .unity-popup-field__arrow { background-image:none; width:18px; height:18px; border-width:0; }
+.catalog-filter .unity-base-popup-field__arrow { width:18px; height:18px; }
+.catalog-filter { margin-right:3px; }
+.card-detail-panel { width:94%; max-height:94%; padding:13px 15px 15px; }
+.detail-header { height:55px; margin-bottom:8px; }
+.detail-title { font-size:30px; }
+.detail-stage { height:267px; border-width:2px; border-color:#67432b; border-radius:12px; background-size:cover; }
+.detail-sprite { top:0; bottom:0; left:0; right:0; }
+.detail-shadow { position:absolute; width:108px; height:17px; left:50%; top:73%; translate:-50% 0; border-radius:50%; background-color:rgba(38,27,26,.22); }
+.detail-cost { width:49px; height:49px; top:10px; left:10px; font-size:30px; }
+.form-button { position:absolute; top:12px; right:12px; min-height:38px; height:38px; font-size:15px; color:#fff4d9; -unity-text-outline-width:.5px; }
+.detail-name { font-size:32px; margin-top:5px; }
+.detail-type { font-size:17px; margin:0 0 4px; color:#95632e; }
+.detail-description { margin:5px 5px 9px; padding:7px 9px; border-radius:7px; font-size:18px; background-color:rgba(255,248,222,.72); }
+.stat-row { height:52px; margin:3px 0; }
+.stat-cell { flex-direction:row; align-items:center; justify-content:flex-start; background-color:rgba(255,252,231,.65); border-width:1px; border-color:#e2c590; border-radius:8px; padding:4px 7px; }
+.stat-icon { width:31px; height:31px; margin-right:7px; flex-shrink:0; -unity-background-scale-mode:scale-to-fit; }
+.stat-copy { flex-grow:1; min-width:0; justify-content:center; }
+.stat-label { font-size:14px; color:#86663d; margin:0; }
+.stat-value { font-size:20px; color:#3a2b22; margin:0; -unity-font-style:bold; }
+.detail-footer { height:60px; margin-top:8px; }
+.detail-footer Button { font-size:21px; min-height:56px; }
+.asset-panel { -unity-slice-left:40; -unity-slice-right:40; -unity-slice-top:40; -unity-slice-bottom:40; -unity-slice-scale:.65px; }
+.asset-dark { -unity-slice-left:36; -unity-slice-right:36; -unity-slice-top:36; -unity-slice-bottom:36; -unity-slice-scale:.55px; }
+.asset-inset { -unity-slice-left:30; -unity-slice-right:30; -unity-slice-top:30; -unity-slice-bottom:30; -unity-slice-scale:.55px; }
+.asset-title { -unity-slice-left:32; -unity-slice-right:32; -unity-slice-top:30; -unity-slice-bottom:30; -unity-slice-scale:.65px; }
+.asset-button { -unity-slice-left:38; -unity-slice-right:38; -unity-slice-top:34; -unity-slice-bottom:34; -unity-slice-scale:.70px; }
+.asset-compact { -unity-slice-left:18; -unity-slice-right:18; -unity-slice-top:18; -unity-slice-bottom:18; -unity-slice-scale:.55px; }
+.asset-frame { -unity-slice-left:18; -unity-slice-right:18; -unity-slice-top:18; -unity-slice-bottom:18; -unity-slice-scale:.40px; }
+.asset-count { -unity-slice-left:28; -unity-slice-right:28; -unity-slice-top:24; -unity-slice-bottom:24; -unity-slice-scale:.55px; }
+.asset-dock { -unity-slice-left:36; -unity-slice-right:36; -unity-slice-top:36; -unity-slice-bottom:36; -unity-slice-scale:.65px; }

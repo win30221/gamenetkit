@@ -25,8 +25,11 @@ namespace TowerDuel
         {
             Paint(root,"menu-shell",Surface.Paper);
             Paint(root,"menu-title-row",Surface.Title);
-            Paint(root,"deck-panel",Surface.Inset);
-            Paint(root,"menu-catalog",Surface.Inset);
+            Paint(root,"friend-room-panel",Surface.Inset);
+            var crest=root.Q("homeCrest");
+            var crestArt=Resources.Load<Texture2D>("TowerDuel/B3/FantasyUI/title_crest");
+            if(crestArt)crest.style.backgroundImage=crestArt;
+            else SetSurface(crest,Surface.Title);
             Paint(root,"catalog-header",Surface.Title);
             Paint(root,"menu-tabs",Surface.Dark);
             Paint(root,"menu-button",Surface.Gold);
@@ -40,6 +43,7 @@ namespace TowerDuel
             Paint(root,"add-button",Surface.SmallGreen);
             Paint(root,"remove-button",Surface.SmallRed);
             Paint(root,"close-button",Surface.SmallRed);
+            Paint(root,"form-button",Surface.SmallBlue);
             Paint(root,"modal-primary",Surface.SmallGreen);
             Paint(root,"menu-deck-count",Surface.Count);
             Paint(root,"menu-modal-panel",Surface.Paper);
@@ -64,6 +68,7 @@ namespace TowerDuel
             Attach(root.Q<Button>("battleTab"),"swords","對戰");
             Attach(root.Q<Button>("createButton"),"plus","建立房間");
             Attach(root.Q<Button>("joinButton"),"users","加入房間");
+            Attach(root.Q<Button>("quickMatchButton"),"swords","快速配對");
         }
 
         public static void SetMenuTab(Button tab,bool selected)
@@ -73,7 +78,18 @@ namespace TowerDuel
             SetSurface(tab,selected?Surface.SmallGreen:Surface.SmallGold);
         }
         public static void SetChangeButton(Button button,bool remove)=>SetSurface(button,remove?Surface.SmallRed:Surface.SmallGreen);
-        public static void PaintStat(VisualElement element)=>SetSurface(element,Surface.Stat);
+        public static void PaintStatIcon(VisualElement element,string title)
+        {
+            string icon=title.Contains("生命")?"heart":
+                title.Contains("距離")||title.Contains("半徑")?"target":
+                title.Contains("傷害")||title.Contains("攻擊")&&!title.Contains("間隔")?"sword":
+                title.Contains("速度")||title.Contains("移速")?"move":
+                title.Contains("時間")||title.Contains("延遲")||title.Contains("間隔")?"hourglass":
+                title.Contains("空中")?"shield":"info";
+            var texture=Resources.Load<Texture2D>("TowerDuel/B3/FantasyUI/icon_"+icon);
+            if(texture)element.style.backgroundImage=texture;
+            else element.style.display=DisplayStyle.None;
+        }
         public static void PaintBadge(VisualElement element)=>SetSurface(element,Surface.Badge);
         public static void PaintCardFrame(VisualElement element)=>SetSurface(element,Surface.Frame);
         private static void Paint(VisualElement root,string className,Surface surface)
@@ -85,10 +101,53 @@ namespace TowerDuel
             if(e==null)return;
             foreach(var name in new[]{"skin-slice","skin-small-slice","skin-frame-slice","skin-badge"})
                 e.RemoveFromClassList(name);
+            foreach(var name in new[]{"asset-panel","asset-dark","asset-inset","asset-title","asset-button","asset-compact","asset-frame","asset-count","asset-dock"})
+                e.RemoveFromClassList(name);
+            string assetName=AssetName(surface);
+            if(e.ClassListContains("dock"))assetName="hud_dock";
+            else if(e.ClassListContains("timer"))assetName="hud_timer";
+            else if(e.ClassListContains("card-action-panel"))assetName="action_popover";
+            var asset=Resources.Load<Texture2D>("TowerDuel/B3/FantasyUI/"+assetName);
+            if(asset)
+            {
+                string style=assetName=="hud_dock"?"asset-dock":assetName=="hud_timer"?"asset-title":
+                    assetName=="action_popover"?"asset-inset":
+                    surface==Surface.Paper?"asset-panel":surface==Surface.Dark?"asset-dark":
+                    surface==Surface.Inset?"asset-inset":surface==Surface.Title?"asset-title":
+                    surface==Surface.Frame?"asset-frame":surface==Surface.Badge?"skin-badge":
+                    surface==Surface.Count?"asset-count":
+                    surface==Surface.SmallGold||surface==Surface.SmallGreen||surface==Surface.SmallBlue||surface==Surface.SmallRed?"asset-compact":"asset-button";
+                e.AddToClassList(style);
+                e.style.backgroundImage=asset;
+                return;
+            }
+            // A checkout without the optional full-resolution art pack still remains playable.
             e.AddToClassList(surface==Surface.Badge?"skin-badge":surface==Surface.Frame?"skin-frame-slice":
                 surface==Surface.SmallGold||surface==Surface.SmallGreen||surface==Surface.SmallBlue||surface==Surface.SmallRed||
                 surface==Surface.Stat||surface==Surface.Count?"skin-small-slice":"skin-slice");
             e.style.backgroundImage=Texture(surface);
+        }
+        private static string AssetName(Surface surface)
+        {
+            switch(surface)
+            {
+                case Surface.Paper:return "panel_parchment";
+                case Surface.Inset:return "panel_inset";
+                case Surface.Dark:return "panel_dark";
+                case Surface.Title:return "title_bar";
+                case Surface.Gold:return "button_secondary_normal";
+                case Surface.Green:return "button_primary_normal";
+                case Surface.Blue:return "button_info_normal";
+                case Surface.Red:return "button_danger_normal";
+                case Surface.SmallGold:return "compact_secondary";
+                case Surface.SmallGreen:return "compact_primary";
+                case Surface.SmallBlue:return "compact_info";
+                case Surface.SmallRed:return "compact_danger";
+                case Surface.Frame:return "card_frame";
+                case Surface.Badge:return "badge_cost";
+                case Surface.Count:return "badge_count";
+                default:return "stat_cell";
+            }
         }
         private static Color C(string hex)
         {
@@ -171,83 +230,19 @@ namespace TowerDuel
             tex.SetPixels32(colors);tex.Apply(false,true);Surfaces[surface]=tex;return tex;
         }
 
-        // Character-specific, deliberately empty stages: no baked character,
-        // captions or statistics. All characters are actual B3 idle atlas frames.
+        // Actual painted stage artwork, not the previous generated geometric landscape.
         public static Texture2D CharacterBackdrop(string id,bool spell)
         {
-            if(Backdrops.TryGetValue(id,out var existing)&&existing)return existing;
-            int seed=17;unchecked{foreach(char ch in id)seed=seed*31+ch;}
-            var rng=new System.Random(seed);
-            const int w=480,h=270;
-            var pixels=new Color32[w*h];
-            bool sky=id=="falcon"||id=="griffin",forest=id=="archer"||id=="swords",
-                frost=id=="frost",fire=id=="fireball",arcane=spell;
-            Color skyTop=frost?C("265c92"):fire?C("75333e"):sky?C("358dd6"):C("4c9cdb");
-            Color skyBottom=frost?C("c4e9fa"):fire?C("ffb671"):C("c7e9ee");
-            Color far=forest?C("729b65"):frost?C("94b7d2"):fire?C("8e5967"):C("7f9eb1");
-            Color near=forest?C("4b7742"):frost?C("5685a9"):fire?C("693947"):C("567e8b");
-            Color land=forest?C("a9c875"):frost?C("adc7dc"):fire?C("bf7b55"):C("b8bc81");
-            Color stone=frost?C("dcebf3"):fire?C("a8674c"):C("d8c5a5");
-            int cloudX=rng.Next(45,125),cloud2=rng.Next(315,430);
-            float phase=(float)rng.NextDouble()*6f;
-            for(int y=0;y<h;y++)for(int x=0;x<w;x++)
-            {
-                float z=y/(float)h;
-                Color col=Color.Lerp(skyBottom,skyTop,z);
-                bool cloud=Ellipse(x,y,cloudX,222,49,11)||Ellipse(x,y,cloudX-20,229,20,15)||
-                    Ellipse(x,y,cloudX+9,234,23,19)||Ellipse(x,y,cloud2,208,47,12)||Ellipse(x,y,cloud2+12,218,22,17);
-                if(cloud&&!arcane)col=Color.Lerp(col,C("fff8e7"),.83f);
-                float ridge=122+24*Mathf.Sin(x*.021f+phase)+12*Mathf.Sin(x*.048f+1.1f);
-                float front=98+14*Mathf.Sin(x*.019f+phase+2)+8*Mathf.Sin(x*.043f);
-                if(y<ridge)col=Color.Lerp(far,skyBottom,.12f);
-                if(y<front)col=near;
-                if(!sky&&!arcane&&!forest&&y>80&&y<126)
-                {
-                    bool side=x<118||x>362;
-                    int tx=x<118?x:x-362;
-                    bool battlement=y<110||tx%28<18;
-                    if(side&&battlement)
-                    {
-                        col=C("c7b69c");
-                        if(y%16<2||(tx+(y/16%2)*17)%34<2)col=C("8b8177");
-                        if(y>108)col=C("e7d3b3");
-                    }
-                }
-                if(forest&&y>57&&y<165)
-                {
-                    for(int n=0;n<4;n++)
-                    {
-                        int cx=n<2?20+n*45:415+(n-2)*45;
-                        if(Ellipse(x,y,cx,116+n%2*15,34,44)||Ellipse(x,y,cx-15,105,23,32))
-                            col=Color.Lerp(near,land,.22f+((x+3*y)%13)*.008f);
-                    }
-                }
-                if(y<67)col=land;
-                // Courtyard/pedestal keeps the center readable behind the transparent idle sprite.
-                float dx=(x-w*.5f)/172f,dy=(y-35f)/32f;
-                if(dx*dx+dy*dy<=1f)
-                {
-                    col=stone;
-                    if(dx*dx+dy*dy>.87f)col=Color.Lerp(stone,C("6e5c55"),.4f);
-                    if(y<26)col=Color.Lerp(stone,C("806f64"),.26f);
-                    if(y%16<1||(x+(y/16%2)*23)%47<1)col=Color.Lerp(col,C("8e8276"),.35f);
-                }
-                if(arcane)
-                {
-                    float dx2=x-w*.5f,dy2=y-133f;
-                    float radius=Mathf.Sqrt(dx2*dx2+dy2*dy2);
-                    if(Mathf.Abs(radius-100)<1.5f||Mathf.Abs(radius-122)<1f)
-                        col=Color.Lerp(col,frost?C("b7f6ff"):C("ffe0a1"),.7f);
-                    if((x*31+y*17+seed)%997==0)col=C("fff4c4");
-                }
-                float vignette=Mathf.Clamp01(Mathf.Abs((x-w*.5f)/(w*.5f))*.30f);
-                col=Color.Lerp(col,C("26334b"),vignette);
-                pixels[y*w+x]=col;
-            }
-            var texture=new Texture2D(w,h,TextureFormat.RGBA32,false){name="TowerDuel/CharacterStage/"+id,
-                filterMode=FilterMode.Bilinear,wrapMode=TextureWrapMode.Clamp,hideFlags=HideFlags.DontSave};
-            texture.SetPixels32(pixels);texture.Apply(false,true);Backdrops[id]=texture;return texture;
+            string stage=id=="frost"?"frost":id=="fireball"?"fire":
+                id=="falcon"||id=="griffin"?"sky":
+                id=="archer"||id=="swords"?"forest":"courtyard";
+            if(Backdrops.TryGetValue(stage,out var existing)&&existing)return existing;
+            var art=Resources.Load<Texture2D>("TowerDuel/B3/CharacterStages/"+stage);
+            if(!art)art=Resources.Load<Texture2D>("TowerDuel/B3/CharacterStages/courtyard");
+            if(!art)art=Resources.Load<Texture2D>("TowerDuel/DuelMenuBattlefield");
+            Backdrops[stage]=art;return art;
         }
+
         private static void Attach(Button button, string key, string text)
         {
             if (button == null) return;
@@ -268,6 +263,8 @@ namespace TowerDuel
         private static Texture2D Get(string key)
         {
             if (Icons.TryGetValue(key, out var cached) && cached) return cached;
+            var asset=Resources.Load<Texture2D>("TowerDuel/B3/FantasyUI/icon_"+(key=="layers"?"cards":key));
+            if(asset){Icons[key]=asset;return asset;}
             if (key == "plus" || key == "users")
             {
                 var icon = RoomIcon(key);

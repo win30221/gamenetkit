@@ -21,6 +21,9 @@ namespace TowerDuel
         private readonly Label deckCount, deckGuide, status, catalogEmpty, replaceHint;
         private readonly DropdownField catalogFilter;
         private readonly Image detailSprite;
+        private readonly DuelCharacterIdlePreview idlePreview;
+        private readonly Button detailFormButton;
+        private bool detailAirForm;
         private readonly CardTile[] slots = new CardTile[DuelRules.DeckSize];
         private readonly Dictionary<string, CardTile> catalogue = new Dictionary<string, CardTile>();
         private readonly List<string> deck = new List<string>(DuelRules.DeckSize);
@@ -40,6 +43,9 @@ namespace TowerDuel
             actionLayer=lobby.Q("cardActionLayer"); actionPanel=lobby.Q("cardActionPanel");
             detailLayer=lobby.Q("cardDetailLayer"); detailStage=lobby.Q("detailStage");
             detailStats=lobby.Q("detailStats"); detailSprite=lobby.Q<Image>("detailSprite");
+            idlePreview=new DuelCharacterIdlePreview(detailSprite,lobby.Q("detailShadow"));
+            detailFormButton=lobby.Q<Button>("detailFormButton");
+            detailFormButton.clicked+=ToggleDetailForm;
             detailScroll=lobby.Q<ScrollView>("detailScroll");
             replaceBar=lobby.Q("replaceBar"); replaceHint=lobby.Q<Label>("replaceHint");
             deckCount=lobby.Q<Label>("deckCount"); deckGuide=lobby.Q<Label>("deckGuide");
@@ -101,7 +107,7 @@ namespace TowerDuel
             foreach(var row in deckCards.Children())SizeRow(row,cardWidth);
             foreach(var row in catalogueRoot.Children())SizeRow(row,cardWidth);
             // A compact header and a substantial illustration, without compressing the room actions.
-            shell.Q(className:"menu-hero").style.height=450f;
+            shell.Q(className:"menu-hero").style.height=420f;
             if(actionLayer.style.display.value==DisplayStyle.Flex)CloseActions();
         }
 
@@ -115,13 +121,16 @@ namespace TowerDuel
         }
         public void Update()
         {
+            idlePreview.Tick();
             var session=client.Session;
             busy=session.Searching||session.Connecting||session.Recovering;
             RefreshControls();
             string message=deck.Count!=DuelRules.DeckSize?"請選滿 8 張卡牌後再開始對戰。":session.Status;
             status.text=message; status.style.display=string.IsNullOrEmpty(message)?DisplayStyle.None:DisplayStyle.Flex;
             string text=session.Searching?"取消配對":"快速配對";
-            if(quickMatch.text!=text)quickMatch.text=text;
+            var quickLabel=quickMatch.Q<Label>(className:"icon-label");
+            if(quickLabel!=null){if(quickLabel.text!=text)quickLabel.text=text;}
+            else if(quickMatch.text!=text)quickMatch.text=text;
         }
         private void RefreshControls()
         {
@@ -310,7 +319,17 @@ namespace TowerDuel
             pendingAdd=null;Display(replaceBar,false);
             foreach(var tile in slots)if(tile!=null)tile.Button.RemoveFromClassList("replace-target");
         }
-        private void CloseDetail(){Display(detailLayer,false);}
+        private void CloseDetail(){idlePreview.Stop();Display(detailLayer,false);}
+        public void ClosePreview()=>CloseDetail();
+        public void Dispose()=>idlePreview.Dispose();
+
+        private void ToggleDetailForm()
+        {
+            if(selectedCard!="griffin")return;
+            detailAirForm=!detailAirForm;
+            detailFormButton.text=detailAirForm?"地面型態":"升空型態";
+            idlePreview.Show(detailAirForm?"griffin-air":"griffin",detailAirForm);
+        }
         private static string Number(float v)=>v.ToString("0.##");
         private static string Seconds(int ticks)=>Number(ticks/30f)+" 秒";
         private void ShowDetail(string id)
@@ -322,19 +341,13 @@ namespace TowerDuel
             detailLayer.Q<Label>("detailType").text=card.IsSpell?"法術":(card.initialAir?"飛行兵種":card.target=="buildings"?"攻城兵種":"地面兵種");
             detailLayer.Q<Label>("detailDescription").text=card.description;
             detailStage.style.backgroundImage=DuelCartoonSkin.CharacterBackdrop(card.id,card.IsSpell);
-            detailSprite.sprite=null;detailSprite.image=null;detailSprite.scaleMode=ScaleMode.ScaleToFit;
-            if(!card.IsSpell)
-            {
-                var prefab=DuelSpriteLibrary.Prefab(id);
-                var art=prefab?prefab.GetComponent<DuelUnitArt>():null;
-                var set=art!=null&&art.Sprites?art.Sprites.Set:null;
-                if(set)detailSprite.sprite=set.Frame(DuelSpriteClip.Idle,0,0);
-            }
-            // Spells have no physical unit or idle atlas; use their original spell illustration.
-            if(detailSprite.sprite==null)detailSprite.image=DuelSpriteLibrary.Card(id);
+            detailAirForm=false;
+            Display(detailFormButton,id=="griffin");
+            detailFormButton.text="升空型態";
+            if(card.IsSpell)idlePreview.ShowSpell(DuelSpriteLibrary.Card(id));
+            else idlePreview.Show(id,card.initialAir);
             var stats=new List<KeyValuePair<string,string>>();
             void Add(string title,string value)=>stats.Add(new KeyValuePair<string,string>(title,value));
-            Add("能量",Number(card.cost));
             if(card.IsSpell)
             {
                 if(card.damage>0)Add("傷害",card.damage.ToString());
@@ -361,9 +374,12 @@ namespace TowerDuel
             {
                 if(i%2==0){row=new VisualElement();row.AddToClassList("stat-row");detailStats.Add(row);}
                 var cell=new VisualElement();cell.AddToClassList("stat-cell");
+                var icon=new VisualElement{pickingMode=PickingMode.Ignore};icon.AddToClassList("stat-icon");
+                DuelCartoonSkin.PaintStatIcon(icon,stats[i].Key);
+                var copy=new VisualElement();copy.AddToClassList("stat-copy");
                 var label=new Label(stats[i].Key);label.AddToClassList("stat-label");
                 var value=new Label(stats[i].Value);value.AddToClassList("stat-value");
-                cell.Add(label);cell.Add(value);row.Add(cell);DuelCartoonSkin.PaintStat(cell);
+                copy.Add(label);copy.Add(value);cell.Add(icon);cell.Add(copy);row.Add(cell);
             }
             UpdateChangeButtons(id);
             Display(detailLayer,true);detailLayer.BringToFront();detailScroll.scrollOffset=Vector2.zero;
