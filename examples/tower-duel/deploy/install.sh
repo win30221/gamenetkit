@@ -64,6 +64,45 @@ publish_core_assets() (
     done
 )
 
+# The Player embeds a release-pinned manifest; a newer page must never
+# replace the bytes named by any old manifest.
+publish_unit_bundles() (
+    set -eu
+    cd "$next"
+    test -s unit-bundles.sha256
+    test -f public/unit-bundles.json
+    # Validate the receipt's grammar before passing its paths to sha256sum.
+    if grep -Eqv '^[0-9a-f]{64}  public/(unit-bundles[.]json|assets/bundles/[0-9a-f]{64}/[a-z0-9-]+[.]bundle)$' unit-bundles.sha256; then
+        echo 'Invalid unit bundle checksum path' >&2
+        exit 1
+    fi
+    test "$(grep -c '  public/unit-bundles[.]json$' unit-bundles.sha256)" = 1
+    test "$(grep -c '  public/assets/bundles/' unit-bundles.sha256)" -gt 0
+    sha256sum -c --strict unit-bundles.sha256 >/dev/null
+    while read -r digest source; do
+        case "$source" in
+            public/unit-bundles.json) continue ;;
+            public/assets/bundles/"$digest"/*.bundle) ;;
+            *) echo 'Bundle content hash does not match its URL' >&2; exit 1 ;;
+        esac
+        target="$base/assets/bundles/$digest/$(basename "$source")"
+        if [ -e "$target" ]; then
+            if ! cmp -s "$target" "$source"; then
+                echo "Corrupt immutable unit bundle: $target (refusing to overwrite)" >&2
+                exit 1
+            fi
+            continue
+        fi
+        mkdir -p "$(dirname "$target")"
+        chmod 755 "$base/assets" "$base/assets/bundles" "$(dirname "$target")"
+        temporary=$(mktemp "$(dirname "$target")/.publish.XXXXXX")
+        if ! install -m 644 "$source" "$temporary" || ! mv -T "$temporary" "$target"; then
+            rm -f "$temporary"
+            exit 1
+        fi
+    done < unit-bundles.sha256
+)
+
 if [ "$mode" = static ] || [ "$mode" = client ]; then
     test -n "$previous"
     # Partial releases may only update an installation that is already multiplayer-only.
@@ -81,7 +120,7 @@ if [ "$mode" = static ] || [ "$mode" = client ]; then
     # Keep the authoritative service and protocol identical during client updates.
     unchanged='tower-duel-api protocol/map.json protocol/rules.json site.caddy public/transport.js'
     if [ "$mode" = static ]; then
-        unchanged="$unchanged public/Build/WebGL.loader.js public/Build/WebGL.framework.js.gz public/Build/WebGL.data.gz public/Build/WebGL.wasm.gz"
+        unchanged="$unchanged public/Build/WebGL.loader.js public/Build/WebGL.framework.js.gz public/Build/WebGL.data.gz public/Build/WebGL.wasm.gz public/unit-bundles.json"
     fi
     for asset in $unchanged; do
         if ! cmp -s "$base/current/$asset" "$next/$asset"; then
@@ -90,6 +129,7 @@ if [ "$mode" = static ] || [ "$mode" = client ]; then
         fi
     done
     publish_core_assets
+    publish_unit_bundles
     ln -sfn "releases/$release" "$base/current.next"
     mv -Tf "$base/current.next" "$base/current"
     if ! curl -fsS http://127.0.0.1:18110/healthz >/dev/null; then
@@ -101,6 +141,7 @@ if [ "$mode" = static ] || [ "$mode" = client ]; then
 fi
 
 publish_core_assets
+publish_unit_bundles
 
 # Save the state of *both* the core deployment and previous optional modes.
 cp "$proxy" "$next/previous.Caddyfile"

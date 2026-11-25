@@ -8,7 +8,7 @@ using UnityEngine.Networking;
 namespace TowerDuel
 {
     [Serializable]
-    internal sealed class DuelUnitBundleRecord
+    public sealed class DuelUnitBundleRecord
     {
         public string kind,sha256;
         public long bytes;
@@ -17,7 +17,7 @@ namespace TowerDuel
     }
 
     [Serializable]
-    internal sealed class DuelUnitBundleManifest
+    public sealed class DuelUnitBundleManifest
     {
         public int version;
         public DuelUnitBundleRecord[] bundles;
@@ -48,8 +48,11 @@ namespace TowerDuel
                 foreach(var card in rules.cards)
                     if(!card.IsSpell&&!sets.ContainsKey(card.id))
                         throw new InvalidOperationException("Missing unit metadata "+card.id);
+                DuelUnitBundleManifest manifest=null;
+#if UNITY_WEBGL && !UNITY_EDITOR
                 var receipt=Resources.Load<TextAsset>("TowerDuel/WebUnitBundles");
-                var manifest=receipt?JsonUtility.FromJson<DuelUnitBundleManifest>(receipt.text):null;
+                if(receipt)manifest=JsonUtility.FromJson<DuelUnitBundleManifest>(receipt.text);
+#endif
                 if(manifest==null||manifest.version==0)
                 {
                     foreach(var set in sets.Values)

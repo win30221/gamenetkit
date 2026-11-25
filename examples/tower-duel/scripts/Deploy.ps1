@@ -71,6 +71,18 @@ for($i=0;$i -lt 24;$i++){
                    ([string]($head.Headers['Cache-Control'] -join ', ')) -notmatch '(?i)max-age=31536000' -or
                    ($asset.name.EndsWith('.gz') -and ([string]($head.Headers['Content-Encoding'] -join ', ')) -notmatch '(?i)\bgzip\b')){$assetsReady=$false;break}
             }
+            if($assetsReady){
+                $bundleManifest=Invoke-RestMethod "$url/unit-bundles.json" -TimeoutSec 5
+                if($bundleManifest.version -ne 1 -or @($bundleManifest.bundles).Count -ne $packageProtocol.UnitBundles.Count){$assetsReady=$false}
+                foreach($asset in $packageProtocol.UnitBundles){
+                    if(-not $assetsReady){break}
+                    $entry=@($bundleManifest.bundles | Where-Object kind -ceq $asset.kind)
+                    if($entry.Count -ne 1 -or $entry[0].sha256 -cne $asset.sha256 -or $entry[0].bytes -ne $asset.bytes){$assetsReady=$false;break}
+                    $head=Invoke-WebRequest -Uri "$url$($asset.url)" -Method Head -TimeoutSec 10
+                    if(([string]($head.Headers['Cache-Control'] -join ', ')) -notmatch '(?i)\bimmutable\b' -or
+                       ([string]($head.Headers['Cache-Control'] -join ', ')) -notmatch '(?i)max-age=31536000'){$assetsReady=$false;break}
+                }
+            }
             if($assetsReady){$ready=$true;break}
         }
     }catch{if($i -eq 23){Write-Warning $_}}
@@ -85,4 +97,4 @@ $manifest | ConvertTo-Json -Depth 6 | Set-Content (Join-Path $out 'deployed.json
 Write-Output "Playable URL: $url/"
 Write-Output "Release: $release"
 Write-Output "Optional modes: disabled; legacy route removed"
-Write-Output "Content-addressed core: verified immutable cache headers and active page URLs"
+Write-Output "Content-addressed core and unit bundles: verified active manifest, URLs and immutable cache headers"

@@ -14,6 +14,8 @@ function Set-TestRecord([string]$Directory) {
     foreach ($name in 'map','rules') {
         $record[$name + 'Hash'] = (Get-FileHash -LiteralPath (Join-Path $resources "$name.json")).Hash.ToLowerInvariant()
     }
+    $unitManifest = Join-Path $Directory 'unit-bundles.json'
+    if(Test-Path -LiteralPath $unitManifest){$record.unitBundlesHash=(Get-FileHash -LiteralPath $unitManifest -Algorithm SHA256).Hash.ToLowerInvariant()}
     [IO.File]::WriteAllText((Join-Path $Directory 'tower-duel-content.json'), ($record | ConvertTo-Json))
 }
 
@@ -60,6 +62,15 @@ function Test-Package([string]$Mode, [string]$ExpectedError = '', [hashtable]$Op
             throw 'Packaging mutated the local Player.'
         }
         $script:LastCoreAssets = $records
+        $unitManifest=Get-Content -LiteralPath (Join-Path $extract 'public/unit-bundles.json') -Raw | ConvertFrom-Json
+        $checksums=Get-Content -LiteralPath (Join-Path $extract 'unit-bundles.sha256')
+        $manifestHash=(Get-FileHash -LiteralPath (Join-Path $extract 'public/unit-bundles.json')).Hash.ToLowerInvariant()
+        if($checksums -cnotcontains "$manifestHash  public/unit-bundles.json"){throw 'Missing unit manifest receipt.'}
+        foreach($unit in $unitManifest.bundles){
+            $relative="assets/bundles/$($unit.sha256)/$($unit.kind).bundle"
+            $hash=(Get-FileHash -LiteralPath (Join-Path $extract "public/$relative")).Hash.ToLowerInvariant()
+            if($hash -cne $unit.sha256 -or $checksums -cnotcontains "$hash  public/$relative"){throw 'Unit receipt does not match packaged bundle.'}
+        }
     } else {
         if (Test-Path (Join-Path $extract 'core-assets.sha256')) { throw 'Optional mode package unexpectedly enabled multiplayer core store.' }
     }
@@ -109,6 +120,16 @@ $Go = 'New-TestGoBinary'
         }
         Set-TestRecord $player
     }
+    $fixtureTemp=Join-Path $scratch 'unit-fixture.bundle'
+    [IO.File]::WriteAllText($fixtureTemp,'fixture unit atlas')
+    $unitHash=(Get-FileHash -LiteralPath $fixtureTemp -Algorithm SHA256).Hash.ToLowerInvariant()
+    $unitDir=Join-Path $plain "assets/bundles/$unitHash"
+    [IO.Directory]::CreateDirectory($unitDir)|Out-Null
+    $unitFile=Join-Path $unitDir 'swords.bundle'
+    Copy-Item -LiteralPath $fixtureTemp -Destination $unitFile
+    $unitManifest=@{version=1;bundles=@(@{kind='swords';sha256=$unitHash;bytes=(Get-Item $unitFile).Length;crc=1})}
+    [IO.File]::WriteAllText((Join-Path $plain 'unit-bundles.json'),($unitManifest | ConvertTo-Json -Depth 5))
+    Set-TestRecord $plain
     $plainPage = @'
 <script src="Build/WebGL.loader.js"></script>
 <script>createUnityInstance(canvas,{dataUrl:'Build/WebGL.data.gz',frameworkUrl:'Build/WebGL.framework.js.gz',codeUrl:'Build/WebGL.wasm.gz',cacheControl: towerDuelCacheControl,});</script>
@@ -127,6 +148,13 @@ $Go = 'New-TestGoBinary'
             throw "Changing only WASM changed the wrong asset URL: $($asset.name)"
         }
     }
+    [IO.File]::AppendAllText($unitFile,'corrupt')
+    Test-Package Multiplayer 'Unit bundle bytes or hash mismatch'
+    Copy-Item -LiteralPath $fixtureTemp -Destination $unitFile -Force
+    [IO.File]::AppendAllText((Join-Path $plain 'unit-bundles.json'),' ')
+    Test-Package Multiplayer 'Unit bundle manifest hash mismatch'
+    [IO.File]::WriteAllText((Join-Path $plain 'unit-bundles.json'),($unitManifest | ConvertTo-Json -Depth 5))
+    Set-TestRecord $plain
     [IO.File]::WriteAllText("$plain/index.html", $plainPage.Replace('cacheControl: towerDuelCacheControl,',''))
     Test-Package Multiplayer 'cache policy missing'
     [IO.File]::WriteAllText("$plain/index.html", $plainPage)

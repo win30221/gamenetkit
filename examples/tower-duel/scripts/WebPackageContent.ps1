@@ -58,6 +58,41 @@ function Set-TowerDuelCoreAssetUrls([string]$Directory, [string]$Bundle) {
     return $records
 }
 
+# Bind the published bundle list to the Player build receipt, then verify every
+# exact bundle byte before the Go build and remote upload can start.
+function Set-TowerDuelUnitBundleReceipt([string]$Directory, [string]$Bundle) {
+    $manifestPath = Join-Path $Directory 'unit-bundles.json'
+    if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
+        throw 'Missing unit-bundles.json. Rebuild multiplayer WebGL.'
+    }
+    $manifestHash = (Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    $buildReceipt = Get-Content -LiteralPath (Join-Path $Directory 'tower-duel-content.json') -Raw | ConvertFrom-Json -ErrorAction Stop
+    if ($buildReceipt.unitBundlesHash -cne $manifestHash) { throw 'Unit bundle manifest hash mismatch. Rebuild multiplayer WebGL.' }
+    $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json -ErrorAction Stop
+    if ($manifest.version -ne 1 -or @($manifest.bundles).Count -eq 0) { throw 'Invalid unit bundle manifest.' }
+    $seen = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    $records = @()
+    $checksums = @("$manifestHash  public/unit-bundles.json")
+    foreach ($asset in $manifest.bundles) {
+        if ($asset.kind -cnotmatch '\A[a-z0-9-]+\z' -or $asset.sha256 -cnotmatch '\A[0-9a-f]{64}\z' -or
+            $asset.bytes -le 0 -or -not $seen.Add([string]$asset.kind)) { throw 'Invalid or duplicate unit bundle record.' }
+        $relative = "assets/bundles/$($asset.sha256)/$($asset.kind).bundle"
+        $path = Join-Path $Directory $relative
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf) -or
+            (Get-Item -LiteralPath $path).Length -ne $asset.bytes -or
+            (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant() -cne $asset.sha256) {
+            throw "Unit bundle bytes or hash mismatch: $relative"
+        }
+        $checksums += "$($asset.sha256)  public/$relative"
+        $records += [pscustomobject]@{kind=$asset.kind;sha256=$asset.sha256;bytes=$asset.bytes;url="/$relative"}
+    }
+    if (@(Get-ChildItem -LiteralPath (Join-Path $Directory 'assets/bundles') -File -Recurse).Count -ne $records.Count) {
+        throw 'Unexpected files in the unit bundle directory. Rebuild multiplayer WebGL.'
+    }
+    [IO.File]::WriteAllText((Join-Path $Bundle 'unit-bundles.sha256'), (($checksums -join "`n") + "`n"), [Text.UTF8Encoding]::new($false))
+    return $records
+}
+
 function New-TowerDuelWebPackageContent([string]$ExampleRoot, [string]$Bundle, [System.Collections.IDictionary]$Targets, [switch]$ContentAddressedCore) {
     # Reserve a fresh release so a failed preflight can only remove its own work.
     $releaseDir = Split-Path $Bundle -Parent
@@ -78,6 +113,7 @@ function New-TowerDuelWebPackageContent([string]$ExampleRoot, [string]$Bundle, [
             rulesHash = (Get-FileHash -LiteralPath $rulesPath -Algorithm SHA256).Hash.ToLowerInvariant()
             Markers = @{}
             CoreAssets = @()
+            UnitBundles = @()
         }
 
         # Check all requested Players before copying any large WebGL files.
@@ -127,6 +163,7 @@ function New-TowerDuelWebPackageContent([string]$ExampleRoot, [string]$Bundle, [
             if ($ContentAddressedCore -and $player.Name -eq 'Multiplayer') {
                 if ($Targets['Multiplayer'] -cne 'public') { throw 'Content-addressed core requires the multiplayer public root.' }
                 $protocol.CoreAssets = @(Set-TowerDuelCoreAssetUrls $destination $Bundle)
+                $protocol.UnitBundles = @(Set-TowerDuelUnitBundleReceipt $destination $Bundle)
             }
             $protocol.Markers[$player.Name] = $player.Marker
         }

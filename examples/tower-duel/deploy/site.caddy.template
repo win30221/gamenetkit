@@ -34,6 +34,20 @@ __DOMAIN__ {
     handle /assets/core/* {
         respond 404
     }
+    @bundle path_regexp unitbundle ^/assets/bundles/[0-9a-f]{64}/[a-z0-9-]+[.]bundle$
+    handle @bundle {
+        uri strip_prefix /assets/bundles
+        root * /srv/tower-duel/assets/bundles
+        header Content-Type application/octet-stream
+        header {
+            Cache-Control "public, max-age=31536000, immutable"
+            match status 2xx 304
+        }
+        file_server
+    }
+    handle /assets/bundles/* {
+        respond 404
+    }
     handle {
         root * /srv/tower-duel/current/public
         @gzip path *.gz

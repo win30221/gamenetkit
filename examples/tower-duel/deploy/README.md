@@ -71,3 +71,43 @@ Compare URLs before and after a rebuild, and use Chrome Network with Disable
 cache unchecked. Check a hashed resource's response headers and reload
 behavior. A changed data file still needs a full download: AssetBundle splitting
 and preloading are a separate follow-up, not part of P1-1.
+
+
+## WebGL unit animation bundles (P1-2)
+
+The normal multiplayer Build, Run and Deploy commands are unchanged. The first
+deployment of this Caddy route requires a full deploy. The source definitions
+and baked animation atlases now live at client/Assets/TowerDuelArt/Units;
+their Unity metadata/GUIDs move with them. Use the existing prepare/bake
+commands to update them. Do not recreate the old Resources/B3/Units folder.
+
+Only the three idle/walk/attack textures of each unit form are split.
+Prefabs, sprite-set metadata, materials, shaders, card art, map and effects
+stay in the Player for this iteration. Unity builds LZ4 texture-only bundles,
+embeds a pinned manifest in the WebGL Player, and temporarily detaches the
+atlas references. It verifies the Player build report before publishing the
+bundles and restores the Editor references in a finally/Dispose scope. If the
+Editor is interrupted during a build, run Tower Duel > Prepare playable scene
+before testing or building a Windows Player.
+
+WebGL opens the existing lobby while downloading units sequentially; an
+inspected card temporarily shows its illustration and prioritizes its animation
+next. All unit forms must load before matchmaking, creating/joining rooms, or
+restoring a saved session. A failed download retries up to three times and then
+offers a manual retry; successful atlases remain loaded for the session.
+Editor/Windows retain direct references and require no downloads.
+
+The build produces unit-bundles.json and assets/bundles/<sha256>/<kind>.bundle.
+The build receipt binds the manifest; packaging validates all bundle bytes.
+The VM installs missing hashes under the shared assets/bundles directory before
+switching the active release; old hashes remain available for older clients.
+The browser can reuse unchanged URLs. Deployment still uploads the complete
+archive; server-side publication is deduplicated, not network upload.
+No automatic garbage collection is enabled.
+
+Read client/Builds/web-build-size.json to compare startupTransferBytes with
+unitBundleBytes; the latter is loaded after the lobby appears. Use the Network
+panel to verify cache behavior, matching unit animations, both griffin forms,
+deck editing during loading, retry on failed requests, and reconnect behavior.
+Verify the Windows/Editor build as well. A slow cold-cache reconnect can still
+exceed the server's existing resume grace period.

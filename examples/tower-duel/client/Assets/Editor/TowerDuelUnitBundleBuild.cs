@@ -93,6 +93,7 @@ namespace TowerDuel.Editor
         internal void AssertNoInlineAtlases(BuildReport report)
         {
             var atlasPaths=new HashSet<string>(snapshots.SelectMany(x=>new[]{x.idle,x.walk,x.attack}).Select(AssetDatabase.GetAssetPath),StringComparer.Ordinal);
+            if(report.packedAssets==null||report.packedAssets.Length==0)throw new InvalidOperationException("Missing detailed Player asset report");
             foreach(var packed in report.packedAssets)
                 foreach(var asset in packed.contents)
                     if(atlasPaths.Contains(asset.sourceAssetPath))

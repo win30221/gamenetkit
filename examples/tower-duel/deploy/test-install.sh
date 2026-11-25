@@ -28,6 +28,29 @@ verify_core() (
     done
 )
 
+write_unit_receipt() (
+    set -eu
+    cd "$1"
+    payload=$2
+    rm -rf public/assets/bundles
+    mkdir -p public/assets/bundles
+    printf '%s\n' "$payload" > public/assets/bundles/unit.tmp
+    digest=$(sha256sum public/assets/bundles/unit.tmp | cut -d ' ' -f 1)
+    mkdir -p "public/assets/bundles/$digest"
+    mv public/assets/bundles/unit.tmp "public/assets/bundles/$digest/griffin.bundle"
+    printf '{"version":1,"bundles":[{"kind":"griffin","sha256":"%s"}]}\n' "$digest" > public/unit-bundles.json
+    sha256sum public/unit-bundles.json "public/assets/bundles/$digest/griffin.bundle" > unit-bundles.sha256
+)
+
+verify_units() (
+    set -eu
+    cd "$1"
+    for file in public/assets/bundles/*/*.bundle; do
+        digest=$(basename "$(dirname "$file")")
+        cmp "$file" "$base/assets/bundles/$digest/$(basename "$file")"
+    done
+)
+
 prepare() {
     TEST_ROOT=$(mktemp -d "$work/tower-duel-install.XXXXXX")
     export TEST_ROOT
@@ -46,6 +69,7 @@ prepare() {
         printf '%s\n' "$name fixture" > "$base/releases/new/public/Build/$name"
     done
     write_core_receipt "$base/releases/new"
+    write_unit_receipt "$base/releases/new" "original griffin"
     ln -s releases/old "$base/current"
     for unit in tower-duel-modes tower-duel-solo-api tower-duel-solo-web; do
         : > "$state/active.$unit.service"
@@ -136,6 +160,7 @@ prepare
 sh "$TEST_ROOT/install-test.sh" new full >/dev/null
 test "$(readlink "$base/current")" = releases/new
 verify_core "$base/releases/new"
+verify_units "$base/releases/new"
 grep -q 'multiplayer-only route' "$base/tower-duel.caddy"
 test ! -e "$base/tower-duel-solo.caddy"
 grep -q 'unrelated' "$proxy"
@@ -159,12 +184,23 @@ cp -a "$base/releases/new" "$base/releases/client"
 for name in tower-duel-api site.caddy; do cmp "$base/releases/new/$name" "$base/releases/client/$name"; done
 printf 'new WASM content\n' > "$base/releases/client/public/Build/WebGL.wasm.gz"
 write_core_receipt "$base/releases/client"
+write_unit_receipt "$base/releases/client" "new griffin"
 sh "$TEST_ROOT/install-test.sh" client client >/dev/null
 test "$(readlink "$base/current")" = releases/client
 verify_core "$base/releases/new"
 verify_core "$base/releases/client"
+verify_units "$base/releases/new"
+verify_units "$base/releases/client"
+test "$(find "$base/assets/bundles" -type f | wc -l | tr -d ' ')" = 2
 # The original 4 assets and one changed WASM are still available.
 test "$(find "$base/assets/core" -type f | wc -l | tr -d ' ')" = 5
+cp -a "$base/releases/client" "$base/releases/badunit"
+printf 'bad receipt\n' > "$base/releases/badunit/unit-bundles.sha256"
+if sh "$TEST_ROOT/install-test.sh" badunit client >"$TEST_ROOT/log" 2>&1; then
+    echo 'Expected invalid unit receipt rejection' >&2; exit 1
+fi
+test "$(readlink "$base/current")" = releases/client
+printf 'PASS: old unit URL retention and invalid bundle receipt rejection\n'
 cp -a "$base/releases/client" "$base/releases/bad"
 printf 'bad receipt\n' > "$base/releases/bad/core-assets.sha256"
 if sh "$TEST_ROOT/install-test.sh" bad client >"$TEST_ROOT/log" 2>&1; then
