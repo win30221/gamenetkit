@@ -430,10 +430,19 @@ namespace TowerDuel.Editor
                     Require(f.Map.CanDeploy(seat,p,state,card),"Nearest destination contains an illegal formation member.");
                 }
                 Expect(-4.2f,-3.8f,guard,-4.5f,-3.5f);
-                Require(!f.Map.TryNearestDeployment(seat,new Vector3(0,0,.2f*forward),state,guard,out _),
-                        "A troop dragged over the centre wall must stay invalid");
-                Require(!f.Map.TryNearestDeployment(seat,new Vector3(f.Map.bridges[0],0,0),state,guard,out _),
-                        "A troop dragged into a doorway must stay invalid");
+                // The raw aim may cross the wall or doorway, but the resolved formation must remain legal.
+                foreach(float x in new[]{0f,f.Map.bridges[0],f.Map.bridges[1]})
+                    foreach(float z in new[]{-.6f,-.5f,-.2f,0f,.2f,.5f,.6f})
+                    {
+                        var aim=new Vector3(x,0,z*forward);
+                        foreach(var card in new[]{guard,squad})
+                        {
+                            Require(!f.Map.CanDeploy(seat,aim,state,card),"Raw aim at the wall/doorway must remain illegal");
+                            Require(f.Map.TryNearestDeployment(seat,aim,state,card,out var resolved),"Crossing the wall/doorway lost the deployment preview");
+                            Require(f.Map.CanDeploy(seat,resolved,state,card),"Wall/doorway aim resolved to an illegal formation");
+                            Require(resolved.z*forward<0,"Intact enemy towers must not unlock enemy placement");
+                        }
+                    }
                 Require(Mathf.Abs(f.Map.SnapDeployment(Vector3.zero,guard).x)==.5f,
                         "A map with an even width must have no cell centred on the seam");
                 Expect(-4.2f,3.2f,guard,-4.5f,home);

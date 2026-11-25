@@ -108,8 +108,7 @@ namespace TowerDuel
                 nearest=new Vector3(Mathf.Clamp(point.x,-width*.5f,width*.5f),point.y,Mathf.Clamp(point.z,-length*.5f,length*.5f));
                 return true;
             }
-            // Dropping a troop on the wall or in a doorway is invalid.
-            if(HasWall&&Mathf.Abs(point.z)<=wallHalfWidth)return false;
+            // Resolve even wall/doorway aims to a legal cell; CanDeploy still rejects actual wall placement.
             var snapped=SnapDeployment(point,card);
             if(CanDeploy(seat,snapped,state,card)){nearest=snapped;return true;}
             // Measure from the original aim, including every member of a squad in legality checks.
