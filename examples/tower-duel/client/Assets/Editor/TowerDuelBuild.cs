@@ -217,7 +217,8 @@ namespace TowerDuel.Editor
             File.Delete("Builds/web-build-size.json");
             var content = TowerDuelWebContent.BeginBuild(output, out var rules);
             BuildReport report;
-            using (var bundles = TowerDuelUnitBundleBuild.Prepare())
+            var bundles=TowerDuelUnitBundleBuild.Prepare();
+            try
             {
                 report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
                     scenes = new[] { Scene }, locationPathName = output,
@@ -232,6 +233,14 @@ namespace TowerDuel.Editor
                 File.WriteAllText(Path.Combine(output, "tower-duel-build.txt"), $"TowerDuel protocol {rules.schema} / {rules.id}\n");
                 WriteWebSizeReport(report, output);
             }
+            catch
+            {
+                bundles.RestoreAfterFailure();
+                throw;
+            }
+            // Do not publish the successful build receipt unless Editor state
+            // was also restored successfully.
+            bundles.Dispose();
             content.Publish(output);
             Debug.Log("Tower Duel Web build succeeded: " + report.summary.totalSize + " bytes");
         }
