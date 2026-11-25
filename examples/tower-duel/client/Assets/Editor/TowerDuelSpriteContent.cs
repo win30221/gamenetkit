@@ -45,10 +45,11 @@ namespace TowerDuel.Editor
     public static class TowerDuelSpriteContent
     {
         private const string Root = "Assets/Resources/TowerDuel/B3";
+        internal const string UnitRoot = "Assets/TowerDuelArt/Units";
         [MenuItem("Tower Duel/Prepare B3 sprite characters")]
         public static void Prepare()
         {
-            if (!Directory.Exists(Root + "/Units")) return;
+            if (!Directory.Exists(UnitRoot)) return;
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             Directory.CreateDirectory(Root + "/Prefabs");
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
@@ -77,13 +78,13 @@ namespace TowerDuel.Editor
             var rules = DuelRules.Load();
             var groundSets = new Dictionary<string, DuelSpriteSet>();
             var airborneSets = new Dictionary<string, DuelSpriteSet>();
-            foreach (string file in Directory.GetFiles(Root + "/Units", "definition.json", SearchOption.AllDirectories))
+            foreach (string file in Directory.GetFiles(UnitRoot, "definition.json", SearchOption.AllDirectories))
             {
                 var definition = B3SpriteDefinition.Read(file);
                 bool airborneVariant = !string.IsNullOrEmpty(definition.groundKind);
                 string cardKind = airborneVariant ? definition.groundKind : definition.kind;
                 if (rules.Find(cardKind) == null) throw new InvalidOperationException("Unknown B3 unit " + cardKind);
-                string folder = Root + "/Units/" + definition.kind;
+                string folder = UnitRoot + "/" + definition.kind;
                 string suffix=definition.baked?"-baked":"";
                 var idle = Import(folder + "/idle"+suffix+".png", true,definition.AtlasImportSize("idle",definition.baked), webCompression: true);
                 var walk = Import(folder + "/walk"+suffix+".png", true,definition.AtlasImportSize("walk",definition.baked), webCompression: true);

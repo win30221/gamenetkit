@@ -15,6 +15,8 @@ namespace TowerDuel
         public string SelectedCard {get;private set;}="guard";
         public DuelPresentation Presentation=>presentation;
         public DuelAudio Audio {get;private set;}
+        public DuelUnitAssets UnitAssets {get;private set;}
+        private bool restoreChecked;
         public const float KeepHealthHeight=10.2f;
         public const float TowerApproachClearance=1.7f;
         private const float SideMarginPixels=8f;
@@ -42,6 +44,7 @@ namespace TowerDuel
 #endif
             Map = DuelMap.Load();
             Rules=DuelRules.Load();
+            UnitAssets=new DuelUnitAssets(Rules);
             Session = new DuelSession(Map,Rules);
             Audio=new DuelAudio(transform);
             Session.ActionConfirmed+=message=>Audio.Play(message.accepted?"deploy":"reject",true);
@@ -52,13 +55,26 @@ namespace TowerDuel
             FrameCamera();
             SetViewSeat(0);
             hud = new DuelHud(this);
-            Session.TryRestore(Server,gameObject.name);
+            if(UnitAssets.Ready) TryRestoreAfterAssets();
+            else if(UnitAssets.CanStart) StartCoroutine(UnitAssets.Preload());
             if (Debug.isDebugBuild && Argument("-td-auto", "") != "") verification = new DuelVerification(this);
+        }
+
+        private void TryRestoreAfterAssets()
+        {
+            if(restoreChecked || !UnitAssets.Ready)return;
+            restoreChecked=true;
+            Session.TryRestore(Server,gameObject.name);
+        }
+        public void RetryUnitAssets()
+        {
+            if(UnitAssets.CanStart)StartCoroutine(UnitAssets.Preload());
         }
 
         private void Update()
         {
             if (Session == null) return;
+            TryRestoreAfterAssets();
             Session.Pump();
             var state = Session.State;
             if(state!=null&&state.match!=renderedMatch){presentation.Reset();renderedMatch=state.match;}
@@ -147,6 +163,7 @@ namespace TowerDuel
 
         public void Connect(string server, string mode, string room, string name, string[] deck = null)
         {
+            if(!UnitAssets.Ready)return;
             Selected = false; HidePreview(); presentation.Reset();
             try { Session.Connect(server, mode, room, name, gameObject.name, deck); Server = server; }
             catch (Exception error) { Debug.LogWarning("Connect: " + error.Message); Session.Disconnect("伺服器位址無效，請輸入 http:// 或 https:// 位址。"); }

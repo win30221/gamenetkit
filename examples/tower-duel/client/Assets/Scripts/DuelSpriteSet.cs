@@ -10,6 +10,7 @@ namespace TowerDuel
     {
         public string Kind;
         public Texture2D Idle, Walk, Attack;
+        public bool HasAtlases => Idle && Walk && Attack;
         public int TileSize = 192, Baseline = 176, ReferenceHeight = 160;
         public int IdleFrames = 1, WalkFrames = 6, AttackFrames = 6, ImpactFrame = 3;
         public float IdleFps = 8f, WalkFps = 8f;

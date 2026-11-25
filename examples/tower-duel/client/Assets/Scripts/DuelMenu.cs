@@ -48,7 +48,7 @@ namespace TowerDuel
             actionLayer=lobby.Q("cardActionLayer"); actionPanel=lobby.Q("cardActionPanel");
             detailLayer=lobby.Q("cardDetailLayer"); detailStage=lobby.Q("detailStage");
             detailStats=lobby.Q("detailStats"); detailSprite=lobby.Q<Image>("detailSprite");
-            idlePreview=new DuelCharacterIdlePreview(detailSprite,lobby.Q("detailShadow"));
+            idlePreview=new DuelCharacterIdlePreview(detailSprite,lobby.Q("detailShadow"),client.UnitAssets);
             detailFormButton=lobby.Q<Button>("detailFormButton");
             detailFormButton.clicked+=ToggleDetailForm;
             detailScroll=lobby.Q<ScrollView>("detailScroll");
@@ -99,7 +99,7 @@ namespace TowerDuel
             joinRoom.clicked+=()=>ShowModal(joinPanel);
             joinConfirm.clicked+=()=>Connect("join");
             roomField.RegisterValueChangedCallback(_=>RefreshControls());
-            quickMatch.clicked+=()=>{if(client.Session.Searching)client.Leave();else Connect("quick");};
+            quickMatch.clicked+=()=>{if(client.UnitAssets.CanRetry)client.RetryUnitAssets();else if(client.Session.Searching)client.Leave();else Connect("quick");};
             lobby.Q<Button>("cancelReplace").clicked+=CancelReplace;
             inspectButton.clicked+=()=>{if(selectedCard!=null)ShowDetail(selectedCard);};
             changeButton.clicked+=ChangeSelected;
@@ -147,9 +147,9 @@ namespace TowerDuel
             var session=client.Session;
             busy=session.Searching||session.Connecting||session.Recovering;
             RefreshControls();
-            string message=deck.Count!=DuelRules.DeckSize?"請選滿 8 張卡牌後再開始對戰。":session.Status;
+            string message=!client.UnitAssets.Ready?client.UnitAssets.Status:deck.Count!=DuelRules.DeckSize?"請選滿 8 張卡牌後再開始對戰。":session.Status;
             status.text=message; status.style.display=string.IsNullOrEmpty(message)?DisplayStyle.None:DisplayStyle.Flex;
-            string text=session.Searching?"取消配對":"快速配對";
+            string text=client.UnitAssets.CanRetry?"重試資源下載":!client.UnitAssets.Ready?"下載資源中…":session.Searching?"取消配對":"快速配對";
             var quickLabel=quickMatch.Q<Label>(className:"icon-label");
             if(quickLabel!=null){if(quickLabel.text!=text)quickLabel.text=text;}
             else if(quickMatch.text!=text)quickMatch.text=text;
@@ -160,9 +160,10 @@ namespace TowerDuel
             deckCards.SetEnabled(!busy); catalogueRoot.SetEnabled(!busy);
             resetDeck.SetEnabled(!busy); catalogFilter.SetEnabled(!busy);
             if(busy&&catalogFilterLayer.style.display.value==DisplayStyle.Flex)CloseFilter();
-            quickMatch.SetEnabled(client.Session.Searching||(!busy&&full));
-            createRoom.SetEnabled(!busy&&full); joinRoom.SetEnabled(!busy&&full);
-            joinConfirm.SetEnabled(!busy&&full&&!string.IsNullOrWhiteSpace(roomField.value));
+            bool available=client.UnitAssets.Ready&&!busy&&full;
+            quickMatch.SetEnabled(client.UnitAssets.CanRetry||client.Session.Searching||available);
+            createRoom.SetEnabled(available); joinRoom.SetEnabled(available);
+            joinConfirm.SetEnabled(available&&!string.IsNullOrWhiteSpace(roomField.value));
             nameField.SetEnabled(!busy); roomField.SetEnabled(!busy); serverField.SetEnabled(!busy);
         }
         private static void Display(VisualElement element,bool show)=>element.style.display=show?DisplayStyle.Flex:DisplayStyle.None;
@@ -215,7 +216,7 @@ namespace TowerDuel
         }
         private void Connect(string mode)
         {
-            if(busy||deck.Count!=DuelRules.DeckSize)return;
+            if(!client.UnitAssets.Ready||busy||deck.Count!=DuelRules.DeckSize)return;
             if(mode=="join"&&string.IsNullOrWhiteSpace(roomField.value))return;
             CloseModals(); client.Connect(serverField.value,mode,mode=="join"?roomField.value.Trim():"",nameField.value,deck.ToArray());
         }

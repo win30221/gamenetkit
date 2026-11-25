@@ -168,7 +168,7 @@ def prepare(kind: str) -> None:
     config = json.loads(config_path.read_text(encoding="utf-8-sig"))
     tile, baseline, reference = (config[k] for k in ("tileSize", "baseline", "referenceHeight"))
     source = {key: REPO/path for key, path in config["sources"].items()}
-    target = RESOURCES / "Units" / kind
+    target = REPO / "examples/tower-duel/client/Assets/TowerDuelArt/Units" / kind
     target.mkdir(parents=True, exist_ok=True)
     source_target = REPO / "examples/tower-duel/art/b3-production/atlases" / kind
     source_target.mkdir(parents=True, exist_ok=True)

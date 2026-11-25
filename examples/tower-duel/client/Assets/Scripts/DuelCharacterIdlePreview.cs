@@ -13,14 +13,17 @@ namespace TowerDuel
         private readonly Image view;
         private readonly VisualElement shadow;
         private DuelSpriteSet set;
+        private readonly DuelUnitAssets assets;
+        private string pendingId;
+        private bool pendingFlight;
         private RenderTexture target;
         private Material material;
         private bool flying, active;
         private float started, nextFrame;
 
-        public DuelCharacterIdlePreview(Image view, VisualElement shadow)
+        public DuelCharacterIdlePreview(Image view, VisualElement shadow,DuelUnitAssets assets)
         {
-            this.view=view;this.shadow=shadow;
+            this.view=view;this.shadow=shadow;this.assets=assets;
             view.scaleMode=ScaleMode.ScaleToFit;
         }
 
@@ -31,6 +34,13 @@ namespace TowerDuel
             if(!set)
             {
                 ShowSpell(DuelSpriteLibrary.Card(id));
+                return;
+            }
+            if(!set.HasAtlases)
+            {
+                ShowSpell(DuelSpriteLibrary.Card(id));
+                pendingId=id;pendingFlight=flight;
+                assets.Prioritize(id);
                 return;
             }
             flying=flight;
@@ -63,6 +73,11 @@ namespace TowerDuel
 
         public void Tick()
         {
+            if(pendingId!=null && assets.IsLoaded(pendingId))
+            {
+                string id=pendingId;bool flight=pendingFlight;
+                Show(id,flight);
+            }
             if(!active||!set)return;
             float now=Time.unscaledTime;
             if(now<nextFrame)return;
@@ -95,7 +110,7 @@ namespace TowerDuel
 
         public void Stop()
         {
-            active=false;set=null;
+            active=false;set=null;pendingId=null;
             view.sprite=null;view.image=null;
             view.style.scale=new Scale(Vector3.one);
             shadow.style.display=DisplayStyle.None;

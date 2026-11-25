@@ -10,7 +10,7 @@ parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('kind')
 kind=parser.parse_args().kind
 config=json.loads((repo/f'examples/tower-duel/art/b3-production/{kind}.json').read_text(encoding='utf-8-sig'))
-root=repo/f'examples/tower-duel/client/Assets/Resources/TowerDuel/B3/Units/{kind}'
+root=repo/f'examples/tower-duel/client/Assets/TowerDuelArt/Units/{kind}'
 definition=json.loads((root/'definition.json').read_text(encoding='utf-8-sig'))
 tile=definition['tileSize']
 idle=definition.get('idleFrames',1);walk=definition['walkFrames'];attack=definition['attackFrames'];impact=definition['impactFrame']

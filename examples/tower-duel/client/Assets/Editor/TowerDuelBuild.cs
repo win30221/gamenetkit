@@ -20,6 +20,7 @@ namespace TowerDuel.Editor
         [MenuItem("Tower Duel/Prepare playable scene")]
         public static void Setup()
         {
+            TowerDuelUnitBundleBuild.ResetManifest();
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             Directory.CreateDirectory(Root + "/Materials");
             AssetDatabase.Refresh();
@@ -151,7 +152,9 @@ namespace TowerDuel.Editor
 
         private static void AssertNoDuplicateWebArt()
         {
-            string units=Root+"/B3/Units";
+            string units=TowerDuelSpriteContent.UnitRoot;
+            if (Directory.Exists(Root+"/B3/Units"))
+                throw new InvalidOperationException("Legacy B3 atlas directory still exists in Resources; remove the duplicate after checking the new TowerDuelArt/Units directory.");
             foreach (string path in Directory.GetFiles(units,"definition.json",SearchOption.AllDirectories))
             {
                 var definition=B3SpriteDefinition.Read(path);
@@ -174,7 +177,7 @@ namespace TowerDuel.Editor
         [Serializable] private sealed class WebSizeReport
         {
             public string builtAtUtc;
-            public long buildReportBytes, actualBuildFilesBytes, startupTransferBytes, packedAssetBytes;
+            public long buildReportBytes, actualBuildFilesBytes, startupTransferBytes, packedAssetBytes, unitBundleBytes;
             public SizeEntry[] files, assets;
         }
         private static void WriteWebSizeReport(BuildReport report,string output)
@@ -194,6 +197,7 @@ namespace TowerDuel.Editor
                 startupTransferBytes=files.Where(x=>x.path=="index.html" || x.path=="Build/WebGL.loader.js" ||
                     x.path=="Build/WebGL.data.gz" || x.path=="Build/WebGL.wasm.gz" ||
                     x.path=="Build/WebGL.framework.js.gz").Sum(x=>x.bytes),
+                unitBundleBytes=files.Where(x=>x.path.StartsWith("assets/bundles/",StringComparison.Ordinal)&&x.path.EndsWith(".bundle",StringComparison.Ordinal)).Sum(x=>x.bytes),
                 packedAssetBytes=assets.Sum(x=>x.bytes),files=files,assets=assets
             };
             File.WriteAllText("Builds/web-build-size.json",JsonUtility.ToJson(result,true)+"\n");
@@ -212,15 +216,22 @@ namespace TowerDuel.Editor
             const string output = "Builds/WebGL";
             File.Delete("Builds/web-build-size.json");
             var content = TowerDuelWebContent.BeginBuild(output, out var rules);
-            var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
-                scenes = new[] { Scene }, locationPathName = output,
-                target = BuildTarget.WebGL, options = BuildOptions.DetailedBuildReport
-            });
-            string result = JsonUtility.ToJson(new BuildResult { result = report.summary.result.ToString(), errors = report.summary.totalErrors, seconds = report.summary.totalTime.TotalSeconds }, true);
-            File.WriteAllText("Builds/web-build-result.json", result);
-            if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded) throw new InvalidOperationException(result);
-            File.WriteAllText(Path.Combine(output, "tower-duel-build.txt"), $"TowerDuel protocol {rules.schema} / {rules.id}\n");
-            WriteWebSizeReport(report, output);
+            BuildReport report;
+            using (var bundles = TowerDuelUnitBundleBuild.Prepare())
+            {
+                report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
+                    scenes = new[] { Scene }, locationPathName = output,
+                    target = BuildTarget.WebGL, options = BuildOptions.DetailedBuildReport
+                });
+                string result = JsonUtility.ToJson(new BuildResult { result = report.summary.result.ToString(), errors = report.summary.totalErrors, seconds = report.summary.totalTime.TotalSeconds }, true);
+                File.WriteAllText("Builds/web-build-result.json", result);
+                if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded) throw new InvalidOperationException(result);
+                bundles.AssertNoInlineAtlases(report);
+                bundles.Publish(output);
+                content.unitBundlesHash = TowerDuelUnitBundleBuild.Sha256(Path.Combine(output, "unit-bundles.json"));
+                File.WriteAllText(Path.Combine(output, "tower-duel-build.txt"), $"TowerDuel protocol {rules.schema} / {rules.id}\n");
+                WriteWebSizeReport(report, output);
+            }
             content.Publish(output);
             Debug.Log("Tower Duel Web build succeeded: " + report.summary.totalSize + " bytes");
         }

@@ -4,7 +4,7 @@ from pathlib import Path
 from PIL import Image,ImageChops,ImageFilter
 
 ROOT=Path(__file__).resolve().parents[3]
-UNITS=ROOT/'examples/tower-duel/client/Assets/Resources/TowerDuel/B3/Units'
+UNITS=ROOT/'examples/tower-duel/client/Assets/TowerDuelArt/Units'
 SOURCES=ROOT/'examples/tower-duel/art/b3-production/atlases'
 
 def luma(pixel):return pixel[0]*.2126+pixel[1]*.7152+pixel[2]*.0722

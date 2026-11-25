@@ -10,7 +10,7 @@ namespace TowerDuel.Editor
     // Offline export only. Runtime plays the finished color and ground frames.
     public static class TowerDuelSpriteBaker
     {
-        private const string Root="Assets/Resources/TowerDuel/B3/Units";
+        private const string Root="Assets/TowerDuelArt/Units";
         private const string SourceRoot="../art/b3-production/atlases";
         public const float ShadowScale=2f;
         private const float ShadowX=-.65f, ShadowZ=-.75055535f, ShadowOpacity=.26f;

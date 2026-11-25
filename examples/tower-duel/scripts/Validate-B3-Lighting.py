@@ -28,7 +28,7 @@ def validate(folder):
         # Isolate the actual sprite silhouette. A wider review camera also sees
         # blue river pixels, which must not be counted as blue team clothing.
         repo=Path(__file__).resolve().parents[3]
-        resource=repo/'examples/tower-duel/client/Assets/Resources/TowerDuel/B3/Units'/probe['kind']
+        resource=repo/'examples/tower-duel/client/Assets/TowerDuelArt/Units'/probe['kind']
         definition=json.loads((resource/'definition.json').read_text())
         tile=definition['tileSize'];height=definition['worldHeight']
         pixels_per_unit=600/(2*max(1.15,height*1.15))*height*tile/definition['referenceHeight']

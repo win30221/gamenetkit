@@ -15,6 +15,7 @@ namespace TowerDuel.Editor
 
         public string mapHash;
         public string rulesHash;
+        public string unitBundlesHash;
         private DateTime mapWriteTime;
         private DateTime rulesWriteTime;
 

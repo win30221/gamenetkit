@@ -32,7 +32,8 @@
     function towerDuelCacheControl(url) {
       const asset = new URL(url, window.location.href);
       if (asset.origin === window.location.origin &&
-          /^\/assets\/core\/[0-9a-f]{64}\/WebGL\.(loader\.js|framework\.js\.gz|data\.gz|wasm\.gz)$/.test(asset.pathname)) return 'immutable';
+          (/^\/assets\/core\/[0-9a-f]{64}\/WebGL\.(loader\.js|framework\.js\.gz|data\.gz|wasm\.gz)$/.test(asset.pathname) ||
+           /^\/assets\/bundles\/[0-9a-f]{64}\/[a-z0-9-]+\.bundle$/.test(asset.pathname))) return 'immutable';
       if (/\.data(?:\.gz)?$|\.bundle$/.test(asset.pathname)) return 'must-revalidate';
       return 'no-store';
     }
