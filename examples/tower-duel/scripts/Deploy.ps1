@@ -16,7 +16,7 @@ $release=[DateTime]::UtcNow.ToString('yyyyMMddTHHmmssZ')+'-'+[guid]::NewGuid().T
 $out=Join-Path $repo ".local/deploy/tower-duel/$release"
 $bundle=Join-Path $out 'bundle'
 . (Join-Path $PSScriptRoot 'WebPackageContent.ps1')
-$packageProtocol = New-TowerDuelWebPackageContent $game $bundle @{Multiplayer='public'}
+$packageProtocol = New-TowerDuelWebPackageContent $game $bundle @{Multiplayer='public'} -ContentAddressedCore
 $buildMarker = $packageProtocol.Markers.Multiplayer
 $rules = $packageProtocol.Rules
 $protocol = [int]$rules.schema
@@ -62,7 +62,17 @@ for($i=0;$i -lt 24;$i++){
         $config=Invoke-RestMethod "$url/api/config" -TimeoutSec 5
         $marker=(Invoke-WebRequest "$url/tower-duel-build.txt" -TimeoutSec 5).Content
         if($marker -is [byte[]]){$marker=[Text.Encoding]::UTF8.GetString($marker)}
-        if($health.Trim() -eq 'ok' -and $page.Content -match 'WebGL.loader.js' -and $config.protocol -eq $protocol -and $config.rulesHash -eq $rulesHash -and $config.mapHash -eq $mapHash -and $config.cards.Count -eq $rules.cards.Count -and $marker.Trim() -eq $buildMarker){$ready=$true;break}
+        if($health.Trim() -eq 'ok' -and $config.protocol -eq $protocol -and $config.rulesHash -eq $rulesHash -and $config.mapHash -eq $mapHash -and $config.cards.Count -eq $rules.cards.Count -and $marker.Trim() -eq $buildMarker){
+            $assetsReady=$true
+            foreach($asset in $packageProtocol.CoreAssets){
+                if(-not $page.Content.Contains($asset.url)){$assetsReady=$false;break}
+                $head=Invoke-WebRequest -Uri "$url$($asset.url)" -Method Head -TimeoutSec 10
+                if(([string]($head.Headers['Cache-Control'] -join ', ')) -notmatch '(?i)\bimmutable\b' -or
+                   ([string]($head.Headers['Cache-Control'] -join ', ')) -notmatch '(?i)max-age=31536000' -or
+                   ($asset.name.EndsWith('.gz') -and ([string]($head.Headers['Content-Encoding'] -join ', ')) -notmatch '(?i)\bgzip\b')){$assetsReady=$false;break}
+            }
+            if($assetsReady){$ready=$true;break}
+        }
     }catch{if($i -eq 23){Write-Warning $_}}
     Start-Sleep -Seconds 3
 }
@@ -75,3 +85,4 @@ $manifest | ConvertTo-Json -Depth 6 | Set-Content (Join-Path $out 'deployed.json
 Write-Output "Playable URL: $url/"
 Write-Output "Release: $release"
 Write-Output "Optional modes: disabled; legacy route removed"
+Write-Output "Content-addressed core: verified immutable cache headers and active page URLs"

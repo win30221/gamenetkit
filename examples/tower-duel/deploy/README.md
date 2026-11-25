@@ -37,3 +37,37 @@ sh examples/tower-duel/deploy/test-install.sh
 
 These tests use temporary fixture directories and mocked `systemctl`, Docker,
 and health checks. They do not contact the production VM.
+
+
+## Content-addressed WebGL core (P1-1)
+
+Rebuild WebGL before deploying this version. The first migration requires a full
+deploy (no -StaticOnly or -ClientOnly), because the shared Caddy route changes.
+The normal commands remain the same.
+
+Packaging rewrites the staged multiplayer index to use
+/assets/core/<sha256>/WebGL.* and writes core-assets.sha256 and
+public/core-assets.json. SHA-256 is calculated on the exact transferred bytes,
+including gzip. The local build and optional-mode packages retain relative
+Build paths. The installed release also retains its fixed Build files for
+existing diagnostics and deployment comparisons.
+
+The installer verifies the receipt and page references, publishes missing
+assets under /opt/rumblebound/tower-duel/assets/core/<sha256>/ before activation,
+and refuses to overwrite an existing corrupt immutable path. Old hashes are
+intentionally retained for older tabs and rollback; no automatic garbage
+collection is enabled. Monitor disk use before adding a retention policy.
+
+Caddy keeps the page, manifest and legacy Build paths revalidated; only valid
+content-addressed core URLs receive a one-year immutable response policy on
+successful responses. The Unity loader also uses immutable for those same-origin
+URLs. The first load after migration downloads the new URLs once; unchanged URLs
+can be reused on subsequent releases, subject to browser cache limits.
+
+To inspect the active manifest:
+  Invoke-RestMethod "https://YOUR_DOMAIN/core-assets.json"
+
+Compare URLs before and after a rebuild, and use Chrome Network with Disable
+cache unchecked. Check a hashed resource's response headers and reload
+behavior. A changed data file still needs a full download: AssetBundle splitting
+and preloading are a separate follow-up, not part of P1-1.

@@ -12,6 +12,28 @@ __DOMAIN__ {
     handle @api {
         reverse_proxy 127.0.0.1:18110
     }
+    # Only these content-addressed paths receive long-lived caching.
+    @core path_regexp core ^/assets/core/[0-9a-f]{64}/WebGL[.](loader[.]js|framework[.]js[.]gz|data[.]gz|wasm[.]gz)$
+    handle @core {
+        uri strip_prefix /assets/core
+        root * /srv/tower-duel/assets/core
+        @coreGzip path *.gz
+        header @coreGzip Content-Encoding gzip
+        @coreWasm path *.wasm.gz
+        header @coreWasm Content-Type application/wasm
+        @coreJs path *.js.gz *.loader.js
+        header @coreJs Content-Type application/javascript
+        @coreData path *.data.gz
+        header @coreData Content-Type application/octet-stream
+        header {
+            Cache-Control "public, max-age=31536000, immutable"
+            match status 2xx 304
+        }
+        file_server
+    }
+    handle /assets/core/* {
+        respond 404
+    }
     handle {
         root * /srv/tower-duel/current/public
         @gzip path *.gz

@@ -27,11 +27,21 @@
       error.textContent='請使用支援 WebGL 2 的新版 Chrome、Edge 或 Safari，或重新整理再試。\n'+String(message);
       document.getElementById('progress').hidden=true;
     }
+    // Only content-addressed same-origin assets can skip Unity's IndexedDB revalidation.
+    // The local /Build files retain the safe revalidation policy.
+    function towerDuelCacheControl(url) {
+      const asset = new URL(url, window.location.href);
+      if (asset.origin === window.location.origin &&
+          /^\/assets\/core\/[0-9a-f]{64}\/WebGL\.(loader\.js|framework\.js\.gz|data\.gz|wasm\.gz)$/.test(asset.pathname)) return 'immutable';
+      if (/\.data(?:\.gz)?$|\.bundle$/.test(asset.pathname)) return 'must-revalidate';
+      return 'no-store';
+    }
     createUnityInstance(canvas,{
       dataUrl:'Build/{{{ DATA_FILENAME }}}',
       frameworkUrl:'Build/{{{ FRAMEWORK_FILENAME }}}',
       codeUrl:'Build/{{{ CODE_FILENAME }}}',
       streamingAssetsUrl:'StreamingAssets',
+      cacheControl: towerDuelCacheControl,
       companyName:{{{ JSON.stringify(COMPANY_NAME) }}},
       productName:{{{ JSON.stringify(PRODUCT_NAME) }}},
       productVersion:{{{ JSON.stringify(PRODUCT_VERSION) }}},

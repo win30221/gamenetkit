@@ -6,6 +6,28 @@ work=${1:-"${TMPDIR:-/tmp}"}
 mkdir -p "$work"
 work=$(cd "$work" && pwd)
 
+write_core_receipt() (
+    set -eu
+    cd "$1"
+    : > core-assets.sha256
+    : > public/index.html
+    for name in WebGL.loader.js WebGL.framework.js.gz WebGL.data.gz WebGL.wasm.gz; do
+        line=$(sha256sum "public/Build/$name")
+        printf '%s\n' "$line" >> core-assets.sha256
+        digest=$(printf '%s' "$line" | cut -d ' ' -f 1)
+        printf '/assets/core/%s/%s\n' "$digest" "$name" >> public/index.html
+    done
+)
+
+verify_core() (
+    set -eu
+    cd "$1"
+    for name in WebGL.loader.js WebGL.framework.js.gz WebGL.data.gz WebGL.wasm.gz; do
+        digest=$(sha256sum "public/Build/$name" | cut -d ' ' -f 1)
+        cmp "$base/assets/core/$digest/$name" "public/Build/$name"
+    done
+)
+
 prepare() {
     TEST_ROOT=$(mktemp -d "$work/tower-duel-install.XXXXXX")
     export TEST_ROOT
@@ -20,7 +42,10 @@ prepare() {
     printf 'original core unit\n' > "$TEST_ROOT/etc/systemd/system/tower-duel.service"
     printf 'multiplayer-only route\n' > "$base/releases/new/site.caddy"
     printf 'binary\n' > "$base/releases/new/tower-duel-api"
-    printf 'wasm\n' > "$base/releases/new/public/Build/WebGL.wasm.gz"
+    for name in WebGL.loader.js WebGL.framework.js.gz WebGL.data.gz WebGL.wasm.gz; do
+        printf '%s\n' "$name fixture" > "$base/releases/new/public/Build/$name"
+    done
+    write_core_receipt "$base/releases/new"
     ln -s releases/old "$base/current"
     for unit in tower-duel-modes tower-duel-solo-api tower-duel-solo-web; do
         : > "$state/active.$unit.service"
@@ -110,6 +135,7 @@ ORIGINAL_PATH=$PATH
 prepare
 sh "$TEST_ROOT/install-test.sh" new full >/dev/null
 test "$(readlink "$base/current")" = releases/new
+verify_core "$base/releases/new"
 grep -q 'multiplayer-only route' "$base/tower-duel.caddy"
 test ! -e "$base/tower-duel-solo.caddy"
 grep -q 'unrelated' "$proxy"
@@ -131,8 +157,28 @@ test "$reloads_before" = "$reloads_after"
 # A partial update after cleanup does not restart the core service.
 cp -a "$base/releases/new" "$base/releases/client"
 for name in tower-duel-api site.caddy; do cmp "$base/releases/new/$name" "$base/releases/client/$name"; done
+printf 'new WASM content\n' > "$base/releases/client/public/Build/WebGL.wasm.gz"
+write_core_receipt "$base/releases/client"
 sh "$TEST_ROOT/install-test.sh" client client >/dev/null
 test "$(readlink "$base/current")" = releases/client
+verify_core "$base/releases/new"
+verify_core "$base/releases/client"
+# The original 4 assets and one changed WASM are still available.
+test "$(find "$base/assets/core" -type f | wc -l | tr -d ' ')" = 5
+cp -a "$base/releases/client" "$base/releases/bad"
+printf 'bad receipt\n' > "$base/releases/bad/core-assets.sha256"
+if sh "$TEST_ROOT/install-test.sh" bad client >"$TEST_ROOT/log" 2>&1; then
+    echo 'Expected invalid core receipt rejection' >&2; exit 1
+fi
+test "$(readlink "$base/current")" = releases/client
+digest=$(sha256sum "$base/releases/client/public/Build/WebGL.wasm.gz" | cut -d ' ' -f 1)
+printf 'corrupt immutable bytes\n' > "$base/assets/core/$digest/WebGL.wasm.gz"
+if sh "$TEST_ROOT/install-test.sh" client client >"$TEST_ROOT/log" 2>&1; then
+    echo 'Expected corrupt immutable asset rejection' >&2; exit 1
+fi
+grep -q 'Corrupt immutable core asset' "$TEST_ROOT/log"
+test "$(readlink "$base/current")" = releases/client
+printf 'PASS: content-addressed core reuse, old URL retention, invalid receipt and corruption rejection\n'
 printf 'PASS: full migration disables optional modes; later client-only update works\n'
 
 prepare

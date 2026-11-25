@@ -43,6 +43,26 @@ function Test-Package([string]$Mode, [string]$ExpectedError = '', [hashtable]$Op
     & tar -xzf $archive -C $extract
     if ($LASTEXITCODE -ne 0) { throw "Could not inspect $archive." }
     $manifest = Get-Content -LiteralPath (Join-Path $extract 'manifest.json') -Raw | ConvertFrom-Json
+    if ($Mode -eq 'Multiplayer') {
+        $page = [IO.File]::ReadAllText((Join-Path $extract 'public/index.html'))
+        $records = @(Get-Content -LiteralPath (Join-Path $extract 'public/core-assets.json') -Raw | ConvertFrom-Json)
+        if ($records.Count -ne 4) { throw 'Wrong number of content-addressed core assets.' }
+        $receipt = Get-Content -LiteralPath (Join-Path $extract 'core-assets.sha256')
+        foreach ($asset in $records) {
+            $hash = (Get-FileHash -LiteralPath (Join-Path $extract "public/Build/$($asset.name)")).Hash.ToLowerInvariant()
+            if ($asset.sha256 -cne $hash -or $asset.url -cne "/assets/core/$hash/$($asset.name)" -or
+                -not $page.Contains($asset.url) -or $receipt -cnotcontains "$hash  public/Build/$($asset.name)") {
+                throw 'Content-addressed URL or checksum does not match packaged bytes.'
+            }
+            if ($page.Contains("Build/$($asset.name)")) { throw 'Fixed path leaked into staged page.' }
+        }
+        if (-not ([IO.File]::ReadAllText((Join-Path $plain 'index.html'))).Contains('Build/WebGL.data.gz')) {
+            throw 'Packaging mutated the local Player.'
+        }
+        $script:LastCoreAssets = $records
+    } else {
+        if (Test-Path (Join-Path $extract 'core-assets.sha256')) { throw 'Optional mode package unexpectedly enabled multiplayer core store.' }
+    }
     $players = @('public')
     if ($Mode -eq 'Merged') { $players += 'modes-public' }
     foreach ($name in 'map','rules') {
@@ -89,11 +109,27 @@ $Go = 'New-TestGoBinary'
         }
         Set-TestRecord $player
     }
-    [IO.File]::WriteAllText("$plain/index.html", '<html></html>')
+    $plainPage = @'
+<script src="Build/WebGL.loader.js"></script>
+<script>createUnityInstance(canvas,{dataUrl:'Build/WebGL.data.gz',frameworkUrl:'Build/WebGL.framework.js.gz',codeUrl:'Build/WebGL.wasm.gz',cacheControl: towerDuelCacheControl,});</script>
+'@
+    [IO.File]::WriteAllText("$plain/index.html", $plainPage)
     [IO.File]::WriteAllText("$solo/index.html", '<meta content="solo-plugin">')
     [IO.File]::WriteAllText("$plain/tower-duel-build.txt", 'TowerDuel protocol 3 / test-revision')
     [IO.File]::WriteAllText("$solo/solo-build.txt", 'TowerDuel Solo protocol 3 / test-revision')
     foreach ($mode in 'Multiplayer','Solo','Merged') { Test-Package $mode }
+    $before = @($script:LastCoreAssets)
+    [IO.File]::AppendAllText("$plain/Build/WebGL.wasm.gz", 'wasm update')
+    Test-Package Multiplayer
+    foreach ($asset in $script:LastCoreAssets) {
+        $previous = $before | Where-Object name -eq $asset.name
+        if (($asset.url -ceq $previous.url) -ne ($asset.name -ne 'WebGL.wasm.gz')) {
+            throw "Changing only WASM changed the wrong asset URL: $($asset.name)"
+        }
+    }
+    [IO.File]::WriteAllText("$plain/index.html", $plainPage.Replace('cacheControl: towerDuelCacheControl,',''))
+    Test-Package Multiplayer 'cache policy missing'
+    [IO.File]::WriteAllText("$plain/index.html", $plainPage)
 
     [IO.File]::WriteAllText($rulesPath, $rules.Replace('"hp":70','"hp":90'))
     foreach ($mode in 'Multiplayer','Solo','Merged') { Test-Package $mode 'rulesHash mismatch' }

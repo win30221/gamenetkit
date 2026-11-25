@@ -24,6 +24,46 @@ chmod 755 "$next/tower-duel-api"
 previous=$(readlink "$base/current" || true)
 mode=${2:-full}
 case "$mode" in full|static|client) ;; *) echo 'Invalid deployment mode' >&2; exit 1;; esac
+
+# Publish exact staged content before exposing any page that references it.
+# Retain past hashes for in-flight downloads, older open pages and rollback.
+# The fixed Build paths remain in the release for legacy diagnostics and comparisons.
+publish_core_assets() (
+    set -eu
+    cd "$next"
+    names='WebGL.loader.js WebGL.framework.js.gz WebGL.data.gz WebGL.wasm.gz'
+    test -f core-assets.sha256
+    test -f public/index.html
+    expected=$(for name in $names; do sha256sum "public/Build/$name" || exit 1; done)
+    if [ "$expected" != "$(cat core-assets.sha256)" ]; then
+        echo 'Core asset checksum receipt does not match the staged Player' >&2
+        exit 1
+    fi
+    for name in $names; do
+        digest=$(sha256sum "public/Build/$name")
+        digest=$(printf '%s' "$digest" | cut -d ' ' -f 1)
+        if ! grep -Fq "/assets/core/$digest/$name" public/index.html; then
+            echo "Core URL missing from staged page: $name" >&2
+            exit 1
+        fi
+        target="$base/assets/core/$digest/$name"
+        if [ -e "$target" ]; then
+            if ! cmp -s "$target" "public/Build/$name"; then
+                echo "Corrupt immutable core asset: $target (refusing to overwrite)" >&2
+                exit 1
+            fi
+            continue
+        fi
+        mkdir -p "$(dirname "$target")"
+        chmod 755 "$base/assets" "$base/assets/core" "$(dirname "$target")"
+        temporary=$(mktemp "$(dirname "$target")/.publish.XXXXXX")
+        if ! install -m 644 "public/Build/$name" "$temporary" || ! mv -T "$temporary" "$target"; then
+            rm -f "$temporary"
+            exit 1
+        fi
+    done
+)
+
 if [ "$mode" = static ] || [ "$mode" = client ]; then
     test -n "$previous"
     # Partial releases may only update an installation that is already multiplayer-only.
@@ -49,6 +89,7 @@ if [ "$mode" = static ] || [ "$mode" = client ]; then
             exit 1
         fi
     done
+    publish_core_assets
     ln -sfn "releases/$release" "$base/current.next"
     mv -Tf "$base/current.next" "$base/current"
     if ! curl -fsS http://127.0.0.1:18110/healthz >/dev/null; then
@@ -58,6 +99,8 @@ if [ "$mode" = static ] || [ "$mode" = client ]; then
     echo "Tower Duel $mode release $release activated without restarting the game"
     exit 0
 fi
+
+publish_core_assets
 
 # Save the state of *both* the core deployment and previous optional modes.
 cp "$proxy" "$next/previous.Caddyfile"
@@ -141,6 +184,19 @@ PrivateTmp=true
 [Install]
 WantedBy=multi-user.target
 UNIT
+# Do not reload the shared proxy unless the active routes really changed.
+if ! cmp -s "$next/Caddyfile.candidate" "$proxy" ||
+   ! cmp -s "$next/site.caddy" "$next/previous.site" ||
+   [ -f "$next/previous.legacy.site" ]; then
+    if ! cmp -s "$next/Caddyfile.candidate" "$proxy"; then
+        # Keep the bind-mounted proxy file inode stable.
+        proxy_changed=1
+        cat "$next/Caddyfile.candidate" > "$proxy"
+    fi
+    reload_attempted=1
+    docker kill --signal=USR1 rumblebound-web >/dev/null
+fi
+# The new content-addressed route must be active before the new page is exposed.
 # A running modes process can refer to the previous release. Restore it on failure.
 optional_changed=1
 service_changed=1
@@ -155,18 +211,6 @@ for attempt in 1 2 3 4 5 6 7 8 9 10; do
     sleep 1
 done
 if [ "$ready" != 1 ]; then journalctl -u tower-duel -n 20 --no-pager; exit 1; fi
-# Do not reload the shared proxy unless the active routes really changed.
-if ! cmp -s "$next/Caddyfile.candidate" "$proxy" ||
-   ! cmp -s "$next/site.caddy" "$next/previous.site" ||
-   [ -f "$next/previous.legacy.site" ]; then
-    if ! cmp -s "$next/Caddyfile.candidate" "$proxy"; then
-        # Keep the bind-mounted proxy file inode stable.
-        proxy_changed=1
-        cat "$next/Caddyfile.candidate" > "$proxy"
-    fi
-    reload_attempted=1
-    docker kill --signal=USR1 rumblebound-web >/dev/null
-fi
 curl -fsS -H 'X-Forwarded-Proto: https' -H 'X-Forwarded-For: 127.0.0.1' http://127.0.0.1:18179/healthz >/dev/null
 
 # Retire optional services only after the multiplayer route and API are healthy.
