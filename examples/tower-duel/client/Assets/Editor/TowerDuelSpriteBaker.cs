@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
@@ -10,6 +11,7 @@ namespace TowerDuel.Editor
     public static class TowerDuelSpriteBaker
     {
         private const string Root="Assets/Resources/TowerDuel/B3/Units";
+        private const string SourceRoot="../art/b3-production/atlases";
         public const float ShadowScale=2f;
         private const float ShadowX=-.65f, ShadowZ=-.75055535f, ShadowOpacity=.26f;
         [MenuItem("Tower Duel/Bake fixed-light sprite sheets")]
@@ -41,11 +43,22 @@ namespace TowerDuel.Editor
         }
         private static void Bake(string folder,string clip,B3SpriteDefinition definition)
         {
+            string runtimeSource=Path.Combine(folder,clip+".png");
+            string sourcePath=Path.Combine(SourceRoot,definition.kind,clip+".png");
+            if (!File.Exists(sourcePath) && File.Exists(runtimeSource))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(sourcePath));
+                File.Copy(runtimeSource,sourcePath);
+            }
+            if (!File.Exists(sourcePath)) throw new FileNotFoundException("Missing source atlas",sourcePath);
+            byte[] sourceBytes=File.ReadAllBytes(sourcePath);
+            if (File.Exists(runtimeSource) && !sourceBytes.SequenceEqual(File.ReadAllBytes(runtimeSource)))
+                throw new InvalidOperationException("Runtime/source atlas mismatch; reconcile before baking: "+runtimeSource);
             var source=new Texture2D(2,2,TextureFormat.RGBA32,false,true);
             Texture2D output=null;
             try
             {
-                if(!source.LoadImage(File.ReadAllBytes(folder+"/"+clip+".png")))throw new InvalidOperationException("Cannot read source atlas");
+                if(!source.LoadImage(sourceBytes))throw new InvalidOperationException("Cannot read source atlas");
                 int tile=definition.tileSize,w=source.width,h=source.height;
                 if(h!=tile*8||w!=tile*definition.Columns(clip))throw new InvalidOperationException("Unexpected source grid: "+folder+"/"+clip);
                 var original=source.GetPixels32();var pixels=new Color32[w*h*2];
@@ -76,6 +89,8 @@ namespace TowerDuel.Editor
                 }
                 output=new Texture2D(w,h*2,TextureFormat.RGBA32,false,true);output.SetPixels32(pixels);output.Apply();
                 File.WriteAllBytes(folder+"/"+clip+"-baked.png",output.EncodeToPNG());
+                // The exact source bytes are archived outside Assets. Do not ship them too.
+                if (File.Exists(runtimeSource)) { File.Delete(runtimeSource); File.Delete(runtimeSource+".meta"); }
             }
             finally { UnityEngine.Object.DestroyImmediate(source);if(output)UnityEngine.Object.DestroyImmediate(output); }
         }

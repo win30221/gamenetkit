@@ -46,6 +46,7 @@ namespace TowerDuel.Editor
                 importer.mipmapEnabled=false;importer.isReadable=false;importer.wrapMode=TextureWrapMode.Clamp;
                 importer.filterMode=FilterMode.Bilinear;importer.npotScale=TextureImporterNPOTScale.None;
                 importer.maxTextureSize=4096;importer.textureCompression=TextureImporterCompression.Uncompressed;
+                TowerDuelSpriteContent.ConfigureWebTexture(importer);
                 importer.SaveAndReimport();
             }
             AssetDatabase.SaveAssets();return "B3 environment imported: 6 textures and four atlases";

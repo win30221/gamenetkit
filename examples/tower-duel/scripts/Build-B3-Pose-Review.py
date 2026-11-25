@@ -17,7 +17,8 @@ idle=definition.get('idleFrames',1);walk=definition['walkFrames'];attack=definit
 samples=[('idle',0)]
 if idle>1:samples.append(('idle',idle//2))
 samples += [('walk',0),('walk',walk//2),('attack',0),('attack',impact-1),('attack',impact),('attack',attack-1)]
-textures={name:Image.open(root/f'{name}.png').convert('RGBA') for name in ('idle','walk','attack')}
+sources=repo/f'examples/tower-duel/art/b3-production/atlases/{kind}'
+textures={name:Image.open(sources/f'{name}.png').convert('RGBA') for name in ('idle','walk','attack')}
 canvas=Image.new('RGB',(len(samples)*tile,8*(tile+20)),(87,106,67))
 draw=ImageDraw.Draw(canvas)
 for row,direction in enumerate(config['directions']):

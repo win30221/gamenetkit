@@ -170,6 +170,8 @@ def prepare(kind: str) -> None:
     source = {key: REPO/path for key, path in config["sources"].items()}
     target = RESOURCES / "Units" / kind
     target.mkdir(parents=True, exist_ok=True)
+    source_target = REPO / "examples/tower-duel/art/b3-production/atlases" / kind
+    source_target.mkdir(parents=True, exist_ok=True)
     report = {"kind": kind, "directions": config["directions"], "tile": tile, "clips": {}}
 
     cutoffs=config.get("sourceAlphaCutoff",{})
@@ -220,7 +222,10 @@ def prepare(kind: str) -> None:
             normalized.append(frames)
             row_reports.append(row_report)
         sheet = atlas(normalized, tile)
-        sheet.save(target / f"{clip}.png")
+        original = source_target / f"{clip}.png"
+        sheet.save(original)
+        if not config.get("baked", False):
+            (target / f"{clip}.png").write_bytes(original.read_bytes())
         report["clips"][clip] = {"size": sheet.size, "frames": sum(map(len, normalized)),
                                     "rows": row_reports}
         for direction, frames in zip(config["directions"], normalized):

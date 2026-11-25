@@ -85,9 +85,9 @@ namespace TowerDuel.Editor
                 if (rules.Find(cardKind) == null) throw new InvalidOperationException("Unknown B3 unit " + cardKind);
                 string folder = Root + "/Units/" + definition.kind;
                 string suffix=definition.baked?"-baked":"";
-                var idle = Import(folder + "/idle"+suffix+".png", true,definition.AtlasImportSize("idle",definition.baked));
-                var walk = Import(folder + "/walk"+suffix+".png", true,definition.AtlasImportSize("walk",definition.baked));
-                var attack = Import(folder + "/attack"+suffix+".png", true,definition.AtlasImportSize("attack",definition.baked));
+                var idle = Import(folder + "/idle"+suffix+".png", true,definition.AtlasImportSize("idle",definition.baked), webCompression: true);
+                var walk = Import(folder + "/walk"+suffix+".png", true,definition.AtlasImportSize("walk",definition.baked), webCompression: true);
+                var attack = Import(folder + "/attack"+suffix+".png", true,definition.AtlasImportSize("attack",definition.baked), webCompression: true);
                 if (!airborneVariant) Import(Root + "/Cards/" + cardKind + ".png", false);
                 string path = Root + "/" + definition.kind + ".asset";
                 var set = AssetDatabase.LoadAssetAtPath<DuelSpriteSet>(path);
@@ -153,7 +153,7 @@ namespace TowerDuel.Editor
             }
             finally { PlayerSettings.insecureHttpOption=previous;AssetDatabase.SaveAssets(); }
         }
-        private static Texture2D Import(string path, bool alpha,int maxSize=2048)
+        private static Texture2D Import(string path, bool alpha,int maxSize=2048,bool webCompression=false)
         {
             var importer = AssetImporter.GetAtPath(path) as TextureImporter;
             if (!importer) throw new InvalidOperationException("Missing B3 artwork " + path);
@@ -164,8 +164,24 @@ namespace TowerDuel.Editor
             importer.textureCompression = TextureImporterCompression.Uncompressed;
             importer.ClearPlatformTextureSettings("Standalone");
             importer.ClearPlatformTextureSettings("WebGL");
+            if (webCompression) ConfigureWebTexture(importer);
             importer.SaveAndReimport();
             return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        }
+
+        // Keep the source atlas geometry, alpha, and desktop settings unchanged.
+        // Let Unity select a WebGL-compatible GPU format for the active build target.
+        internal static void ConfigureWebTexture(TextureImporter importer)
+        {
+            var settings = importer.GetPlatformTextureSettings("WebGL");
+            settings.overridden = true;
+            settings.maxTextureSize = importer.maxTextureSize;
+            settings.format = TextureImporterFormat.Automatic;
+            settings.textureCompression = TextureImporterCompression.CompressedHQ;
+            settings.compressionQuality = 100;
+            settings.crunchedCompression = false;
+            settings.allowsAlphaSplitting = false;
+            importer.SetPlatformTextureSettings(settings);
         }
     }
 }

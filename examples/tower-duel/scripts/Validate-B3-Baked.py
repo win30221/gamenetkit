@@ -5,6 +5,7 @@ from PIL import Image,ImageChops,ImageFilter
 
 ROOT=Path(__file__).resolve().parents[3]
 UNITS=ROOT/'examples/tower-duel/client/Assets/Resources/TowerDuel/B3/Units'
+SOURCES=ROOT/'examples/tower-duel/art/b3-production/atlases'
 
 def luma(pixel):return pixel[0]*.2126+pixel[1]*.7152+pixel[2]*.0722
 
@@ -16,7 +17,7 @@ def validate():
         assert d.get('baked'),f'{folder.name}: not enabled'
         clips=[]
         for clip,columns in (('idle',d.get('idleFrames',1)),('walk',d['walkFrames']),('attack',d['attackFrames'])):
-            source=Image.open(folder/(clip+'.png')).convert('RGBA')
+            source=Image.open(SOURCES/folder.name/(clip+'.png')).convert('RGBA')
             assert source.size==(tile*columns,tile*8),f'{folder.name}/{clip}: wrong source grid'
             sheet=Image.open(folder/(clip+'-baked.png')).convert('RGBA')
             assert sheet.size==(tile*columns,tile*16),f'{folder.name}/{clip}: wrong grid'

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -148,23 +149,78 @@ namespace TowerDuel.Editor
             $"memory={PlayerSettings.WebGL.initialMemorySize}/{PlayerSettings.WebGL.maximumMemorySize}; " +
             $"growth={PlayerSettings.WebGL.memoryGrowthMode}; template={PlayerSettings.WebGL.template}";
 
+        private static void AssertNoDuplicateWebArt()
+        {
+            string units=Root+"/B3/Units";
+            foreach (string path in Directory.GetFiles(units,"definition.json",SearchOption.AllDirectories))
+            {
+                var definition=B3SpriteDefinition.Read(path);
+                if (!definition.baked) continue;
+                foreach (string clip in new[]{"idle","walk","attack"})
+                {
+                    string original=Path.Combine(Path.GetDirectoryName(path),clip+".png");
+                    if (File.Exists(original))
+                        throw new InvalidOperationException("Baked unit has duplicate runtime source atlas: "+original+
+                            ". Archive it under art/b3-production/atlases or run the sprite baker.");
+                }
+            }
+            foreach (string path in Directory.GetFiles(Root+"/Cards","*.png"))
+                if (File.Exists(Path.Combine(Root+"/B3/Cards",Path.GetFileName(path))))
+                    throw new InvalidOperationException("Duplicate legacy card art: "+path+
+                        ". Archive the legacy copy outside Resources.");
+        }
+
+        [Serializable] private sealed class SizeEntry { public string path; public long bytes; }
+        [Serializable] private sealed class WebSizeReport
+        {
+            public string builtAtUtc;
+            public long buildReportBytes, actualBuildFilesBytes, startupTransferBytes, packedAssetBytes;
+            public SizeEntry[] files, assets;
+        }
+        private static void WriteWebSizeReport(BuildReport report,string output)
+        {
+            string absolute=Path.GetFullPath(output);
+            var files=Directory.GetFiles(absolute,"*",SearchOption.AllDirectories)
+                .Select(path=>new SizeEntry { path=path.Substring(absolute.Length+1).Replace('\\','/'), bytes=new FileInfo(path).Length })
+                .OrderByDescending(x=>x.bytes).ThenBy(x=>x.path,StringComparer.Ordinal).ToArray();
+            var assets=(report.packedAssets ?? Array.Empty<PackedAssets>()).SelectMany(x=>x.contents)
+                .GroupBy(x=>string.IsNullOrEmpty(x.sourceAssetPath)?"(internal)":x.sourceAssetPath)
+                .Select(g=>new SizeEntry { path=g.Key, bytes=g.Sum(x=>(long)x.packedSize) })
+                .OrderByDescending(x=>x.bytes).ThenBy(x=>x.path,StringComparer.Ordinal).ToArray();
+            var result=new WebSizeReport {
+                builtAtUtc=DateTime.UtcNow.ToString("o"),
+                buildReportBytes=(long)report.summary.totalSize,
+                actualBuildFilesBytes=files.Sum(x=>x.bytes),
+                startupTransferBytes=files.Where(x=>x.path=="index.html" || x.path=="Build/WebGL.loader.js" ||
+                    x.path=="Build/WebGL.data.gz" || x.path=="Build/WebGL.wasm.gz" ||
+                    x.path=="Build/WebGL.framework.js.gz").Sum(x=>x.bytes),
+                packedAssetBytes=assets.Sum(x=>x.bytes),files=files,assets=assets
+            };
+            File.WriteAllText("Builds/web-build-size.json",JsonUtility.ToJson(result,true)+"\n");
+            Debug.Log("Tower Duel Web startup files: "+result.startupTransferBytes+" bytes. Detailed asset report: Builds/web-build-size.json");
+            foreach (var asset in assets.Take(10)) Debug.Log("Packed asset: "+asset.bytes+" bytes "+asset.path);
+        }
+
         [MenuItem("Tower Duel/Build Web release player")]
         public static void BuildWeb()
         {
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.WebGL)
                 throw new InvalidOperationException("Open this Editor with -buildTarget WebGL before building");
+            AssertNoDuplicateWebArt();
             Setup();
             ConfigureWeb();
             const string output = "Builds/WebGL";
+            File.Delete("Builds/web-build-size.json");
             var content = TowerDuelWebContent.BeginBuild(output, out var rules);
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
                 scenes = new[] { Scene }, locationPathName = output,
-                target = BuildTarget.WebGL, options = BuildOptions.None
+                target = BuildTarget.WebGL, options = BuildOptions.DetailedBuildReport
             });
             string result = JsonUtility.ToJson(new BuildResult { result = report.summary.result.ToString(), errors = report.summary.totalErrors, seconds = report.summary.totalTime.TotalSeconds }, true);
             File.WriteAllText("Builds/web-build-result.json", result);
             if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded) throw new InvalidOperationException(result);
             File.WriteAllText(Path.Combine(output, "tower-duel-build.txt"), $"TowerDuel protocol {rules.schema} / {rules.id}\n");
+            WriteWebSizeReport(report, output);
             content.Publish(output);
             Debug.Log("Tower Duel Web build succeeded: " + report.summary.totalSize + " bytes");
         }

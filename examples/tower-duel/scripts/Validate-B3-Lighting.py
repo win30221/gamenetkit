@@ -32,7 +32,7 @@ def validate(folder):
         definition=json.loads((resource/'definition.json').read_text())
         tile=definition['tileSize'];height=definition['worldHeight']
         pixels_per_unit=600/(2*max(1.15,height*1.15))*height*tile/definition['referenceHeight']
-        alpha=Image.open(resource/'idle.png').convert('RGBA').crop((0,0,tile,tile)).getchannel('A')
+        alpha=Image.open(repo/'examples/tower-duel/art/b3-production/atlases'/probe['kind']/'idle.png').convert('RGBA').crop((0,0,tile,tile)).getchannel('A')
         alpha=alpha.resize((round(pixels_per_unit),round(pixels_per_unit)),Image.Resampling.LANCZOS)
         mask=Image.new('L',(600,600));mask.paste(alpha,(round(probe['footX']-pixels_per_unit*.5),round(probe['footY']-pixels_per_unit*definition['baseline']/tile)))
         mask=mask.point(lambda n:255 if n>250 else 0).filter(ImageFilter.MinFilter(5))
